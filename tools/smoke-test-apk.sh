@@ -60,6 +60,13 @@ while [ "$left" -gt 0 ]; do
     case "$resumed" in
         *"$PACKAGE/"*) break ;;
     esac
+    # Older builds name the activity record differently, and the window that has
+    # the focus is the same answer by another route.
+    resumed=$(adb shell dumpsys window 2>/dev/null \
+        | grep -E 'mCurrentFocus|mFocusedApp' | head -2 || true)
+    case "$resumed" in
+        *"$PACKAGE/"*) break ;;
+    esac
     resumed=""
     sleep 1
     left=$((left - 1))

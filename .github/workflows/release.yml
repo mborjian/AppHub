@@ -147,6 +147,18 @@ jobs:
           (cd dist && sha256sum "$name" | tee "$name.sha256")
           echo "RELEASE_APK=dist/$name" >> "$GITHUB_ENV"
 
+      # The runner exposes /dev/kvm but not to the user the job runs as, and an
+      # emulator without it falls back to software emulation: it did boot that
+      # way, in six minutes, with its settings service never coming up - and the
+      # emulator's own setup then failed on the animation settings before the
+      # check below could run.
+      - name: Give the emulator access to KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       # Everything above proves the file is a signed APK of the right version.
       # This is what proves it is the app: it goes onto an emulator, and the
       # launcher activity has to reach the front and stay there. Nothing is
