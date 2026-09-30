@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One app on the shortcuts screen: its own icon in its own colours, its name,
+     and the tick that decides whether the board draws it.
+
+     The whole row is the target, so ticking an app is one tap on a 72dp line
+     rather than a hit at a 24dp box. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_1"
+    android:background="@drawable/bg_setting_row"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/row_min_height"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_3"
+    android:paddingTop="@dimen/space_2"
+    android:paddingEnd="@dimen/space_4"
+    android:paddingBottom="@dimen/space_2">
+
+    <ImageView
+        android:id="@+id/rowIcon"
+        android:layout_width="@dimen/icon_app_row"
+        android:layout_height="@dimen/icon_app_row"
+        android:contentDescription="@null"
+        tools:src="@mipmap/ic_launcher" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rowLabel"
+            style="@style/Text.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="Organic Maps" />
+
+        <TextView
+            android:id="@+id/rowSubtitle"
+            style="@style/Text.Meta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="app.organicmaps" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/rowCheck"
+        android:layout_width="@dimen/icon_row"
+        android:layout_height="@dimen/icon_row"
+        android:layout_marginStart="@dimen/space_3"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_check_circle"
+        android:tint="@color/primary"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout>

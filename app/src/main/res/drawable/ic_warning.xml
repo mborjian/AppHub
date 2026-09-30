@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Attention, not fault: this is the amber glyph, never red. In a car red means
+     the vehicle has a problem. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M12,4.5 L20.8,19.5 H3.2 Z M12,10 V14.2"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.75" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M13.1,17 A1.1,1.1 0 1,1 10.9,17 A1.1,1.1 0 1,1 13.1,17" />
+</vector>

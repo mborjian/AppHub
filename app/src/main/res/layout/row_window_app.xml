@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One app on the window margins screen: its icon and name on the left, the
+     rectangle it is currently given, and the profile's own switch.
+
+     The row and the switch are separate targets on purpose: the row opens the
+     four numbers, the switch turns the profile on or off, and turning it off
+     leaves the numbers where they were. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_1"
+    android:background="@drawable/bg_setting_row"
+    android:clickable="true"
+    android:elevation="@dimen/elev_raised"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/row_min_height"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_3"
+    android:paddingTop="@dimen/space_2"
+    android:paddingEnd="@dimen/space_3"
+    android:paddingBottom="@dimen/space_2">
+
+    <ImageView
+        android:id="@+id/rowIcon"
+        android:layout_width="@dimen/icon_app_row"
+        android:layout_height="@dimen/icon_app_row"
+        android:contentDescription="@null"
+        tools:src="@mipmap/ic_launcher" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rowLabel"
+            style="@style/Text.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="Organic Maps" />
+
+        <TextView
+            android:id="@+id/rowSubtitle"
+            style="@style/Text.Meta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="app.organicmaps" />
+    </LinearLayout>
+
+    <!-- left / right / top / bottom, or "Off" - tabular, so a wheel turning
+         behind the sheet does not make this line wobble -->
+    <TextView
+        android:id="@+id/windowValue"
+        style="@style/Text.Meta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:gravity="end"
+        tools:text="200 / 20 / 0 / 0 px" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/windowSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_2"
+        android:minHeight="@dimen/touch_min" />
+
+</LinearLayout>

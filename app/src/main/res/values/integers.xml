@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Instrument: how long things take, in one place, so the whole surface can be
+     slowed together if it ever needs to be.
+
+       instant     press feedback
+       fast        ripples, value changes, the running mark fading in
+       medium      tiles lifting, the search field arriving, a list filtering
+       slow        sheets, screens, the edit bar
+       deliberate  the first-run breath and the undo bar -->
+<resources>
+    <integer name="motion_instant">90</integer>
+    <integer name="motion_fast">180</integer>
+    <integer name="motion_medium">240</integer>
+    <integer name="motion_slow">320</integer>
+    <integer name="motion_deliberate">420</integer>
+
+    <!-- how long the undo bar waits before leaving on its own -->
+    <integer name="undo_timeout">5000</integer>
+
+    <!-- how long a tile must be held to lift the board -->
+    <integer name="hold_to_lift">400</integer>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A sheet card: the widest radius in the system, because it is the only
+     surface that floats over everything. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/hub_surface" />
+    <corners android:radius="@dimen/radius_xl" />
+    <stroke
+        android:width="@dimen/stroke_hairline"
+        android:color="@color/hub_stroke" />
+</shape>

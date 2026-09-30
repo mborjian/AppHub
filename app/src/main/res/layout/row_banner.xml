@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A banner: one sentence the app has to say, with a tone.
+
+     It exists because the app's best habit - saying what it actually did, or
+     was refused - was being told in 12sp at the bottom of a card. The fill is
+     washed and the glyph tinted from code, so one layout carries ok, attention,
+     blocked and information. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/gutter_grid"
+    android:layout_marginTop="@dimen/space_2"
+    android:layout_marginEnd="@dimen/gutter_grid"
+    android:background="@drawable/bg_banner"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/banner_min_height"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_4"
+    android:paddingTop="@dimen/space_3"
+    android:paddingEnd="@dimen/space_2"
+    android:paddingBottom="@dimen/space_3">
+
+    <ImageView
+        android:id="@+id/bannerIcon"
+        android:layout_width="@dimen/icon_row"
+        android:layout_height="@dimen/icon_row"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_warning"
+        android:tint="@color/hub_warn" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/bannerTitle"
+            style="@style/Text.BodyStrong"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="Running apps aren’t marked" />
+
+        <TextView
+            android:id="@+id/bannerMessage"
+            style="@style/Text.BodyS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            tools:text="Usage access is off, so nothing can show as running." />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/bannerAction"
+        style="@style/Text.BodyStrong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_min"
+        android:paddingStart="@dimen/space_3"
+        android:paddingEnd="@dimen/space_3"
+        android:textColor="@color/primary_text"
+        android:visibility="gone"
+        tools:text="Enable"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/bannerDismiss"
+        android:layout_width="@dimen/touch_min"
+        android:layout_height="@dimen/touch_min"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/dismiss"
+        android:focusable="true"
+        android:padding="@dimen/space_4"
+        android:src="@drawable/ic_close"
+        android:tint="@color/hub_ink_600"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout>

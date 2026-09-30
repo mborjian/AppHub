@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Instrument: the spacing, target, radius and elevation scale.
+
+     Every dimension the app draws with lives here rather than inside a layout.
+     That is not tidiness for its own sake: *Adapt to screen* multiplies the dp
+     space, so a literal in a layout is a value that scales and a literal in
+     code is a value that does not. One scale, one place to reason about it.
+
+     The car floor: at 160dpi one dp is one pixel is 0.159mm. Apple's 44pt is a
+     hand-held number (7mm); a moving vehicle wants 9mm for anything secondary
+     and 14mm for anything primary. That is touch_min and touch_car. -->
+<resources>
+
+    <!-- spacing: 4dp base, 8dp rhythm -->
+    <dimen name="space_1">4dp</dimen>
+    <dimen name="space_2">8dp</dimen>
+    <dimen name="space_3">12dp</dimen>
+    <dimen name="space_4">16dp</dimen>
+    <dimen name="space_5">24dp</dimen>
+    <dimen name="space_6">32dp</dimen>
+    <dimen name="space_7">48dp</dimen>
+
+    <!-- the grid -->
+    <dimen name="gutter_grid">12dp</dimen>
+    <dimen name="gap_cell">8dp</dimen>
+    <dimen name="cell_padding">12dp</dimen>
+
+    <!-- targets -->
+    <dimen name="touch_min">56dp</dimen>
+    <dimen name="touch_car">88dp</dimen>
+    <dimen name="row_min_height">72dp</dimen>
+    <!-- A sheet row is shorter than a settings row only because six of them have
+         to fit the unit's own panel at once: 64dp is 10.2mm, still above the
+         9mm a secondary target needs. -->
+    <dimen name="row_sheet_height">64dp</dimen>
+    <dimen name="pill_height">56dp</dimen>
+    <dimen name="banner_min_height">64dp</dimen>
+
+    <!-- icon sizes -->
+    <!-- an app's own icon beside its name, in the two lists that have one.
+         Clipped and cached like the board's, so the icon shape setting means
+         the same thing on every screen that draws an icon. -->
+    <dimen name="icon_app_row">40dp</dimen>
+    <dimen name="icon_row">24dp</dimen>
+    <dimen name="icon_dense">20dp</dimen>
+    <dimen name="icon_banner">40dp</dimen>
+    <dimen name="icon_empty">48dp</dimen>
+    <dimen name="icon_badge">16dp</dimen>
+
+    <!-- A tile's icon, before the adapter sizes it from the setting. This is the
+         reference size the whole system is drawn against (IconSize.MEDIUM), so
+         the placeholder and the skeleton are the size a real tile lands at
+         rather than a size of their own. -->
+    <dimen name="icon_tile">64dp</dimen>
+
+    <!-- the bar under a placeholder tile, where a real tile has its name: the
+         height of one line of Text.Body without the text -->
+    <dimen name="skeleton_bar">10dp</dimen>
+
+    <!-- the wheel's column: wide enough for four digits and a unit at the
+         largest value the app allows, so the wheel does not resize as it turns -->
+    <dimen name="number_column">200dp</dimen>
+
+    <!-- lines and rings -->
+    <dimen name="stroke_hairline">1dp</dimen>
+    <dimen name="ring_width">3dp</dimen>
+    <dimen name="touch_ring">48dp</dimen>
+
+    <!-- radii -->
+    <dimen name="radius_xs">8dp</dimen>
+    <dimen name="radius_s">12dp</dimen>
+    <dimen name="radius_m">16dp</dimen>
+    <dimen name="radius_l">22dp</dimen>
+    <dimen name="radius_xl">28dp</dimen>
+    <dimen name="radius_full">999dp</dimen>
+
+    <!-- sheets -->
+    <dimen name="sheet_max_width">520dp</dimen>
+    <dimen name="sheet_min_width">320dp</dimen>
+    <dimen name="sheet_edge_inset">16dp</dimen>
+
+    <!-- depth: tone and stroke first, one small shadow second -->
+    <dimen name="elev_raised">1dp</dimen>
+    <dimen name="elev_lifted">2dp</dimen>
+    <dimen name="elev_floating">8dp</dimen>
+    <dimen name="elev_dragging">12dp</dimen>
+
+    <!-- The lifted tile's badge, at the reference icon: a 24dp circle inside
+         the 56dp target (the inset is what makes the drawing smaller than the
+         thing you aim at), a glyph inset inside that, and the distance the
+         whole badge is carried out of the icon's box - half the *target*, which
+         is what puts the circle's centre on the artwork's corner whatever size
+         the icon is. The nudge is two names because a dimension cannot be both
+         signs at once.
+
+         The icon size is a setting, though, and this was the one icon in the
+         app whose marks were not: at Small the same 24dp circle covers half the
+         artwork and at Extra large a quarter of it. [AppAdapter.badge] therefore
+         derives the circle and its glyph from the icon, so the circle stays the
+         same fraction of whatever it is sitting on - and never more than the
+         24dp below, which is the badge a driver already recognises. These four
+         are the reference that derivation is written against: the shape drawn
+         at a 64dp icon, with [dot_state] the same for the running mark. -->
+    <dimen name="badge_inset">16dp</dimen>
+    <dimen name="badge_glyph_inset">18dp</dimen>
+    <dimen name="badge_nudge_x">28dp</dimen>
+    <dimen name="badge_nudge_y">-28dp</dimen>
+    <dimen name="dot_state">12dp</dimen>
+
+    <!-- how far the running ring paints outside the icon's box: it is the icon's
+         own box that carries it, so the ring gets out of it by an inset -->
+    <dimen name="ring_outset">-4dp</dimen>
+
+    <!-- room for the pill (and the undo bar) under the last row of tiles, so
+         neither ever covers something the driver can tap -->
+    <dimen name="grid_bottom_padding">120dp</dimen>
+
+</resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A tile that has been asked for but has not arrived.
+
+     Before this existed the board was empty for the length of a PackageManager
+     query and then filled with 19 icons at once - which is a false empty state,
+     the one lie a launcher must never tell. The shape is the real tile's, so
+     nothing moves when the icons land, and it pulses opacity only: a shimmer
+     sweep is a bright moving streak on a windscreen. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/space_1"
+    android:alpha="0.55"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="@dimen/cell_padding">
+
+    <View
+        android:id="@+id/skeletonIcon"
+        android:layout_width="@dimen/icon_tile"
+        android:layout_height="@dimen/icon_tile"
+        android:background="@drawable/bg_skeleton" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/skeleton_bar"
+        android:layout_marginTop="@dimen/space_2"
+        android:layout_marginStart="@dimen/space_4"
+        android:layout_marginEnd="@dimen/space_4"
+        android:background="@drawable/bg_skeleton" />
+
+</LinearLayout>

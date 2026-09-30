@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One line of a settings screen: title, optional subtitle, and exactly one of
+     the three controls on the right (switch, value, chevron).
+
+     72dp tall, because a row a driver has to aim at should not be shorter than
+     the finger that finds it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_1"
+    android:background="@drawable/bg_setting_row"
+    android:clickable="true"
+    android:elevation="@dimen/elev_raised"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/row_min_height"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_4"
+    android:paddingTop="@dimen/space_3"
+    android:paddingEnd="@dimen/space_3"
+    android:paddingBottom="@dimen/space_3">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/settingTitle"
+            style="@style/Text.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="Icon size" />
+
+        <TextView
+            android:id="@+id/settingSubtitle"
+            style="@style/Text.BodyS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:visibility="gone"
+            tools:text="The grid fits fewer columns as icons grow"
+            tools:visibility="visible" />
+    </LinearLayout>
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/settingSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:minHeight="@dimen/touch_min"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <!-- values are tabular and LTR, so a number that changes under a finger
+         never moves the row around it -->
+    <TextView
+        android:id="@+id/settingValue"
+        style="@style/Text.Meta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:gravity="end"
+        android:visibility="gone"
+        tools:text="200 / 0 / 0 / 0 px"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/settingChevron"
+        android:layout_width="@dimen/icon_dense"
+        android:layout_height="@dimen/icon_dense"
+        android:layout_marginStart="@dimen/space_2"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_forward"
+        android:tint="@color/hub_ink_400"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout>

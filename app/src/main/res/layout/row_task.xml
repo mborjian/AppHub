@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One open app on the task manager: its icon, name and what it is doing on
+     the left, and the one button this screen exists for on the right.
+
+     The button is a real 56dp target rather than a row tap: closing is the
+     only verb here, but it still should not fire from an elbow landing
+     anywhere on the row. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_1"
+    android:background="@drawable/bg_setting_row"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/row_min_height"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_3"
+    android:paddingTop="@dimen/space_2"
+    android:paddingEnd="@dimen/space_3"
+    android:paddingBottom="@dimen/space_2">
+
+    <ImageView
+        android:id="@+id/rowIcon"
+        android:layout_width="@dimen/icon_app_row"
+        android:layout_height="@dimen/icon_app_row"
+        android:contentDescription="@null"
+        tools:src="@mipmap/ic_launcher" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rowLabel"
+            style="@style/Text.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="Organic Maps" />
+
+        <TextView
+            android:id="@+id/rowSubtitle"
+            style="@style/Text.Meta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:ellipsize="middle"
+            android:maxLines="1"
+            tools:text="app.organicmaps · Running" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/rowClose"
+        style="@style/Text.BodyStrong"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/touch_min"
+        android:layout_marginStart="@dimen/space_3"
+        android:background="@drawable/bg_pill_quiet"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:paddingStart="@dimen/space_4"
+        android:paddingEnd="@dimen/space_4"
+        android:text="@string/action_close"
+        android:textColor="@color/primary_text" />
+
+</LinearLayout>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One line of a sheet: icon, label, optional subtitle, optional check.
+
+     64dp tall - row_sheet_height. A sheet is a list of verbs a driver picks
+     from while the vehicle is moving, so it is a car target rather than a
+     hand-held one, but shorter than a settings row: six of these have to fit
+     the unit's panel at once, because a verb the driver cannot see is a verb
+     that is not there. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_sheet_row"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/row_sheet_height"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_4"
+    android:paddingTop="@dimen/space_3"
+    android:paddingEnd="@dimen/space_4"
+    android:paddingBottom="@dimen/space_3">
+
+    <ImageView
+        android:id="@+id/rowIcon"
+        android:layout_width="@dimen/icon_row"
+        android:layout_height="@dimen/icon_row"
+        android:contentDescription="@null"
+        android:tint="@color/hub_ink_700"
+        android:visibility="gone"
+        tools:src="@drawable/ic_open"
+        tools:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/rowText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rowLabel"
+            style="@style/Text.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="Open" />
+
+        <TextView
+            android:id="@+id/rowSubtitle"
+            style="@style/Text.Meta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:visibility="gone"
+            tools:text="app.organicmaps"
+            tools:visibility="visible" />
+    </LinearLayout>
+
+    <!-- Selection is a shape, not a bare tick: it is announced to a screen
+         reader as well (see Sheet.rowView). -->
+    <ImageView
+        android:id="@+id/rowCheck"
+        android:layout_width="@dimen/icon_dense"
+        android:layout_height="@dimen/icon_dense"
+        android:layout_marginStart="@dimen/space_3"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_check_circle"
+        android:tint="@color/primary"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The secondary control: same shape as the filled pill, drawn in the surface
+     tone with a hairline. Used for "Try again" beside a filled primary, and for
+     the segmented control's own track. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/ripple">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/hub_surface" />
+            <corners android:radius="@dimen/radius_full" />
+            <stroke
+                android:width="@dimen/stroke_hairline"
+                android:color="@color/hub_stroke" />
+        </shape>
+    </item>
+</ripple>

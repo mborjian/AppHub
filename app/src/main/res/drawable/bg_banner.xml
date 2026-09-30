@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A banner: the tone-matched panel that carries a status sentence. The fill is
+     `hub_surface` here and is washed in code (hub_wash_ok / _warn / _blocked /
+     _info), because four near-identical drawables are four places to forget. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/hub_surface" />
+    <corners android:radius="@dimen/radius_m" />
+    <stroke
+        android:width="@dimen/stroke_hairline"
+        android:color="@color/hub_stroke" />
+</shape>

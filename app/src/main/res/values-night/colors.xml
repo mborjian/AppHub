@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Instrument, night.
+
+     A night drive is the one place the app must be quiet: no pure white on near
+     black (halation at arm's length reads as blur), no bright ring around every
+     tile, and depth from tone rather than shadow - which a dark panel cannot
+     show anyway. The surfaces step in tone instead: #171A21 on #0F1115. -->
+<resources>
+
+    <color name="hub_page">#0F1115</color>
+    <color name="hub_surface">#171A21</color>
+    <color name="hub_stroke">#242833</color>
+    <color name="hub_scrim">#70000000</color>
+
+    <color name="hub_ink_900">#ECEFF5</color>
+    <color name="hub_ink_700">#C6CEDA</color>
+    <color name="hub_ink_600">#A9B2C0</color>
+    <color name="hub_ink_400">#6C7686</color>
+
+    <color name="hub_blue_600">#3B7BF5</color>
+    <color name="hub_blue_700">#7AA2FF</color>
+    <color name="hub_blue_100">#12234F</color>
+    <color name="hub_blue_300">#7AA2FF</color>
+
+    <color name="hub_inverse_surface">#242833</color>
+    <color name="hub_inverse_text">#ECEFF5</color>
+
+    <color name="hub_running">#4ADE80</color>
+    <color name="hub_recent">#A9B2C0</color>
+    <color name="hub_warn">#F5B84A</color>
+    <color name="hub_danger">#FF7A70</color>
+    <color name="hub_ok">#4ADE80</color>
+    <color name="hub_blocked">#A9B2C0</color>
+    <color name="hub_ripple">#33FFFFFF</color>
+    <color name="hub_ripple_inverse">#33FFFFFF</color>
+
+    <color name="hub_wash_info">#12234F</color>
+    <color name="hub_wash_warn">#2C2211</color>
+    <color name="hub_wash_ok">#10281B</color>
+    <color name="hub_wash_blocked">#1E222A</color>
+
+    <color name="hub_on_fill">#FFFFFF</color>
+
+    <color name="bg">@color/hub_page</color>
+    <color name="card">@color/hub_surface</color>
+    <color name="card_stroke">@color/hub_stroke</color>
+    <color name="text_primary">@color/hub_ink_900</color>
+    <color name="text_secondary">@color/hub_ink_600</color>
+    <color name="primary">@color/hub_blue_600</color>
+    <color name="primary_text">@color/hub_blue_700</color>
+    <color name="state_running">@color/hub_running</color>
+    <color name="danger">@color/hub_danger</color>
+    <color name="warn">@color/hub_warn</color>
+    <color name="ripple">@color/hub_ripple</color>
+
+</resources>

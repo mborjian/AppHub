@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Fallback "close": killBackgroundProcesses() for the listed apps.
+         Protection level is normal, so it is granted at install time. -->
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+
+    <!-- Real "close" (force-stop), only actually granted to a privileged
+         app that sits in /system/priv-app and is signed with the platform
+         key (see tools/release.py, system mode). Harmless otherwise. -->
+    <uses-permission
+        android:name="android.permission.FORCE_STOP_PACKAGES"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- The open apps, exactly: this is the permission the framework itself
+         checks before it hands over the task list, and it is what separates
+         "this app is open" from "this app was used recently".
+         protectionLevel=signature|privileged, so it is granted to an APK
+         signed with the platform key (tools/release.py) or installed under
+         /system/priv-app - no root needed at runtime. Harmless otherwise: a
+         plain install is simply refused it and falls back. -->
+    <uses-permission
+        android:name="android.permission.REAL_GET_TASKS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- Closing a task the way the recents screen does, where that is allowed
+         (signature|recents|role). Never required: the layers below it remain. -->
+    <uses-permission
+        android:name="android.permission.REMOVE_TASKS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- The running dot, on the devices where nothing better is available.
+         Needs a one-time opt-in from the user in
+         Settings > Apps > Special access > Usage access, which the settings
+         screen offers and then hides once it is granted. -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- Needed from Android 11 on to see every installed app. Irrelevant on
+         the Android 10 head unit, harmless everywhere else. -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+
+    <!-- The window-margins watcher has to run while *other* apps are on screen,
+         which is exactly what a foreground service is for. The service only
+         exists while at least one profile is switched on. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- ... and it is started again after a reboot: a profile applies to an app
+         started from the vehicle's own launcher too, and that launcher is the
+         first thing on screen after a boot. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppHub">
+
+        <!-- uiMode and density are deliberately NOT in configChanges: a theme
+             or density change then recreates the activity, which is what makes
+             the new colours apply everywhere. -->
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings_title" />
+
+        <!-- The list on the left is a field to type in, so the window shrinks
+             around the keyboard (adjustResize) instead of being panned: the
+             panes then stay where they are and the field stays on screen. -->
+        <activity
+            android:name=".ShortcutsActivity"
+            android:exported="false"
+            android:label="@string/set_shortcuts_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- The open apps, each with its own Close button: the selective
+             counterpart of the tools' "Close all". -->
+        <activity
+            android:name=".TaskManagerActivity"
+            android:exported="false"
+            android:label="@string/task_manager" />
+
+        <activity
+            android:name=".WindowMarginsActivity"
+            android:exported="false"
+            android:label="@string/window_title" />
+
+        <!-- The watcher behind the app window margins: it applies a profile to
+             its app the moment that app comes to the front, however it was
+             started. Alive only while a profile is on - see
+             WindowMarginService. -->
+        <service
+            android:name=".WindowMarginService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps per-app window bounds applied while another app is in front" />
+        </service>
+
+        <receiver
+            android:name=".WindowBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

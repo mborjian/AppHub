@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">مرکز برنامه‌ها</string>
+    <string name="empty">هنوز برنامه‌ای برای نمایش نیست</string>
+    <string name="cannot_open">%1$s باز نشد</string>
+    <string name="running_marker">در حال اجرا</string>
+    <string name="task_state_open">باز</string>
+    <string name="task_state_recent">اخیراً باز</string>
+    <string name="task_row_meta">%1$s · %2$s</string>
+    <string name="task_empty_title">برنامه‌ای باز نیست</string>
+    <string name="task_empty_message">برنامه‌ها تا وقتی باز هستند اینجا نمایش داده می‌شوند.</string>
+    <string name="task_blind_title">برنامه‌های باز دیده نمی‌شوند</string>
+    <string name="task_blind_message">این نصب اجازه ندارد فهرست برنامه‌های باز را بخواند. دسترسی استفاده را روشن کنید تا ببینید اخیراً چه چیزی باز شده، یا مرکز برنامه‌ها را به‌صورت برنامهٔ سیستمی نصب کنید تا همهٔ برنامه‌های باز دیده و بسته شوند.</string>
+    <string name="task_recent_banner_title">اخیراً استفاده‌شده، نه باز</string>
+    <string name="task_recent_banner_message">دسترسی استفاده نمی‌تواند برنامهٔ باز را از برنامه‌ای که مدتی پیش استفاده شده تشخیص دهد. نصب سیستمی همهٔ برنامه‌های باز را نشان می‌دهد و می‌بندد.</string>
+    <string name="close_refused_toast">%1$s هنوز باز است</string>
+
+    <string name="action_open">باز کردن</string>
+    <string name="action_close">بستن</string>
+    <string name="action_pin">نشان‌کردن در بالا</string>
+    <string name="action_unpin">برداشتن نشان</string>
+    <string name="action_info">اطلاعات برنامه</string>
+    <string name="action_hide">پنهان از صفحه اصلی</string>
+    <string name="hidden_toast">%1$s از صفحه اصلی پنهان شد</string>
+
+    <string name="close_all">بستن همه</string>
+    <string name="close_all_done">%1$d برنامه بسته شد</string>
+    <string name="close_all_none">برنامه‌ای برای بستن باز نیست</string>
+    <string name="closed_toast">%1$s بسته شد</string>
+    <string name="closed_background_toast">%1$s در پس‌زمینه بسته شد</string>
+    <string name="settings_unavailable">این صفحه تنظیمات روی این دستگاه موجود نیست</string>
+
+    <string name="settings_title">تنظیمات</string>
+
+    <string name="tools">ابزارها</string>
+    <string name="find_app">جست‌وجوی برنامه</string>
+    <string name="edit_page">ویرایش صفحه</string>
+    <string name="task_manager">مدیریت برنامه‌های باز</string>
+    <string name="done">تمام</string>
+    <string name="drag_hint">برای جابه‌جایی، کاشی را نگه دارید</string>
+    <string name="order_reset">بازگرداندن ترتیب</string>
+    <string name="undo">بازگرداندن</string>
+    <string name="more_actions">کارهای بیشتر</string>
+    <string name="close_hub">بستن مرکز برنامه‌ها</string>
+    <string name="hidden_undo">%1$s پنهان شد</string>
+    <string name="closed_undo">%1$s بسته شد</string>
+    <string name="pinned_undo">%1$s در بالا نشان شد</string>
+    <string name="unpinned_undo">نشان %1$s برداشته شد</string>
+    <string name="dismiss">بستن</string>
+
+    <string name="section_look">ظاهر</string>
+    <string name="section_layout">چیدمان</string>
+    <string name="section_behaviour">رفتار</string>
+    <string name="section_maintenance">نگهداری</string>
+
+    <!-- Persian counts one form for every number, which is why this has a single
+         item: the language, not the app, decides what a quantity looks like. -->
+    <plurals name="apps_count">
+        <item quantity="other">%1$d برنامه</item>
+    </plurals>
+    <string name="loading_apps">در حال خواندن برنامه‌ها…</string>
+    <string name="load_failed_title">فهرست برنامه‌ها خوانده نشد</string>
+    <string name="load_failed_message">دستگاه پاسخ نداد.</string>
+    <string name="try_again">تلاش دوباره</string>
+    <string name="empty_title">هنوز برنامه‌ای نیست</string>
+    <string name="empty_message">برنامه‌هایی که روی این دستگاه نصب می‌کنید اینجا نمایش داده می‌شوند.</string>
+    <string name="open_settings">باز کردن تنظیمات</string>
+    <string name="no_match_title">برنامه‌ای با «%1$s» پیدا نشد</string>
+    <string name="no_match_message">یک واژه کوتاه‌تر امتحان کنید.</string>
+    <string name="dots_offer_title">برنامه‌های باز نشانه‌گذاری نمی‌شوند</string>
+    <string name="dots_offer_message">دسترسی استفاده خاموش است، پس هیچ برنامه‌ای به‌عنوان باز نشان داده نمی‌شود.</string>
+
+    <string name="tile_running">%1$s، در حال اجرا</string>
+    <string name="tile_open">%1$s، باز</string>
+    <string name="tile_recent">%1$s، اخیراً باز</string>
+    <string name="tile_more">%1$s، کارهای بیشتر</string>
+    <string name="row_selected">%1$s، انتخاب‌شده</string>
+    <string name="settings_back">بازگشت</string>
+    <string name="enable">فعال‌کردن</string>
+
+    <string name="set_names_title">نمایش نام برنامه‌ها</string>
+    <string name="set_names_subtitle">یک خط زیر هر آیکون</string>
+
+    <string name="set_shortcuts_title">میان‌برها</string>
+    <string name="set_shortcuts_subtitle">کدام برنامه‌ها در صفحه اصلی دیده شوند</string>
+    <string name="filter_hint">جست‌وجوی برنامه‌ها</string>
+    <string name="filter_none">برنامه‌ای پیدا نشد</string>
+    <string name="filter_clear">پاک‌کردن جست‌وجو</string>
+    <string name="select_all">همه برنامه‌ها</string>
+    <string name="select_none">هیچ‌کدام</string>
+    <string name="preview_title">صفحه اصلی</string>
+    <string name="preview_hint">برای جابه‌جایی، کاشی را نگه دارید</string>
+
+    <string name="shortcuts_all">همه %1$d برنامه</string>
+    <string name="shortcuts_count">%1$d از %2$d برنامه</string>
+    <string name="loading">در حال بارگذاری…</string>
+    <string name="none">هیچ‌کدام</string>
+
+    <string name="set_size_title">اندازه آیکون</string>
+    <string name="set_size_subtitle">با بزرگ‌تر شدن آیکون، تعداد ستون‌ها کمتر می‌شود</string>
+
+    <string name="set_adapt_title">هماهنگی با صفحه</string>
+    <string name="set_adapt_subtitle">آیکون‌ها، متن و فاصله‌ها با اندازه صفحه بزرگ می‌شوند</string>
+    <string name="adapt_value">×%1$s</string>
+
+    <string name="set_shape_title">شکل آیکون</string>
+    <string name="set_shape_subtitle">آیکون هر برنامه چگونه بریده شود</string>
+
+    <string name="set_grid_title">شبکه</string>
+    <string name="set_grid_subtitle">تعداد ستون‌ها؛ حالت خودکار با صفحه هماهنگ می‌شود</string>
+
+    <string name="set_sort_title">ترتیب</string>
+    <string name="set_sort_subtitle">برنامه‌های نشان‌شده همیشه بالا می‌مانند</string>
+
+    <string name="set_system_title">نمایش برنامه‌های سیستمی</string>
+    <string name="set_system_subtitle">برنامه‌های کارخانه‌ای دستگاه هم نمایش داده شوند</string>
+
+    <string name="set_theme_title">پوسته</string>
+    <string name="set_theme_subtitle">روشن، تیره، یا همان تنظیم دستگاه</string>
+
+    <string name="set_direction_title">جهت چیدمان</string>
+    <string name="set_direction_subtitle">راست‌به‌چپ، چپ‌به‌راست، یا خودکار</string>
+
+    <string name="set_back_subtitle">بازگشت به شبکه برنامه‌ها</string>
+
+    <string name="set_margins_title">حاشیه صفحه</string>
+    <string name="set_margins_subtitle">چپ / راست / بالا / پایین، بر حسب dp — تا لایه‌های رویی بخشی از برنامه را نپوشانند</string>
+    <string name="set_margins_message">یک لبه را انتخاب کنید و مقدار را با چرخ تنظیم کنید.</string>
+    <string name="margins_value">%1$d / %2$d / %3$d / %4$d dp</string>
+    <string name="margin_value">%1$d dp</string>
+    <string name="margin_range">هر مقدار از ۰ تا %1$d dp</string>
+    <string name="margin_unit">dp</string>
+    <string name="margin_picker">مقدار حاشیه</string>
+    <string name="margin_type_title">تایپ مقدار</string>
+    <string name="margin_type_subtitle">استفاده از صفحه‌کلید عددی به‌جای چرخ</string>
+    <string name="margin_left">چپ</string>
+    <string name="margin_right">راست</string>
+    <string name="margin_top">بالا</string>
+    <string name="margin_bottom">پایین</string>
+
+    <string name="set_usage_title">دسترسی استفاده</string>
+    <string name="set_usage_subtitle">برای نشان‌دادن برنامه‌های باز لازم است</string>
+
+    <string name="set_reset_title">بازگرداندن تنظیمات</string>
+    <string name="set_reset_subtitle">بازگشت به حالت پیش‌فرض؛ نشان‌ها حفظ می‌شوند</string>
+    <string name="set_reset_message">همه تنظیمات به حالت پیش‌فرض برمی‌گردند.</string>
+    <string name="set_reset_confirm">بازگرداندن</string>
+
+    <string name="theme_system">سیستم</string>
+    <string name="theme_light">روشن</string>
+    <string name="theme_dark">تیره</string>
+
+    <string name="direction_system">سیستم</string>
+    <string name="direction_rtl">راست به چپ</string>
+    <string name="direction_ltr">چپ به راست</string>
+
+    <string name="size_small">کوچک</string>
+    <string name="size_medium">متوسط</string>
+    <string name="size_large">بزرگ</string>
+    <string name="size_huge">خیلی بزرگ</string>
+
+    <string name="shape_original">بدون تغییر</string>
+    <string name="shape_rounded">گوشه‌گرد</string>
+    <string name="shape_circle">دایره‌ای</string>
+    <string name="shape_iphone">مدل آیفون</string>
+    <string name="shape_samsung">مدل سامسونگ</string>
+
+    <string name="sort_asc">نام (الف تا ی)</string>
+    <string name="sort_desc">نام (ی تا الف)</string>
+
+    <string name="grid_auto">خودکار (%1$d ستون)</string>
+    <string name="grid_fixed">%1$d ستون</string>
+
+    <string name="set_window_title">حاشیه پنجره برنامه</string>
+    <string name="set_window_subtitle">پنجره خودِ برنامه را — هر طور که باز شده باشد — داخل یک مستطیل قرار می‌دهد</string>
+    <string name="window_title">حاشیه پنجره برنامه</string>
+    <string name="action_window">حاشیه پنجره</string>
+    <string name="window_master_title">اعمال حاشیه پنجره‌ها</string>
+    <string name="window_master_subtitle">این برنامه‌ها را زیر نظر می‌گیرد و هر کدام جلو بیاید جابه‌جا می‌کند</string>
+    <string name="window_profile_message">یک لبه را انتخاب کنید، یا این برنامه را خاموش کنید.</string>
+    <string name="window_edge_title">%1$s — %2$s</string>
+    <string name="window_value">%1$d / %2$d / %3$d / %4$d پیکسل</string>
+    <string name="window_margin_value">%1$d پیکسل</string>
+    <string name="window_range">هر مقدار از ۰ تا %1$d پیکسل</string>
+    <string name="window_unit">پیکسل</string>
+    <string name="window_off">خاموش</string>
+    <string name="window_turn_on">روشن‌کردن این برنامه</string>
+    <string name="window_turn_off">خاموش‌کردن این برنامه</string>
+    <string name="window_protected">لانچر خودِ دستگاه — دست‌نخورده</string>
+    <string name="window_empty">هنوز برنامه‌ای نیست</string>
+    <string name="window_empty_hint">برنامه‌هایی که روی این دستگاه نصب می‌کنید اینجا نمایش داده می‌شوند.</string>
+    <plurals name="window_count">
+        <item quantity="other">%1$d برنامه</item>
+    </plurals>
+    <string name="window_status_off">خاموش: هیچ پنجره‌ای جابه‌جا نمی‌شود.</string>
+    <string name="window_status_none">هنوز برای هیچ برنامه‌ای حاشیه پنجره روشن نشده است.</string>
+    <string name="window_status_no_root">دسترسی روت در دسترس نیست، بنابراین هیچ پنجره‌ای جابه‌جا نمی‌شود.</string>
+    <string name="window_status_waiting">مراقب %1$d برنامه؛ هر کدام جلو بیاید داخل مستطیل خود منتقل می‌شود.</string>
+    <string name="window_status_no_multi_window">این دستگاه می‌گوید چندپنجره‌ای ندارد، پس شاید فقط پنجره‌هایی را بتواند جابه‌جا کند که از قبل قابل تغییر اندازه باشند.</string>
+    <string name="window_status_applied">%1$s اکنون داخل مستطیل خود اجرا می‌شود.</string>
+    <string name="window_status_fullscreen">%1$s تمام‌صفحه باز می‌شود و این دستگاه فقط کارهای Freeform یا چندپنجره‌ای را تغییر اندازه می‌دهد — چیزی جابه‌جا نشد.</string>
+    <string name="window_status_refused">دستگاه از جابه‌جایی %1$s خودداری کرد، بنابراین چیزی تغییر نکرد.</string>
+    <string name="window_channel">حاشیه پنجره برنامه</string>
+    <string name="window_channel_description">تا زمانی که حاشیه پنجره‌ای روشن است نمایش داده می‌شود.</string>
+    <string name="window_notification_title">حاشیه پنجره</string>
+    <string name="window_notification_text">%1$d برنامه زیر نظر</string>
+</resources>

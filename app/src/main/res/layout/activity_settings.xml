@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Every option the grid has, on one screen - in four named groups instead of
+     one column of twenty-one rows.
+
+     "Look" answers what the board looks like, "Layout" where things go,
+     "Behaviour" what the unit is allowed to tell App Hub, and "Maintenance" the
+     two rows that change something rather than display something. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/hub_page"
+    android:orientation="vertical">
+
+    <include
+        layout="@layout/view_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/space_5"
+        android:scrollbarStyle="insideOverlay">
+
+        <LinearLayout
+            android:id="@+id/settingsRows"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/space_4"
+            android:paddingEnd="@dimen/space_4" />
+    </ScrollView>
+
+</LinearLayout>

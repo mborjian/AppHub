@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The hairline between two groups of verbs in a sheet: everything that acts
+     on an app, then everything that takes it away. A separator is cheaper than
+     a second card and clearer than a heavier row. -->
+<View xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/stroke_hairline"
+    android:layout_marginStart="@dimen/space_4"
+    android:layout_marginTop="@dimen/space_2"
+    android:layout_marginEnd="@dimen/space_4"
+    android:layout_marginBottom="@dimen/space_2"
+    android:background="@color/hub_stroke" />

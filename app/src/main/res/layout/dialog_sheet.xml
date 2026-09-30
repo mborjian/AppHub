@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A floating rounded card: the long-press menu, every settings picker, the
+     wheel and the typed entry all live in this one shape.
+
+     The widest radius in the system, because it is the only surface that floats
+     over everything, and there is still a dimmed board behind it rather than a
+     replaced screen. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/space_3">
+
+    <LinearLayout
+        android:id="@+id/sheetCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_sheet"
+        android:elevation="@dimen/elev_floating"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/space_2"
+        android:paddingBottom="@dimen/space_2">
+
+        <LinearLayout
+            android:id="@+id/sheetHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="@dimen/touch_min"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/space_4"
+            android:paddingTop="@dimen/space_3"
+            android:paddingEnd="@dimen/space_4"
+            android:paddingBottom="@dimen/space_3">
+
+            <ImageView
+                android:id="@+id/sheetIcon"
+                android:layout_width="@dimen/icon_banner"
+                android:layout_height="@dimen/icon_banner"
+                android:contentDescription="@null" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_3"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/sheetTitle"
+                    style="@style/Text.TitleM"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    tools:text="Chrome" />
+
+                <TextView
+                    android:id="@+id/sheetSubtitle"
+                    style="@style/Text.BodyS"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:visibility="gone"
+                    tools:text="com.android.chrome, running"
+                    tools:visibility="visible" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- the second sentence a question needs: what happens if you say yes -->
+        <TextView
+            android:id="@+id/sheetMessage"
+            style="@style/Text.BodyS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/space_4"
+            android:paddingEnd="@dimen/space_4"
+            android:paddingBottom="@dimen/space_3"
+            android:visibility="gone"
+            tools:text="Apps with unsaved work may lose it."
+            tools:visibility="visible" />
+
+        <!-- The rows scroll once they no longer fit the screen. A short sheet is
+             unaffected - wrap_content stays wrap_content. -->
+        <ScrollView
+            android:id="@+id/sheetScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fadeScrollbars="true"
+            android:scrollbarStyle="insideOverlay">
+
+            <LinearLayout
+                android:id="@+id/sheetRows"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </ScrollView>
+
+        <!-- rows that must stay reachable whatever the list above is doing:
+             the one that closes the sheet -->
+        <LinearLayout
+            android:id="@+id/sheetFooter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/space_1"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</FrameLayout>

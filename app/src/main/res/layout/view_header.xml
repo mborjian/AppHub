@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The header of every inner screen, in one file.
+
+     It used to be copy-pasted into three layouts with the same 44dp icon, the
+     same 21sp bold title and three slightly different paddings - which is how
+     three screens that were meant to look identical stop looking identical.
+
+     The back target is 56dp, not 44dp: at 160dpi that is 8.9mm, and this is the
+     exit of every screen in an app used from a moving seat. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/touch_min"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_2"
+    android:paddingTop="@dimen/space_2"
+    android:paddingEnd="@dimen/space_5"
+    android:paddingBottom="@dimen/space_2">
+
+    <ImageView
+        android:id="@+id/backButton"
+        android:layout_width="@dimen/touch_min"
+        android:layout_height="@dimen/touch_min"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/settings_back"
+        android:focusable="true"
+        android:padding="@dimen/space_4"
+        android:src="@drawable/ic_back"
+        android:tint="@color/text_primary" />
+
+    <TextView
+        android:id="@+id/headerTitle"
+        style="@style/Text.TitleL"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_1"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        tools:text="Settings" />
+
+    <!-- what the screen is a count of, or the one action it offers -->
+    <TextView
+        android:id="@+id/headerTrailing"
+        style="@style/Text.Meta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:visibility="gone"
+        tools:text="All 19 apps"
+        tools:visibility="visible" />
+
+</LinearLayout>

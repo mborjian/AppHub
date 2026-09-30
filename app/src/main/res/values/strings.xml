@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">App Hub</string>
+    <string name="empty">No apps to show yet</string>
+    <string name="cannot_open">Cannot open %1$s</string>
+    <string name="running_marker">Running</string>
+    <string name="task_state_open">Open</string>
+    <string name="task_state_recent">Recently open</string>
+    <string name="task_row_meta">%1$s · %2$s</string>
+    <string name="task_empty_title">No open apps</string>
+    <string name="task_empty_message">Apps appear here while they are open.</string>
+    <string name="task_blind_title">Cannot see open apps</string>
+    <string name="task_blind_message">This install may not read the list of open apps. Turn on Usage access to see what was used recently, or install App Hub as a system app to see - and close - every open app.</string>
+    <string name="task_recent_banner_title">Recently used, not open</string>
+    <string name="task_recent_banner_message">Usage access cannot tell an app that is open from one used a while ago. A system install shows, and closes, every open app.</string>
+    <string name="close_refused_toast">%1$s is still open</string>
+
+    <string name="action_open">Open</string>
+    <string name="action_close">Close</string>
+    <string name="action_pin">Pin to top</string>
+    <string name="action_unpin">Unpin</string>
+    <string name="action_info">App info</string>
+    <string name="action_hide">Hide from the main page</string>
+    <string name="hidden_toast">%1$s hidden from the main page</string>
+
+    <string name="close_all">Close all</string>
+    <string name="close_all_done">Closed %1$d apps</string>
+    <string name="close_all_none">Nothing is open to close</string>
+    <string name="closed_toast">%1$s closed</string>
+    <string name="closed_background_toast">%1$s closed in background</string>
+    <string name="settings_unavailable">That settings screen is not available on this device</string>
+
+    <string name="settings_title">Settings</string>
+
+    <!-- Instrument: the surface around the board. Sentence case, second person,
+         and the consequence named rather than implied - the same voice the
+         rest of the app already speaks in. -->
+    <string name="tools">Tools</string>
+    <string name="find_app">Find an app</string>
+    <string name="edit_page">Edit the page</string>
+    <string name="task_manager">Task manager</string>
+    <string name="done">Done</string>
+    <string name="drag_hint">Hold a tile to move it</string>
+    <string name="order_reset">Reset order</string>
+    <string name="undo">Undo</string>
+    <string name="more_actions">More actions</string>
+    <string name="close_hub">Close App Hub</string>
+    <string name="hidden_undo">%1$s hidden</string>
+    <string name="closed_undo">%1$s closed</string>
+    <string name="pinned_undo">%1$s pinned to top</string>
+    <string name="unpinned_undo">%1$s unpinned</string>
+    <string name="dismiss">Dismiss</string>
+
+    <string name="section_look">Look</string>
+    <string name="section_layout">Layout</string>
+    <string name="section_behaviour">Behaviour</string>
+    <string name="section_maintenance">Maintenance</string>
+
+    <!-- One count, used by the empty board, the window list and its status line.
+         A quantity, not a template: "1 apps" was the app telling the driver it
+         had not been written for the number one. -->
+    <plurals name="apps_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+    <string name="loading_apps">Reading your apps…</string>
+    <string name="load_failed_title">Could not read the app list</string>
+    <string name="load_failed_message">The unit did not answer.</string>
+    <string name="try_again">Try again</string>
+    <string name="empty_title">No apps yet</string>
+    <string name="empty_message">Apps you install on this unit appear here.</string>
+    <string name="open_settings">Open settings</string>
+    <string name="no_match_title">No app matches “%1$s”</string>
+    <string name="no_match_message">Try a shorter word.</string>
+    <string name="dots_offer_title">Running apps aren’t marked</string>
+    <string name="dots_offer_message">Usage access is off, so nothing can show as running.</string>
+
+    <!-- what a tile says about itself, out loud. The state is part of the
+         tile's own description, so a screen reader does not meet a 12dp dot
+         floating beside an app name with no idea what it means. -->
+    <string name="tile_running">%1$s, running</string>
+    <string name="tile_open">%1$s, open</string>
+    <string name="tile_recent">%1$s, recently open</string>
+    <string name="tile_more">%1$s, more actions</string>
+    <string name="row_selected">%1$s, selected</string>
+    <string name="settings_back">Back</string>
+    <string name="enable">Enable</string>
+
+    <string name="set_names_title">Show app names</string>
+    <string name="set_names_subtitle">A single line under each icon</string>
+
+    <string name="set_shortcuts_title">Shortcuts</string>
+    <string name="set_shortcuts_subtitle">Which apps get a cell on the main page</string>
+    <string name="filter_hint">Filter apps</string>
+    <string name="filter_none">No app matches</string>
+    <string name="filter_clear">Clear the filter</string>
+    <string name="select_all">All apps</string>
+    <string name="select_none">None</string>
+    <string name="preview_title">Main page</string>
+    <string name="preview_hint">Hold a tile to move it</string>
+
+    <string name="shortcuts_all">All %1$d apps</string>
+    <string name="shortcuts_count">%1$d of %2$d apps</string>
+    <string name="loading">Loading…</string>
+    <string name="none">None</string>
+
+    <string name="set_size_title">Icon size</string>
+    <string name="set_size_subtitle">The grid fits fewer columns as icons grow</string>
+
+    <string name="set_adapt_title">Adapt to screen</string>
+    <string name="set_adapt_subtitle">Grow the icons, the text and the spacing with the size of the screen</string>
+    <string name="adapt_value">×%1$s</string>
+
+    <string name="set_shape_title">Icon shape</string>
+    <string name="set_shape_subtitle">How each app icon is clipped</string>
+
+    <string name="set_grid_title">Grid</string>
+    <string name="set_grid_subtitle">Columns; auto fits the screen</string>
+
+    <string name="set_sort_title">Sort</string>
+    <string name="set_sort_subtitle">Pinned apps always stay first</string>
+
+    <string name="set_system_title">Include system apps</string>
+    <string name="set_system_subtitle">Also list the unit\'s factory apps</string>
+
+    <string name="set_theme_title">Theme</string>
+    <string name="set_theme_subtitle">Light, dark, or the unit\'s own setting</string>
+
+    <string name="set_direction_title">Layout direction</string>
+    <string name="set_direction_subtitle">Right-to-left, left-to-right, or automatic</string>
+
+    <string name="set_back_subtitle">Back to the app grid</string>
+
+    <string name="set_margins_title">Screen margins</string>
+    <string name="set_margins_subtitle">Left / right / top / bottom, in dp - keeps an overlay from covering the app</string>
+    <string name="set_margins_message">Pick an edge, then dial in the value.</string>
+    <string name="margins_value">%1$d / %2$d / %3$d / %4$d dp</string>
+    <string name="margin_value">%1$d dp</string>
+    <string name="margin_range">Any value from 0 to %1$d dp</string>
+    <string name="margin_unit">dp</string>
+    <string name="margin_picker">Margin value</string>
+    <string name="margin_type_title">Type the value</string>
+    <string name="margin_type_subtitle">Use the number keyboard instead of the wheel</string>
+    <string name="margin_left">Left</string>
+    <string name="margin_right">Right</string>
+    <string name="margin_top">Top</string>
+    <string name="margin_bottom">Bottom</string>
+
+    <string name="set_usage_title">Usage access</string>
+    <string name="set_usage_subtitle">Needed to mark the apps that are still open</string>
+
+    <string name="set_reset_title">Reset settings</string>
+    <string name="set_reset_subtitle">Back to the defaults; pinned apps are kept</string>
+    <string name="set_reset_message">All settings go back to their defaults.</string>
+    <string name="set_reset_confirm">Reset</string>
+
+    <!-- option values -->
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <string name="direction_system">System</string>
+    <string name="direction_rtl">Right to left</string>
+    <string name="direction_ltr">Left to right</string>
+
+    <string name="size_small">Small</string>
+    <string name="size_medium">Medium</string>
+    <string name="size_large">Large</string>
+    <string name="size_huge">Extra large</string>
+
+    <string name="shape_original">Original</string>
+    <string name="shape_rounded">Rounded</string>
+    <string name="shape_circle">Circular</string>
+    <string name="shape_iphone">iPhone style</string>
+    <string name="shape_samsung">Samsung style</string>
+
+    <string name="sort_asc">Name (A–Z)</string>
+    <string name="sort_desc">Name (Z–A)</string>
+
+    <string name="grid_auto">Auto (%1$d columns)</string>
+    <string name="grid_fixed">%1$d columns</string>
+
+    <!-- app window margins: one rectangle per app, applied when that app comes
+         to the front, however it was started -->
+    <string name="set_window_title">App window margins</string>
+    <string name="set_window_subtitle">Move an app\'s own window inside a rectangle, however it was started</string>
+    <string name="window_title">App window margins</string>
+    <string name="action_window">Window margins</string>
+    <string name="window_master_title">Apply window margins</string>
+    <string name="window_master_subtitle">Watch these apps and move the one that comes to the front</string>
+    <string name="window_profile_message">Pick an edge to set, or turn the profile off.</string>
+    <string name="window_edge_title">%1$s — %2$s</string>
+    <string name="window_value">%1$d / %2$d / %3$d / %4$d px</string>
+    <string name="window_margin_value">%1$d px</string>
+    <string name="window_range">Any value from 0 to %1$d px</string>
+    <string name="window_unit">px</string>
+    <string name="window_off">Off</string>
+    <string name="window_turn_on">Turn the profile on</string>
+    <string name="window_turn_off">Turn the profile off</string>
+    <string name="window_protected">the unit\'s own launcher — left alone</string>
+    <string name="window_empty">No apps yet</string>
+    <string name="window_empty_hint">Apps you install on this unit appear here.</string>
+    <plurals name="window_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+    <string name="window_status_off">Off: no window is being moved.</string>
+    <string name="window_status_none">No app has a window profile turned on yet.</string>
+    <string name="window_status_no_root">Root access is not available, so no window can be moved.</string>
+    <string name="window_status_waiting">Watching %1$d apps; the one that comes to the front is moved into its rectangle.</string>
+    <string name="window_status_no_multi_window">This unit says it does not do multi-window, so it may only be able to move a window that is already resizable.</string>
+    <string name="window_status_applied">%1$s is running inside its rectangle.</string>
+    <string name="window_status_fullscreen">%1$s opens fullscreen, and this unit only resizes freeform or multi-window tasks - nothing was moved.</string>
+    <string name="window_status_refused">The unit refused to move %1$s, so nothing was changed.</string>
+    <string name="window_channel">App window margins</string>
+    <string name="window_channel_description">Shown while an app window margin profile is on.</string>
+    <string name="window_notification_title">Window margins</string>
+    <string name="window_notification_text">%1$d app(s) watched</string>
+</resources>

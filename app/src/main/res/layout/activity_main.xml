@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The board, and nothing else.
+
+     It used to end with two cells that were not apps - a gear and a Close - and
+     that made the settings reachable only by scrolling past every installed app
+     and put a red "quit" one mis-tap away from an icon. Both left the board:
+     the tools live behind the pill at the bottom-end, which floats over the
+     scroll and is therefore always one tap away, wherever the board happens to
+     be. What is left is only what the driver came for. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/hub_page">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Search arrives in place when it is asked for, and takes itself away
+             again; it is not a permanent row over the board. -->
+        <LinearLayout
+            android:id="@+id/searchRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/gutter_grid"
+            android:layout_marginTop="@dimen/space_2"
+            android:layout_marginEnd="@dimen/gutter_grid"
+            android:background="@drawable/bg_setting_row"
+            android:gravity="center_vertical"
+            android:minHeight="@dimen/touch_min"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="@dimen/icon_row"
+                android:layout_height="@dimen/icon_row"
+                android:layout_marginStart="@dimen/space_4"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_search"
+                android:tint="@color/hub_ink_600" />
+
+            <EditText
+                android:id="@+id/searchField"
+                style="@style/Text.Field"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="@string/find_app"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingStart="@dimen/space_3"
+                android:paddingTop="@dimen/space_3"
+                android:paddingEnd="@dimen/space_3"
+                android:paddingBottom="@dimen/space_3"
+                android:textColorHint="@color/hub_ink_400"
+                android:textCursorDrawable="@null" />
+
+            <ImageView
+                android:id="@+id/searchClear"
+                android:layout_width="@dimen/touch_min"
+                android:layout_height="@dimen/touch_min"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="@string/filter_clear"
+                android:focusable="true"
+                android:padding="@dimen/space_4"
+                android:src="@drawable/ic_close"
+                android:tint="@color/hub_ink_600" />
+        </LinearLayout>
+
+        <!-- shown once, while the running marks have no permission to exist -->
+        <include
+            android:id="@+id/dotsBanner"
+            layout="@layout/row_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/appGrid"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/gutter_grid"
+            android:paddingTop="@dimen/space_1"
+            android:paddingEnd="@dimen/gutter_grid"
+            android:paddingBottom="@dimen/grid_bottom_padding"
+            android:scrollbars="vertical"
+            tools:itemCount="8"
+            tools:listitem="@layout/item_app" />
+    </LinearLayout>
+
+    <!-- The lift, in one bar: what the hold means, how to get the old order
+         back, and the way out. It rises where the pill was, so the two are
+         never both on screen and the bottom edge always holds exactly one
+         thing to press. -->
+    <LinearLayout
+        android:id="@+id/editBar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/pill_height"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginStart="@dimen/space_5"
+        android:layout_marginEnd="@dimen/space_5"
+        android:layout_marginBottom="@dimen/space_5"
+        android:background="@drawable/bg_sheet"
+        android:elevation="@dimen/elev_floating"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_5"
+        android:paddingEnd="@dimen/space_2"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/editHint"
+            style="@style/Text.BodyS"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/drag_hint" />
+
+        <TextView
+            android:id="@+id/editReset"
+            style="@style/Text.BodyStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_3"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/touch_min"
+            android:paddingStart="@dimen/space_3"
+            android:paddingEnd="@dimen/space_3"
+            android:text="@string/order_reset"
+            android:textColor="@color/primary_text" />
+
+        <TextView
+            android:id="@+id/editDone"
+            style="@style/Text.OnFill"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/touch_min"
+            android:layout_marginStart="@dimen/space_2"
+            android:background="@drawable/bg_pill"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minWidth="@dimen/touch_car"
+            android:paddingStart="@dimen/space_5"
+            android:paddingEnd="@dimen/space_5"
+            android:text="@string/done" />
+    </LinearLayout>
+
+    <!-- Tools. Floating, bottom-end, always reachable, and faded out of the way
+         while the board is being read. -->
+    <LinearLayout
+        android:id="@+id/hubPill"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/pill_height"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="@dimen/space_5"
+        android:layout_marginBottom="@dimen/space_5"
+        android:background="@drawable/bg_pill"
+        android:clickable="true"
+        android:elevation="@dimen/elev_floating"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_5"
+        android:paddingEnd="@dimen/space_5">
+
+        <ImageView
+            android:layout_width="@dimen/icon_row"
+            android:layout_height="@dimen/icon_row"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_tune"
+            android:tint="@color/hub_on_fill" />
+
+        <TextView
+            android:id="@+id/pillLabel"
+            style="@style/Text.OnFill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_2"
+            android:text="@string/tools" />
+    </LinearLayout>
+
+    <!-- The undo bar: every destructive tap in this app is reversible for five
+         seconds, which is the cheapest luxury it owns. -->
+    <LinearLayout
+        android:id="@+id/undoBar"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/pill_height"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="@dimen/space_5"
+        android:background="@drawable/bg_undo"
+        android:elevation="@dimen/elev_floating"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_5"
+        android:paddingEnd="@dimen/space_2"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/undoText"
+            style="@style/Text.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/hub_inverse_text"
+            tools:text="Chrome hidden" />
+
+        <TextView
+            android:id="@+id/undoAction"
+            style="@style/Text.BodyStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_4"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:minHeight="@dimen/touch_min"
+            android:paddingStart="@dimen/space_3"
+            android:paddingEnd="@dimen/space_3"
+            android:text="@string/undo"
+            android:textColor="@color/hub_blue_300" />
+    </LinearLayout>
+
+</FrameLayout>
