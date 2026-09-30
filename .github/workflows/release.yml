@@ -1,0 +1,112 @@
+# Publishes one signed, universal APK whenever a vX.Y.Z tag is pushed.
+#
+# The app has no native libraries and no density-specific resources, so an ABI
+# or density split could not leave anything out - a single APK installs on every
+# arm and x86 device from Android 9 (minSdk 28) up.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # gh release create
+
+jobs:
+  release:
+    name: Build, sign and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # --generate-notes needs the history and older tags
+
+      # gradle/gradle-daemon-jvm.properties (tracked) asks for a JetBrains 21
+      # toolchain; installing exactly that keeps Gradle from provisioning one.
+      - name: Install the JDK the wrapper asks for
+        uses: actions/setup-java@v6
+        with:
+          distribution: jetbrains
+          java-version: '21'
+          cache: gradle
+
+      # The wrapper is committed without the executable bit, which only shows up
+      # on a fresh Linux checkout.
+      - name: Make the Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Set up the Android SDK
+        uses: android-actions/setup-android@v4
+
+      # gradle.properties sets android.builder.sdkDownload=false, so the build
+      # will not fetch these itself.
+      - name: Install the platform and build-tools the build expects
+        run: sdkmanager --install "platforms;android-37.0" "build-tools;36.0.0"
+
+      # The tag is the release name, but app/build.gradle.kts is what goes into
+      # the APK - refuse to publish when the two disagree.
+      - name: Check the tag against the version in the build file
+        run: |
+          declared=$(sed -n 's/^ *versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts)
+          declared_code=$(sed -n 's/^ *versionCode = \([0-9]*\).*/\1/p' app/build.gradle.kts)
+          padded=$(awk -F. '{printf "%s.%s.%s", $1, ($2==""?0:$2), ($3==""?0:$3)}' <<< "$declared")
+          tag="${GITHUB_REF_NAME#v}"
+          echo "tag $GITHUB_REF_NAME | versionName $declared (as $padded) | versionCode $declared_code"
+          if [ "$tag" != "$padded" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match versionName $declared - bump versionName (and versionCode) in app/build.gradle.kts, move the tag, push again."
+            exit 1
+          fi
+
+      # Nothing signed ever lives in the repository: the keystore arrives as a
+      # secret and is written to the runner's temp directory for this job only.
+      - name: Decode the release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::the RELEASE_KEYSTORE_BASE64 secret is not set - see the README's release section."
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '\n\r \t' | base64 -d > "$RUNNER_TEMP/release.jks"
+          chmod 600 "$RUNNER_TEMP/release.jks"
+          test -s "$RUNNER_TEMP/release.jks"
+
+      - name: Build the signed release APK
+        env:
+          APPHUB_KEYSTORE: ${{ runner.temp }}/release.jks
+          APPHUB_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          APPHUB_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          APPHUB_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon --stacktrace assembleRelease
+
+      - name: Verify the signature and collect the APK
+        run: |
+          sdk="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          apksigner=$(ls "$sdk"/build-tools/*/apksigner | sort -V | tail -1)
+          aapt2=$(ls "$sdk"/build-tools/*/aapt2 | sort -V | tail -1)
+          apk=app/build/outputs/apk/release/app-release.apk
+          test -f "$apk"
+          "$apksigner" verify --verbose --print-certs "$apk"
+          "$aapt2" dump badging "$apk" | sed -n '1,3p'
+
+          mkdir -p dist
+          name="AppHub-${GITHUB_REF_NAME#v}-universal.apk"
+          cp "$apk" "dist/$name"
+          (cd dist && sha256sum "$name" | tee "$name.sha256")
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            --verify-tag \
+            dist/*.apk dist/*.sha256

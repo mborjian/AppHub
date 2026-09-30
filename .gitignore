@@ -10,3 +10,7 @@ captures/
 .kotlin/
 .freebuff/
 AGENTS.md
+
+# signing material never belongs in the repository
+*.jks
+*.keystore

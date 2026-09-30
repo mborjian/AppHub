@@ -17,6 +17,28 @@ android {
         versionName = "2.0"
     }
 
+    // The release keystore never goes into the repository: CI decodes it from a
+    // secret into $RUNNER_TEMP and exports the four APPHUB_* variables below,
+    // and a local release can export the same ones. With none of them set the
+    // release APK is simply left unsigned, exactly as it used to be.
+    val keystoreFile = System.getenv("APPHUB_KEYSTORE")
+    val keystorePassword = System.getenv("APPHUB_KEYSTORE_PASSWORD")
+    val keyAliasValue = System.getenv("APPHUB_KEY_ALIAS")
+    val keyPasswordValue = System.getenv("APPHUB_KEY_PASSWORD")
+    val releaseSigning = if (
+        keystoreFile != null && keystorePassword != null &&
+        keyAliasValue != null && keyPasswordValue != null
+    ) {
+        signingConfigs.create("release") {
+            storeFile = file(keystoreFile)
+            storePassword = keystorePassword
+            keyAlias = keyAliasValue
+            keyPassword = keyPasswordValue
+        }
+    } else {
+        null
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -24,6 +46,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            if (releaseSigning != null) {
+                signingConfig = releaseSigning
+            }
         }
     }
 

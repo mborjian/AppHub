@@ -492,7 +492,9 @@ Output: `app/build/outputs/apk/debug/app-debug.apk` → `adb install -r <apk>`.
 `.github/workflows/android-debug.yml` runs this same build on every push and
 pull request, so a dependency that stops resolving cannot slip through: it
 installs JDK 21 (the JetBrains build the wrapper asks for) plus the SDK
-packages above, then builds the debug APK and uploads it as an artifact.
+packages above, then builds the debug APK and uploads it as an artifact. A
+`vX.Y.Z` tag runs `.github/workflows/release.yml` instead; see *Releasing from a
+tag* below.
 
 **Debugging over Wi-Fi.** Android Studio's *Pair devices using Wi-Fi* dialog
 refuses to open while the adb server is older than platform-tools 37.0.0: it
@@ -541,6 +543,57 @@ user-data copy → `mkdir /system/priv-app/AppHub` → `cp` → `chown root:root
 > to continue on `enforce` unless you pass `--force`. Installing the
 > platform-signed APK normally (`--install`) is always safe and gives you
 > layers 1 and 3; only layer 2 needs `/system/priv-app`.
+
+### Releasing from a tag
+
+`.github/workflows/release.yml` runs when a `vX.Y.Z` tag is pushed and
+publishes a signed APK on the GitHub release: **one universal build**, because
+the app ships no native libraries and no density-specific resources, so a split
+by ABI or screen density could not leave anything out.
+
+The keystore never enters the repository. It lives in four repository secrets,
+and the job decodes it into `$RUNNER_TEMP` for that run only:
+
+| Secret | What it holds |
+| --- | --- |
+| `RELEASE_KEYSTORE_BASE64` | the `.jks` file, base64-encoded on one line |
+| `RELEASE_KEYSTORE_PASSWORD` | the store password |
+| `RELEASE_KEY_ALIAS` | the alias inside it |
+| `RELEASE_KEY_PASSWORD` | the key's password (often the store one) |
+
+```bash
+# from wherever the keystore is kept - do not put it in the repository
+base64 -w0 apphub-release.jks > /tmp/apphub.b64
+gh secret set RELEASE_KEYSTORE_BASE64 < /tmp/apphub.b64 && rm /tmp/apphub.b64
+gh secret set RELEASE_KEYSTORE_PASSWORD   # prompts, so it stays out of the history
+gh secret set RELEASE_KEY_ALIAS
+gh secret set RELEASE_KEY_PASSWORD
+```
+
+`*.jks` and `*.keystore` are ignored, but keeping the file outside the working
+tree is still the better habit.
+
+A release is then one tag, and the tag has to match what the APK will say:
+
+```bash
+# bump versionName and versionCode in app/build.gradle.kts first
+git tag v2.0.0 && git push origin v2.0.0
+```
+
+The job refuses to build when the tag and `versionName` disagree - the current
+`2.0` counts as `2.0.0`, so `v2.0.0` is the first tag that can match - and it
+checks the signature with `apksigner verify` before publishing
+`AppHub-<version>-universal.apk` plus its `.sha256`.
+
+A signed build on this machine uses the same four variables as the workflow:
+
+```bash
+APPHUB_KEYSTORE=C:/keys/apphub-release.jks APPHUB_KEYSTORE_PASSWORD=... \
+APPHUB_KEY_ALIAS=... APPHUB_KEY_PASSWORD=... ./gradlew assembleRelease
+```
+
+With none of them set, `assembleRelease` still works and leaves the APK
+unsigned, which is what `tools/release.py` expects for the platform-key path.
 
 ## Project layout
 
