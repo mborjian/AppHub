@@ -4,6 +4,36 @@ plugins {
     // org.jetbrains.kotlin.android plugin must no longer be applied.
 }
 
+// --------------------------------------------------------------- the version
+//
+// No release number is written in this file: it comes from the newest reachable
+// vX.Y.Z git tag, so publishing a release is the tag and nothing else - there is
+// no version to bump in lockstep with it, and no way for the two to disagree.
+// versionName is what the tag says, and versionCode is packed from it:
+// 1.0.0 -> 10000, 1.0.1 -> 10001, 1.1.0 -> 10100. Both may only grow, which is
+// what an installer compares when it is handed an APK.
+//
+// A checkout without tags - a shallow clone, an exported tree - has no tag to
+// read and builds the fallback below: the first release this project shipped.
+val fallbackVersionName = "1.0.0"
+
+val tagVersion = providers.exec {
+    commandLine(
+        "git", "describe", "--tags", "--abbrev=0",
+        "--match", "v[0-9]*.[0-9]*.[0-9]*",
+    )
+    workingDir = rootDir
+    isIgnoreExitValue = true
+}.standardOutput.asText.map { it.trim().removePrefix("v") }
+
+val appVersionName = runCatching { tagVersion.get() }.getOrNull()
+    ?.takeIf { it.matches(Regex("""\d+\.\d+\.\d+""")) }
+    ?: fallbackVersionName
+
+val appVersionCode = appVersionName.split('.').let { (major, minor, patch) ->
+    major.toInt() * 10_000 + minor.toInt() * 100 + patch.toInt()
+}
+
 android {
     namespace = "com.mimskydo.apphub"
     compileSdk = 37
@@ -13,8 +43,8 @@ android {
         // The head unit runs Android 9 (API 28).
         minSdk = 28
         targetSdk = 37
-        versionCode = 3
-        versionName = "2.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
     }
 
     // The release keystore never goes into the repository: CI decodes it from a

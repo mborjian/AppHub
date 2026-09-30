@@ -22,29 +22,16 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7
-
-      # gradle/gradle-daemon-jvm.properties (tracked) asks for a JetBrains 21
-      # toolchain; installing exactly that keeps Gradle from provisioning one.
-      - name: Install the JDK the wrapper asks for
-        uses: actions/setup-java@v6
         with:
-          distribution: jetbrains
-          java-version: '21'
-          cache: gradle
+          # The version comes from the git tags (see app/build.gradle.kts), so a
+          # build here reads them the way a release does instead of falling back
+          # to the stand-in number.
+          fetch-depth: 0
+          fetch-tags: true
 
-      # The wrapper is committed without the executable bit, which only shows up
-      # on a fresh Linux checkout.
-      - name: Make the Gradle wrapper executable
-        run: chmod +x gradlew
-
-      - name: Set up the Android SDK
-        uses: android-actions/setup-android@v4
-
-      # gradle.properties sets android.builder.sdkDownload=false, so the build
-      # will not fetch these itself: 37.0 is what compileSdk = 37 resolves to,
-      # and 36.0.0 is the build-tools revision AGP 9.4.1 uses here.
-      - name: Install the platform and build-tools the build expects
-        run: sdkmanager --install "platforms;android-37.0" "build-tools;36.0.0"
+      # The JDK and the SDK packages, pinned in one place for both workflows.
+      - name: Set up the JDK and the Android SDK
+        uses: ./.github/actions/android-setup
 
       - name: Build the debug APK
         run: ./gradlew --no-daemon --stacktrace assembleDebug

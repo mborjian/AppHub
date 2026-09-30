@@ -458,6 +458,12 @@ wrapper for a JetBrains 21 toolchain, which on this machine is
 9.4.1 (`compileSdk` 37 → SDK package `platforms;android-37.0`) and build-tools
 36.0.0.
 
+The version is not written in the build file either: `versionName` is the newest
+reachable `vX.Y.Z` git tag and `versionCode` is packed from it — `1.0.0` →
+`10000`, `1.0.1` → `10001`, `1.1.0` → `10100` — so a release is the tag and
+nothing else. A checkout with no tags at all (a shallow clone, an exported tree)
+builds `1.0.0`, the first release this project shipped.
+
 ```bash
 ./gradlew assembleDebug          # works with no flags, and no network
 ./gradlew --offline assembleDebug   # same, but also forbids any network access
@@ -491,10 +497,11 @@ Output: `app/build/outputs/apk/debug/app-debug.apk` → `adb install -r <apk>`.
 
 `.github/workflows/android-debug.yml` runs this same build on every push and
 pull request, so a dependency that stops resolving cannot slip through: it
-installs JDK 21 (the JetBrains build the wrapper asks for) plus the SDK
-packages above, then builds the debug APK and uploads it as an artifact. A
-`vX.Y.Z` tag runs `.github/workflows/release.yml` instead; see *Releasing from a
-tag* below.
+builds the debug APK and uploads it as an artifact. Both workflows take their
+JDK and SDK packages from one composite action,
+`.github/actions/android-setup/action.yml`, so those pins live in a single place
+instead of in two files. A `vX.Y.Z` tag runs `.github/workflows/release.yml`
+instead; see *Releasing from a tag* below.
 
 **Debugging over Wi-Fi.** Android Studio's *Pair devices using Wi-Fi* dialog
 refuses to open while the adb server is older than platform-tools 37.0.0: it
@@ -573,17 +580,26 @@ gh secret set RELEASE_KEY_PASSWORD
 `*.jks` and `*.keystore` are ignored, but keeping the file outside the working
 tree is still the better habit.
 
-A release is then one tag, and the tag has to match what the APK will say:
+A release is then one tag, and nothing else — the tag *is* the version:
 
 ```bash
-# bump versionName and versionCode in app/build.gradle.kts first
-git tag v2.0.0 && git push origin v2.0.0
+git tag v1.0.0 && git push origin v1.0.0     # the first release
+git tag v1.0.1 && git push origin v1.0.1     # the next one
 ```
 
-The job refuses to build when the tag and `versionName` disagree - the current
-`2.0` counts as `2.0.0`, so `v2.0.0` is the first tag that can match - and it
-checks the signature with `apksigner verify` before publishing
-`AppHub-<version>-universal.apk` plus its `.sha256`.
+There is nothing to bump first. The job refuses a tag that is not a plain
+`vX.Y.Z`, builds, checks the APK's own `versionName` against the tag, verifies
+the signature with `apksigner verify`, and then — before it publishes anything —
+installs that signed APK on an emulator (Android 11, Google APIs, headless) and
+requires the launcher activity `com.mimskydo.apphub/.MainActivity` to reach the
+front and stay there. Only then does it publish
+`AppHub-<version>-universal.apk` plus its `.sha256`. The emulator run leaves a
+screenshot and an activity dump in the `smoke-test-<tag>` artifact, and
+`tools/smoke-test-apk.sh` is the same check by hand:
+
+```bash
+sh tools/smoke-test-apk.sh app/build/outputs/apk/release/app-release.apk
+```
 
 A signed build on this machine uses the same four variables as the workflow:
 
@@ -625,8 +641,10 @@ app_hub/
 │   │   └── RootShell.kt             optional su, probes `-c` and `<uid>` forms
 │   └── res/                         layouts, drawables, theme, EN + FA strings
 ├── tools/release.py                 platform-signed release + optional install
+├── tools/smoke-test-apk.sh          installs an APK on the emulator, proves it starts
 ├── build.gradle.kts                 AGP 9.4.1 (built-in Kotlin, no Kotlin plugin)
-├── .github/workflows/               debug APK build on every push
+├── .github/actions/android-setup/   the JDK + SDK pins, shared by both workflows
+├── .github/workflows/               debug APK on every push, release on a tag
 └── gradle/wrapper/                  Gradle 9.7.1 wrapper
 ```
 

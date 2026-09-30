@@ -1,0 +1,51 @@
+# The JDK and the Android SDK packages the build needs, in one place: both
+# workflows call this, so a pin can only be moved here.
+#
+# The repository has to be checked out *before* the step that calls this - a
+# local action lives in the checkout - which is why the checkout stays the
+# workflows' own first step.
+name: Set up the Android build
+
+inputs:
+  java_version:
+    description: JDK major version - must match gradle/gradle-daemon-jvm.properties
+    default: '21'
+  distribution:
+    description: JDK distribution - the JetBrains build the wrapper asks for
+    default: jetbrains
+  platform:
+    description: SDK platform package that compileSdk resolves to
+    default: 'platforms;android-37.0'
+  build_tools:
+    description: SDK build-tools revision AGP uses here
+    default: 'build-tools;36.0.0'
+
+runs:
+  using: composite
+  steps:
+    # The tracked gradle/gradle-daemon-jvm.properties asks the wrapper for a
+    # JetBrains 21 toolchain; installing exactly that keeps Gradle from having to
+    # provision one, and `cache: gradle` keeps the wrapper distribution between
+    # runs.
+    - name: Install the JDK the wrapper asks for
+      uses: actions/setup-java@v6
+      with:
+        distribution: ${{ inputs.distribution }}
+        java-version: ${{ inputs.java_version }}
+        cache: gradle
+
+    # The wrapper is committed without the executable bit, which only shows up on
+    # a fresh Linux checkout.
+    - name: Make the Gradle wrapper executable
+      shell: bash
+      run: chmod +x gradlew
+
+    - name: Set up the Android SDK
+      uses: android-actions/setup-android@v4
+
+    # gradle.properties sets android.builder.sdkDownload=false, so the build will
+    # not fetch these itself: 37.0 is what compileSdk = 37 resolves to, and 36.0.0
+    # is the build-tools revision AGP 9.4.1 uses here.
+    - name: Install the platform and build-tools the build expects
+      shell: bash
+      run: sdkmanager --install "${{ inputs.platform }}" "${{ inputs.build_tools }}"
