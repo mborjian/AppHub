@@ -1,4 +1,4 @@
-package com.mahdi.apphub
+package com.mimskydo.apphub
 
 import android.animation.ObjectAnimator
 import android.content.res.Resources

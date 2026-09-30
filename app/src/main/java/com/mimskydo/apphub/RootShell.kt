@@ -1,4 +1,4 @@
-package com.mahdi.apphub
+package com.mimskydo.apphub
 
 import java.io.File
 import java.util.concurrent.TimeUnit

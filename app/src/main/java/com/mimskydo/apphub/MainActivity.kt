@@ -1,4 +1,4 @@
-package com.mahdi.apphub
+package com.mimskydo.apphub
 
 import android.content.ActivityNotFoundException
 import android.content.Intent

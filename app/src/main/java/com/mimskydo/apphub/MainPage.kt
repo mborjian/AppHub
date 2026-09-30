@@ -1,4 +1,4 @@
-package com.mahdi.apphub
+package com.mimskydo.apphub
 
 /**
  * The main page as a value: which apps it shows, in which order, and which cells

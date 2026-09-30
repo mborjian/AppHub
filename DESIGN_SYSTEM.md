@@ -20,7 +20,7 @@ pinned offline graph is the app's hardest architectural constraint.
 
 | | |
 |---|---|
-| Name / package | **App Hub** · `com.mahdi.apphub` |
+| Name / package | **App Hub** · `com.mimskydo.apphub` |
 | Version | `versionCode 2`, `versionName 1.1` |
 | Built with | AGP 8.8.0 / Kotlin 2.1.10, Gradle 8.10.2 |
 | SDK | `compileSdk 35`, `minSdk 28`, `targetSdk 34` |

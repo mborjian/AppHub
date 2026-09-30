@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.mahdi.apphub"
+    namespace = "com.mimskydo.apphub"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.mahdi.apphub"
+        applicationId = "com.mimskydo.apphub"
         // The head unit runs Android 9 (API 28).
         minSdk = 28
         targetSdk = 37

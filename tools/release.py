@@ -57,7 +57,7 @@ UNSIGNED = RELEASE_DIR / "app-release-unsigned.apk"
 ALIGNED = RELEASE_DIR / "app-release-aligned.apk"
 SIGNED = RELEASE_DIR / "app-release-platform.apk"
 
-PACKAGE = "com.mahdi.apphub"
+PACKAGE = "com.mimskydo.apphub"
 SYSTEM_DIR = "/system/priv-app/AppHub"
 SYSTEM_APK = f"{SYSTEM_DIR}/AppHub.apk"
 DEVICE_TMP = "/data/local/tmp/apphub.apk"

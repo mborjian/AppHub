@@ -1,4 +1,4 @@
-package com.mahdi.apphub
+package com.mimskydo.apphub
 
 /**
  * What a search field matches against: letters and digits only, lower-cased.
