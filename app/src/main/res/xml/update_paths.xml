@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  What the update provider may hand out: the downloaded APK, which lives in this
+  app's own cache. One path, on purpose - a provider that can serve any file is a
+  door, and this one only ever has one thing behind it.
+-->
+<paths>
+    <cache-path name="update" path="." />
+</paths>

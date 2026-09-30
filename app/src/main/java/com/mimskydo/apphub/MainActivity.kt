@@ -108,6 +108,26 @@ class MainActivity : BaseActivity() {
         wireBanner()
         wireReorder()
         wireScrollFade()
+
+        reportUpdate()
+    }
+
+    /**
+     * What became of an update that replaced this app's own process.
+     *
+     * The run that starts an install can never report it - putting a package in
+     * place of a running one kills the process that asked for it - so the version
+     * it was installing is left in [Prefs.pendingUpdate] and read back here, once,
+     * on the first board after the restart. Which of the two sentences it gets is
+     * the version actually installed, not the one that was hoped for.
+     */
+    private fun reportUpdate() {
+        val wanted = prefs.pendingUpdate ?: return
+        prefs.pendingUpdate = null
+        toast(
+            if (Updater.version(this).name == wanted) getString(R.string.update_done, wanted)
+            else getString(R.string.update_not_installed, wanted)
+        )
     }
 
     override fun onResume() {

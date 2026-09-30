@@ -48,6 +48,17 @@ class SettingsActivity : BaseActivity() {
 
     private lateinit var usageRow: View
 
+    private lateinit var updateRow: View
+
+    /**
+     * What the update row says while it is working, or null when it has nothing
+     * to add to the version it stands for.
+     */
+    private var updateValue: CharSequence? = null
+
+    /** true while a check or a download is in flight, so a second tap is not a queue */
+    private var updateRunning = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
@@ -260,6 +271,13 @@ class SettingsActivity : BaseActivity() {
 
         addSection(R.string.section_maintenance)
 
+        // First in the group, because it is the one row here that changes this
+        // app rather than the unit.
+        updateRow = addValueRow(
+            R.string.set_update_title, R.string.set_update_subtitle,
+            value = { updateValue ?: Updater.version(this).name },
+        ) { checkForUpdates() }
+
         addActionRow(R.string.set_reset_title, R.string.set_reset_subtitle) { confirmReset() }
 
         addBackRow()
@@ -351,13 +369,14 @@ class SettingsActivity : BaseActivity() {
         subtitleRes: Int,
         value: () -> CharSequence,
         onClick: () -> Unit,
-    ) {
+    ): View {
         val row = inflateRow(titleRes, subtitleRes)
         row.findViewById<TextView>(R.id.settingValue).isVisible = true
         row.findViewById<ImageView>(R.id.settingChevron).isVisible = true
         valueRows += row to value
         row.setOnClickListener { onClick() }
         rows.addView(row)
+        return row
     }
 
     /**
@@ -567,6 +586,202 @@ class SettingsActivity : BaseActivity() {
      */
     private fun openWindowMargins() {
         startActivity(Intent(this, WindowMarginsActivity::class.java))
+    }
+
+    // -------------------------------------------------------------- updates
+
+    /**
+     * The update, in three steps, each of them on the worker so the screen never
+     * waits: ask GitHub what the newest release is, take its APK, install it.
+     *
+     * Every ending is said out loud - up to date, nothing published, no answer,
+     * refused, or the ways an install can go. A row that goes back to its old
+     * value in silence is indistinguishable from a tap that did nothing.
+     */
+    private fun checkForUpdates() {
+        if (updateRunning) return
+        updateRunning = true
+        setUpdateValue(getString(R.string.update_checking))
+        worker.execute {
+            val checked = Updater.check(this)
+            post {
+                updateRunning = false
+                onChecked(checked)
+            }
+        }
+    }
+
+    private fun onChecked(checked: Updater.Check) {
+        when (checked) {
+            is Updater.Check.Newer -> {
+                if (Updater.isReleasable(this)) {
+                    setUpdateValue(getString(R.string.update_ready_value, checked.release.version.name))
+                    offerUpdate(checked.release)
+                } else {
+                    // A platform-signed build cannot be replaced by a release,
+                    // and the download is what would find that out the hard way.
+                    setUpdateValue(null)
+                    reportPlatformBuild(checked.release)
+                }
+            }
+            is Updater.Check.Latest -> {
+                setUpdateValue(null)
+                toast(getString(R.string.update_latest, checked.version.name))
+            }
+            Updater.Check.Nothing -> {
+                setUpdateValue(null)
+                toast(getString(R.string.update_nothing))
+            }
+            is Updater.Check.Trouble -> {
+                // the detail is already a sentence: what went wrong is the answer
+                setUpdateValue(null)
+                toast(checked.detail)
+            }
+        }
+    }
+
+    /** The offer: what the release is, and what can be done with it. */
+    private fun offerUpdate(release: Updater.Release) {
+        Sheet.show(
+            this,
+            title = getString(R.string.update_ready_title, release.version.name),
+            subtitle = getString(R.string.update_ready_subtitle, release.apkName),
+            message = release.notes.takeIf { it.isNotEmpty() }
+                ?: getString(R.string.update_no_notes),
+            rows = listOf(
+                SheetRow(
+                    label = getString(R.string.update_install),
+                    onClick = { installUpdate(release) },
+                ),
+                SheetRow(
+                    label = getString(R.string.update_page),
+                    onClick = { openReleasePage(release) },
+                ),
+                SheetRow(label = getString(android.R.string.cancel)),
+            ),
+        )
+    }
+
+    /**
+     * What a unit build can be told: the key is not this app's release key, so
+     * no release can take its place, and saying so is the whole answer.
+     */
+    private fun reportPlatformBuild(release: Updater.Release) {
+        Sheet.show(
+            this,
+            title = getString(R.string.update_platform_title),
+            message = getString(R.string.update_platform_message, release.version.name),
+            rows = listOf(
+                SheetRow(
+                    label = getString(R.string.update_page),
+                    onClick = { openReleasePage(release) },
+                ),
+                SheetRow(label = getString(android.R.string.cancel)),
+            ),
+        )
+    }
+
+    private fun installUpdate(release: Updater.Release) {
+        if (updateRunning) return
+        updateRunning = true
+        showProgress(0)
+        worker.execute {
+            val download = Updater.download(this, release) { percent -> post { showProgress(percent) } }
+            when (download) {
+                is Updater.Download.OnDisk -> {
+                    val install = Updater.install(this, download.file, release.version.name)
+                    post {
+                        updateRunning = false
+                        onInstalled(install, release)
+                    }
+                }
+                is Updater.Download.Refused -> post {
+                    updateRunning = false
+                    setUpdateValue(null)
+                    toast(getString(download.refusal.message))
+                }
+                is Updater.Download.Failed -> post {
+                    updateRunning = false
+                    setUpdateValue(null)
+                    toast(download.detail)
+                }
+            }
+        }
+    }
+
+    private fun onInstalled(install: Updater.Install, release: Updater.Release) {
+        when (install) {
+            Updater.Install.Silent -> {
+                // Root has already replaced the package: this process is on its
+                // way out, and the next board says whether the update took.
+                val installing = getString(R.string.update_installing, release.version.name)
+                setUpdateValue(installing)
+                toast(installing)
+            }
+            Updater.Install.AskingTheSystem -> {
+                setUpdateValue(null)
+                toast(getString(R.string.update_asking))
+            }
+            Updater.Install.DifferentSignature -> {
+                setUpdateValue(null)
+                reportPlatformBuild(release)
+            }
+            Updater.Install.NeedsPermission -> {
+                setUpdateValue(null)
+                askForInstallPermission()
+            }
+            is Updater.Install.Failed -> {
+                setUpdateValue(null)
+                toast(getString(R.string.update_install_failed, install.detail))
+            }
+        }
+    }
+
+    /**
+     * Android will not show its install dialog until this app has been allowed
+     * to install packages once, in a screen of the system's own.
+     */
+    private fun askForInstallPermission() {
+        Sheet.show(
+            this,
+            title = getString(R.string.update_permission_title),
+            message = getString(R.string.update_permission_message),
+            rows = listOf(
+                SheetRow(label = getString(R.string.update_permission_open)) {
+                    if (!Updater.askForInstallPermission(this)) {
+                        toast(getString(R.string.settings_unavailable))
+                    }
+                },
+                SheetRow(label = getString(android.R.string.cancel)),
+            ),
+        )
+    }
+
+    private fun openReleasePage(release: Updater.Release) {
+        if (!Updater.openPage(this, release)) toast(getString(R.string.settings_unavailable))
+    }
+
+    private fun showProgress(percent: Int) {
+        setUpdateValue(
+            if (percent < 0) getString(R.string.update_downloading)
+            else getString(R.string.update_downloading_percent, percent)
+        )
+    }
+
+    /**
+     * The update row's right-hand text, for as long as the flow has something to
+     * say. The version is what it reads when nothing does, so a finished flow
+     * puts the row back by itself instead of leaving a stale word in it.
+     */
+    private fun setUpdateValue(text: CharSequence?) {
+        updateValue = text
+        updateRow.findViewById<TextView>(R.id.settingValue).text =
+            text ?: Updater.version(this).name
+    }
+
+    /** the worker's way back to the screen, for a screen that is still there */
+    private fun post(block: () -> Unit) = runOnUiThread {
+        if (!isFinishing && !isDestroyed) block()
     }
 
     // -------------------------------------------------------------- actions

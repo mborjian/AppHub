@@ -154,6 +154,42 @@
     <string name="set_reset_message">All settings go back to their defaults.</string>
     <string name="set_reset_confirm">Reset</string>
 
+    <!-- The self-update: the releases this app publishes on its repository, the
+         APK of a newer one, and the four things that have to hold before that
+         file is allowed near the installer. -->
+    <string name="set_update_title">Updates</string>
+    <string name="set_update_subtitle">This app\'s releases on GitHub, checked and installed here</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_downloading">Downloading…</string>
+    <string name="update_downloading_percent">Downloading %1$d%%</string>
+    <string name="update_ready_value">%1$s ready</string>
+    <string name="update_ready_title">App Hub %1$s</string>
+    <string name="update_ready_subtitle">Signed and published as %1$s</string>
+    <string name="update_no_notes">This release does not say what changed.</string>
+    <string name="update_install">Install it</string>
+    <string name="update_page">Open the release page</string>
+    <string name="update_installing">Installing %1$s; this screen closes when it is done</string>
+    <string name="update_asking">Finish the install in the screen that opened</string>
+    <string name="update_permission_title">One permission first</string>
+    <string name="update_permission_message">Android installs a package only after you let this app do it once, in the screen that opens next.</string>
+    <string name="update_permission_open">Open that screen</string>
+    <string name="update_platform_title">This build is the unit\'s own</string>
+    <string name="update_platform_message">It is signed with the platform key, and a release cannot replace it: install the %1$s APK by hand once, and this row updates it from then on.</string>
+    <string name="update_latest">%1$s is the newest release</string>
+    <string name="update_nothing">Nothing has been published yet</string>
+    <string name="update_offline">GitHub did not answer: %1$s</string>
+    <string name="update_no_apk">The newest release is not one this app can install</string>
+    <string name="update_bad_release">The newest release could not be read</string>
+    <string name="update_download_failed">The download failed: %1$s</string>
+    <string name="update_done">Updated to %1$s</string>
+    <string name="update_not_installed">The update to %1$s did not install</string>
+    <string name="update_install_failed">The install failed: %1$s</string>
+    <string name="update_refused_file">That file is not an app package</string>
+    <string name="update_refused_signature">That file is not signed with this app\'s key, so nothing was installed</string>
+    <string name="update_refused_package">That file is a different app, so nothing was installed</string>
+    <string name="update_refused_version">That file is not newer than the build on this unit</string>
+    <string name="update_refused_digest">The download does not match the checksum published with it</string>
+
     <!-- option values -->
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>

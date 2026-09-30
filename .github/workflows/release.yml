@@ -130,6 +130,19 @@ jobs:
           apk=app/build/outputs/apk/release/app-release.apk
           test -f "$apk"
           "$apksigner" verify --verbose --print-certs "$apk"
+
+          # The app's own update screen trusts exactly one certificate digest,
+          # pinned in Updater.kt. A release that key did not sign would install
+          # nowhere, so the two are compared here - at the one moment a signing
+          # key can change.
+          pinned=$(sed -n 's/.*"\([0-9a-f]\{64\}\)".*/\1/p' app/src/main/java/com/mimskydo/apphub/Updater.kt)
+          signed=$("$apksigner" verify --print-certs "$apk" | sed -n 's/.*SHA-256 digest: *//p' | tail -1)
+          if [ "$pinned" != "$signed" ]; then
+            echo "::error::this APK is signed by $signed while Updater.kt pins $pinned - a build already on the unit could not verify it."
+            exit 1
+          fi
+          echo "signed by the key the update screen pins: $signed"
+
           badging=$("$aapt2" dump badging "$apk")
           echo "$badging" | sed -n '1,3p'
 

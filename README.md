@@ -615,6 +615,52 @@ screenshot and an activity dump in the `smoke-test-<tag>` artifact, and
 sh tools/smoke-test-apk.sh app/build/outputs/apk/release/app-release.apk
 ```
 
+### Updating from the unit itself
+
+The *Updates* row in the settings is the whole feature: it shows the build this
+unit is running (`1.0.0`), and tapping it asks GitHub for
+`releases/latest` of this repository. If that release is newer, the row offers
+it, and the APK is downloaded, checked and installed without a laptop anywhere
+near the car.
+
+An APK arriving from the network is code this app would then be running, so
+nothing is installed until all four of these hold:
+
+| Check | What it rules out |
+| --- | --- |
+| signed with the release certificate, pinned as a SHA-256 digest in `Updater.kt` | anything not published from this project |
+| the package name is this app's | a file that is not this app at all |
+| `versionCode` newer than the installed one | going backwards, and re-installing what is there |
+| matching the `.sha256` published beside it | a truncated or substituted transfer |
+
+Android will not replace a package with a differently-signed one either, but
+that is the platform's answer after the fact; the pin is what lets the row say
+*why* instead.
+
+The install itself has two paths, in this order: on a unit with root, the file is
+copied to `/data/local/tmp` and installed with `su -c pm install -r`, which is the
+same install `adb install` runs and needs no taps at all. Without root, Android's
+own dialog does it - the same screen the unit shows for any sideloaded APK, after
+a one-time *allow installs from this app* grant.
+
+Replacing a running package kills the process that asked for it, so the run that
+starts an update can never report the result. The version being installed is
+written down before the silent path runs, and the next time the board comes up it
+says which of the two happened: *Updated to 1.0.1*, or *The update to 1.0.1 did
+not install*.
+
+Two things are worth knowing:
+
+* **A platform-signed build cannot be updated this way.** `tools/release.py`
+signs with the unit's platform key, and no release carries that signature, so
+the row says so instead of downloading something it cannot use. Install the
+release APK by hand once (the one-time switch), and this row updates it from
+then on.
+* **Rotating the signing key breaks it for existing installs.** The release job
+refuses to publish an APK whose signer does not match the digest pinned in
+`Updater.kt`, which is what makes a silent drift impossible - and the unit is
+then left needing one manual install again.
+
 A signed build on this machine uses the same four variables as the workflow:
 
 ```bash
@@ -641,6 +687,7 @@ app_hub/
 │   │   ├── Sheet.kt                 the rounded dialog behind every menu/picker
 │   │   ├── IconShape.kt             icon masking (circle, squircles, rounded)
 │   │   ├── AppRepository.kt         PackageManager query (off the UI thread)
+│   ├── Updater.kt               the release check, the verified download, the install
 │   │   ├── AppEntry.kt              cell model + AppState (running/recent)
 │   │   ├── AppAdapter.kt            grid adapter, icon cache, settings cell
 │   │   ├── PinnedApps.kt            ordered pins in SharedPreferences
@@ -772,6 +819,10 @@ and the launcher tooling in `../launcher_tool/` was not touched by this work.
 
 ## Honest limitations
 
+* **An in-app update needs the release key, not the platform one.** The *Updates* row
+  installs only an APK signed with the release certificate it pins, so a unit running the
+  platform-signed build (any unit, after `tools/release.py`) cannot be updated from the
+  screen until the release APK is installed over it once, by hand.
 * **Window margins need root.** Without a usable `su` every call answers null, the screen says
   *"Root access is not available, so no window can be moved"* and nothing else happens - the
   rest of the hub works exactly as before.

@@ -38,6 +38,15 @@
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
+    <!-- The update screen reads this repository's public releases and takes the
+         APK of a newer one; nothing else in the app talks to the network. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- The self-update. Without it Android will not show its install dialog at
+         all; the app checks for it and offers the one-time grant rather than
+         downloading a file it cannot use. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <!-- Needed from Android 11 on to see every installed app. Irrelevant on
          the Android 10 head unit, harmless everywhere else. -->
     <uses-permission
@@ -128,6 +137,19 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <!-- The system's installer reads the downloaded APK through this, and
+             nothing else does: one cache path, no export, and permission
+             granted per intent rather than once and for all. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_paths" />
+        </provider>
 
     </application>
 

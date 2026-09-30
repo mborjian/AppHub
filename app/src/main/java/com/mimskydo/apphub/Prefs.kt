@@ -210,6 +210,23 @@ class Prefs(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_TASKS_OFFER, value).apply()
 
     /**
+     * The version an update was installing when this app's own process was
+     * replaced, or null when none was.
+     *
+     * Installing over a running package kills it, so the run that started an
+     * update can never report how it went: this is what lets the next launch
+     * say which of the two happened. Deliberately not part of [SETTING_KEYS] -
+     * it is not a setting, and it clears itself the first time it is read.
+     */
+    var pendingUpdate: String?
+        get() = prefs.getString(KEY_PENDING_UPDATE, null)
+        set(value) {
+            val editor = prefs.edit()
+            if (value == null) editor.remove(KEY_PENDING_UPDATE) else editor.putString(KEY_PENDING_UPDATE, value)
+            editor.apply()
+        }
+
+    /**
      * Draw everything at a size that suits the screen this app is running on.
      *
      * Not a fifth icon size: a switch, and it applies to the whole app - the
@@ -435,6 +452,7 @@ class Prefs(context: Context) {
         const val KEY_ADAPT = "adapt_screen"
         const val KEY_DOTS_OFFER = "dots_offer_dismissed"
         const val KEY_TASKS_OFFER = "tasks_offer_dismissed"
+        const val KEY_PENDING_UPDATE = "pending_update"
 
         /** the width in dp a phone has, which is what the screen is measured against */
         const val REFERENCE_WIDTH_DP = 400f
