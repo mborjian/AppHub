@@ -20,7 +20,7 @@ that document is what it *looks like* and why.
 |---|---|
 | **Grid** | every launcher-able app, icon on top and one line of text under it (long names ellipsize), re-read on every resume, sorted with a locale-aware collator (Persian names order correctly). Column count follows the screen, or is fixed in the settings |
 | **Tap** | launches that app (exact `package` + activity, with a `getLaunchIntentForPackage` fallback) |
-| **Long press** | the board **lifts**: every tile scales slightly and grows a badge in its icon's corner, and the page's tiles become draggable. The badge (or a tap through the tools sheet's *Edit the page*) opens one app's card: **Open**, **Window margins**, **Pin to top**, **App info** / **Close**, **Hide from the main page** - grouped, with a hairline between the three kinds of verb |
+| **Long press** | the board **lifts**: every tile scales slightly and grows a badge in its icon's corner, and the page's tiles become draggable. The badge (or a tap through the tools sheet's *Edit the page*) opens one app's card: **Open**, **Window margins**, **Pin to top**, **App info** / **Close**, **Hide from the main page**, **Uninstall** - grouped, with a hairline between the three kinds of verb. *Uninstall* is only there for an app the user installed; see [Uninstalling an app](#uninstalling-an-app-three-layers) |
 | **Dot** | a small dot on the icon of an app that is open: filled for a process or a task the system still holds, hollow for one that was only used recently (see [What is open, and how App Hub knows](#what-is-open-and-how-app-hub-knows)) |
 | **Pin** | long press → *Pin to top*; pinned apps keep their place at the front, in the order you pinned them, and the choice survives restarts |
 | **Window margins** | long press → *Window margins*: give one app its own rectangle (**left / right / top / bottom**, in pixels) and it is moved inside it the moment it comes to the front - however it was started, from this grid or from the vehicle's own launcher. See [App window margins](#app-window-margins-one-rectangle-per-app) |
@@ -272,6 +272,48 @@ because a car is a place where the answer has to be readable after the fact:
 ```bash
 adb logcat -s AppHub        # close <pkg> task=<id> layer=<method> stillOpen=<bool> source=<source>
 ```
+
+## Uninstalling an app: three layers
+
+`Uninstall.uninstall()` mirrors the close: the strongest mechanism available
+first, every layer optional, and the report naming the one that answered. The
+rule above all of them is that **only an app the user installed may be passed to
+any layer**. The answer is read when the board is drawn (and carried on the
+entry), read again when the removal is attempted, and it is what decides both
+whether the card offers the row and whether the engine acts — a factory app is
+never offered, and cannot be removed even from a card that somehow asked.
+Uninstalling App Hub itself is refused for the same reason root exists:
+`pm uninstall` does not ask.
+
+1. **root** — `su -c pm uninstall <pkg>`. The command `adb uninstall` runs, and
+   the removal Settings' own Uninstall button performs: the app goes for every
+   account on the unit. It is also the only layer that *answers* — `pm` prints
+   `Success` only once the package is already gone, and any other line is read
+   as a refusal, so nothing is reported that the shell did not confirm. (No
+   `--user` flag: the SDK no longer offers a public way to name the current
+   user, and `--user 0` on a unit whose driver is another account would take
+   the app off somebody else's profile.)
+2. **`DELETE_PACKAGES`** — `PackageInstaller.uninstall()`, which the platform
+   runs straight through when that permission is held: `signature|privileged`,
+   so it belongs to the platform-signed install or a `/system/priv-app` one. No
+   root, no screen, and no installer session — the delete is dispatched, and the
+   board's next read is where it becomes visible.
+3. **`ACTION_DELETE`** — the platform's own uninstaller, hosted by Settings,
+   which asks the driver and removes the app itself. This is where an ordinary
+   install ends, and `REQUEST_DELETE_PACKAGES` is what makes Android willing to
+   show that screen to a normal app at all: from Android 9 on, without the
+   permission the platform does not refuse the request, it silently opens
+   nothing and logs `E/UninstallerActivity: Uid … does not have
+   android.permission.REQUEST_DELETE_PACKAGES or
+   android.permission.DELETE_PACKAGES`.
+
+The card's row is amber like the other removals, because it takes something
+away; the question it opens is asked first, because this is the one removal that
+re-opening cannot bring back. The red row inside that question is the app's only
+`destroy` row — red is reserved for the yes-button of a question already asked.
+What the toast says is the layer's own news and never one sentence for all
+three: **uninstalled**, *finish the removal in the screen that opened*, or
+*not removed*.
 
 ## What is open, and how App Hub knows
 
@@ -687,7 +729,7 @@ app_hub/
 │   │   ├── Sheet.kt                 the rounded dialog behind every menu/picker
 │   │   ├── IconShape.kt             icon masking (circle, squircles, rounded)
 │   │   ├── AppRepository.kt         PackageManager query (off the UI thread)
-│   ├── Updater.kt               the release check, the verified download, the install
+│   │   ├── Updater.kt               the release check, the verified download, the install
 │   │   ├── AppEntry.kt              cell model + AppState (running/recent)
 │   │   ├── AppAdapter.kt            grid adapter, icon cache, settings cell
 │   │   ├── PinnedApps.kt            ordered pins in SharedPreferences
@@ -695,6 +737,7 @@ app_hub/
 │   │   ├── RunningApps.kt           process-based detection (privileged/root)
 │   │   ├── ActivityStats.kt         usage-stats recency + access check
 │   │   ├── ForceStop.kt             the four close layers + the verified report
+│   │   ├── Uninstall.kt             the three removal layers, user-installed apps only
 │   │   ├── WindowProfiles.kt        per-app window rectangles (one per package)
 │   │   ├── WindowControl.kt         the root side: foreground, tasks, `am task resize`
 │   │   ├── WindowMarginService.kt   the watcher that applies them, + boot receiver
@@ -817,6 +860,12 @@ to touch it):
 Not checked: the head unit itself. Nothing here was installed on the vehicle,
 and the launcher tooling in `../launcher_tool/` was not touched by this work.
 
+The uninstall flow is the one thing in this round no screen could be driven for:
+opening Android's own uninstaller needs a device, and this machine has neither an
+emulator nor an attached one. Its layers were checked against the platform
+sources and its permissions against the built APK; the first real removal will
+be the unit's.
+
 ## Honest limitations
 
 * **An in-app update needs the release key, not the platform one.** The *Updates* row
@@ -835,6 +884,18 @@ and the launcher tooling in `../launcher_tool/` was not touched by this work.
 * **System apps are excluded by default** (`FLAG_SYSTEM` /
   `FLAG_UPDATED_SYSTEM_APP` are filtered out) — this hub is for what the user
   installed. *Include system apps* in the settings lists them too.
+* **Uninstall is offered only for apps the user installed**, and the same check
+  runs again when the removal is attempted, so the offer and the act cannot
+  disagree. A factory app has no such row; App Hub never removes itself.
+* **The app is gone only after the layer that answered has done its job.** Root
+  and the platform-signed install remove it without a screen; on an ordinary
+  install the row opens Android's own uninstaller, and the toast says the
+  removal is waiting on that screen instead of claiming it happened. The app's
+  data goes with it, and App Hub cannot put it back.
+* **The uninstall flow was not driven on a device from this machine** (no
+  emulator and none attached). The release build, the permissions in the APK
+  badging and the platform behaviour of each layer are what verified it; the
+  first real removal is the unit's.
 * **No exact "open" view without privileges.** On a plain install you get the
   `recent` state (needs the usage-access opt-in) or nothing; only the
   platform-signed install, a `/system/priv-app` install or root gives the real

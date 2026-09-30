@@ -21,7 +21,20 @@
     <string name="action_unpin">Unpin</string>
     <string name="action_info">App info</string>
     <string name="action_hide">Hide from the main page</string>
+    <string name="action_uninstall">Uninstall</string>
     <string name="hidden_toast">%1$s hidden from the main page</string>
+
+    <!-- Taking an app off the unit. Offered only for one the user installed,
+         and the only removal that asks first, because re-opening cannot bring
+         it back. The toast is not one sentence: a removal the platform carried
+         out and one it has only been asked to show a screen for are different
+         news. -->
+    <string name="uninstall_title">Uninstall %1$s?</string>
+    <string name="uninstall_message">It comes off this unit with its data, and App Hub cannot put it back.</string>
+    <string name="uninstall_confirm">Uninstall it</string>
+    <string name="uninstalled_toast">%1$s uninstalled</string>
+    <string name="uninstall_asking_toast">Finish the removal in the screen that opened</string>
+    <string name="uninstall_refused_toast">%1$s could not be removed</string>
 
     <string name="close_all">Close all</string>
     <string name="close_all_done">Closed %1$d apps</string>

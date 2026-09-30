@@ -643,6 +643,41 @@ class MainActivity : BaseActivity() {
     }
 
     /**
+     * The one removal that re-opening cannot bring back, so it is the one that
+     * asks first. Red is the yes-row inside that question and nowhere else on
+     * this card: the card itself only ever says amber.
+     */
+    private fun confirmUninstall(entry: AppEntry) {
+        Sheet.show(
+            context = this,
+            title = getString(R.string.uninstall_title, entry.label),
+            subtitle = getString(R.string.uninstall_message),
+            rows = listOf(
+                SheetRow(
+                    label = getString(R.string.uninstall_confirm),
+                    destroy = true,
+                    onClick = { uninstallApp(entry) },
+                ),
+                SheetRow(label = getString(android.R.string.cancel)),
+            ),
+        )
+    }
+
+    /**
+     * The layers answer and the report says which: the platform's own screen
+     * may be the thing that just opened, in which case nothing has been removed
+     * yet and the sentence says so. The board re-reads either way, so the tile -
+     * not the toast - is where the outcome ends up visible.
+     */
+    private fun uninstallApp(entry: AppEntry) {
+        background {
+            val method = Uninstall.uninstall(applicationContext, entry)
+            post { toast(UninstallReport.text(this, method, entry.label)) }
+            pauseThenReload()
+        }
+    }
+
+    /**
      * The tools asked for it, so it happens - there is no second question.
      * The menu row is already one deliberate tap among five, and everything
      * closed here is one tile away on the board afterwards.
@@ -735,6 +770,18 @@ class MainActivity : BaseActivity() {
             danger = true,
             onClick = { hideFromMainPage(entry) },
         )
+        // Only an app the user put on the unit gets this row: a factory app is
+        // not this install's to remove, and the answer comes from the entry
+        // rather than being asked again here - the same read that decided what
+        // the board may draw is the one the card acts on (see [AppEntry.system]).
+        if (!entry.system) {
+            rows += SheetRow(
+                label = getString(R.string.action_uninstall),
+                icon = ContextCompat.getDrawable(this, R.drawable.ic_uninstall),
+                danger = true,
+                onClick = { confirmUninstall(entry) },
+            )
+        }
 
         Sheet.show(
             context = this,

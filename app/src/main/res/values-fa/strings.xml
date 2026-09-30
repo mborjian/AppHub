@@ -21,7 +21,15 @@
     <string name="action_unpin">برداشتن نشان</string>
     <string name="action_info">اطلاعات برنامه</string>
     <string name="action_hide">پنهان از صفحه اصلی</string>
+    <string name="action_uninstall">حذف برنامه</string>
     <string name="hidden_toast">%1$s از صفحه اصلی پنهان شد</string>
+
+    <string name="uninstall_title">حذف %1$s؟</string>
+    <string name="uninstall_message">این برنامه همراه با داده‌هایش از این دستگاه حذف می‌شود و مرکز برنامه‌ها نمی‌تواند آن را برگرداند.</string>
+    <string name="uninstall_confirm">حذف کن</string>
+    <string name="uninstalled_toast">%1$s حذف شد</string>
+    <string name="uninstall_asking_toast">حذف را در صفحه‌ای که باز شد کامل کنید</string>
+    <string name="uninstall_refused_toast">%1$s حذف نشد</string>
 
     <string name="close_all">بستن همه</string>
     <string name="close_all_done">%1$d برنامه بسته شد</string>

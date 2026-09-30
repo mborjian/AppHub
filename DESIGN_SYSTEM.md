@@ -348,7 +348,7 @@ on a car screen is the thing being touched.
 | Weight | **1.75dp stroke**, round cap, round join — outline, not Material-fill |
 | Sizes | 24 (rows, headers) · 20 (dense rows, chips) · 40 (status banners) · 48 (empty states) |
 | Colour | inherits tint: `ink_700`/`night_100` for structural, `blue_700`/`blue_300` for active, `warn`/`blocked` for status; never two colours in one glyph |
-| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `frame` (window), `eye-off` (hide), `grid`, `check-circle`, `warning`, `blocked`, `refresh` |
+| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `frame` (window), `eye-off` (hide), `trash` (uninstall), `grid`, `check-circle`, `warning`, `blocked`, `refresh` |
 | Running ring | not an icon: a shape drawable (`stroke 3dp`, `radius_l`) drawn behind the tile |
 
 The existing `ic_tune` (filled rectangles) and `ic_back` (Material filled arrow)
@@ -473,6 +473,7 @@ Apple move: the sheet belongs to the board, it does not replace it.
  │  ├──────────────────────────────────────────────────────┤  │
  │  │ ⊘ Close                                     amber    │  │  grouped apart
  │  │ ⊘ Hide from the main page                   amber    │  │
+ │  │ ⌫ Uninstall                                 amber    │  │  user apps only
  │  ├──────────────────────────────────────────────────────┤  │
  │  │                     Cancel                           │  │
  │  └──────────────────────────────────────────────────────┘  │
@@ -480,8 +481,17 @@ Apple move: the sheet belongs to the board, it does not replace it.
 ```
 
 Grouping is the fix for friction #1: *do* the thing (Open), *arrange* it
-(Window margins / Pin / App info), *remove* it (Close / Hide — amber, last, with
-a hairline separator above). Today all five are one undifferentiated list.
+(Window margins / Pin / App info), *remove* it (Close / Hide / Uninstall —
+amber, last, with a hairline separator above). Today all five are one
+undifferentiated list.
+
+*Uninstall* is drawn only for an app the user installed, which is also the only
+card that reaches seven rows: the sheet's cap scrolls its row area by the last
+few dp on a 600dp-tall panel rather than letting the card grow past the screen.
+The row opens a question — the one removal that re-opening cannot bring back —
+and the red yes-row inside it is the first use of the `destroy` variant:
+`danger` stays amber for everything the card itself says, red exists only to
+answer a question that was already asked.
 
 ### 4.5 Search (new, in-place)
 

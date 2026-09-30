@@ -47,6 +47,19 @@
          downloading a file it cannot use. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <!-- Removing an app the user installed, through Android's own uninstaller
+         screen. protectionLevel is normal; without it, from Android 9 on, the
+         platform does not refuse the request - it silently shows nothing. -->
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+
+    <!-- Silent removal, only actually granted to an app in /system/priv-app
+         signed with the platform key (see tools/release.py, system mode). With
+         it, PackageInstaller.uninstall deletes straight through. Harmless
+         otherwise: the layer is skipped and Android's own screen asks. -->
+    <uses-permission
+        android:name="android.permission.DELETE_PACKAGES"
+        tools:ignore="ProtectedPermissions" />
+
     <!-- Needed from Android 11 on to see every installed app. Irrelevant on
          the Android 10 head unit, harmless everywhere else. -->
     <uses-permission

@@ -25,4 +25,13 @@ data class AppEntry(
     val icon: Drawable,
     val pinned: Boolean = false,
     val state: AppState = AppState.IDLE,
+    /**
+     * True for an app the unit came with, including one of those that has been
+     * updated in place since.
+     *
+     * Carried on the entry rather than asked again where it matters: the action
+     * card offers to uninstall an app or does not, and one answer read once is
+     * what keeps that offer and the board that drew it from disagreeing.
+     */
+    val system: Boolean = false,
 )

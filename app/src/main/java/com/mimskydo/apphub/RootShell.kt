@@ -49,6 +49,23 @@ object RootShell {
     fun forceStop(packageName: String): Boolean =
         run("am force-stop $packageName", listOf("am", "force-stop", packageName)) != null
 
+    /**
+     * `pm uninstall` - the same command `adb uninstall` runs, and the same
+     * removal Settings' own Uninstall button performs: the app goes for every
+     * account on the unit, not just the one in front of it.
+     *
+     * No `--user` flag because the SDK offers no public way to name the
+     * current user any more (`Context.getUserId` is gone from the API 37
+     * stub), and guessing `--user 0` on a unit whose driver is another account
+     * would take the app off somebody else's profile instead.
+     *
+     * True only on the shell's own `Success` line: `pm` exits 0 for a refused
+     * removal too, so its output is the only signal worth reading.
+     */
+    fun uninstall(packageName: String): Boolean =
+        run("pm uninstall $packageName", listOf("pm", "uninstall", packageName))
+            ?.contains("Success") == true
+
     /** `ps -A -o NAME`, one process name per line (empty when no root). */
     fun processNames(): Set<String> =
         run("ps -A -o NAME", listOf("ps", "-A", "-o", "NAME"))
