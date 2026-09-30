@@ -577,6 +577,20 @@ gh secret set RELEASE_KEY_ALIAS
 gh secret set RELEASE_KEY_PASSWORD
 ```
 
+On Windows, or anywhere the `base64` in reach is not the one that wraps at
+column 76, the same thing without a file in between:
+
+```powershell
+$b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\keys\apphub-release.jks"))
+$b64 | gh secret set RELEASE_KEYSTORE_BASE64
+```
+
+The job strips a byte-order mark, NUL padding or `certutil`'s
+`-----BEGIN …-----` lines off that secret before it decodes it, and it refuses a
+value that is not base64 at all instead of signing with a broken keystore. It
+then opens the keystore with `keytool`, so a password or an alias that does not
+match is found in a second rather than after a build and an emulator boot.
+
 `*.jks` and `*.keystore` are ignored, but keeping the file outside the working
 tree is still the better habit.
 

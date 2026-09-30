@@ -70,9 +70,49 @@ jobs:
             echo "::error::the RELEASE_KEYSTORE_BASE64 secret is not set - see the README's release section."
             exit 1
           fi
-          printf '%s' "$KEYSTORE_BASE64" | tr -d '\n\r \t' | base64 -d > "$RUNNER_TEMP/release.jks"
+
+          # A secret set from a file tends to carry more than the payload: a
+          # byte-order mark, NUL bytes from a UTF-16 redirect, or the
+          # `-----BEGIN ...-----` lines certutil wraps base64 in. Those are
+          # stripped off here; anything else is reported instead of guessed at.
+          clean=$(printf '%s' "$KEYSTORE_BASE64" \
+            | tr -d '\000' \
+            | tr -d '\n\r \t' \
+            | tr -d '\357\273\277' \
+            | sed 's/^.*-----BEGIN[^-]*-----//' \
+            | sed 's/-----END.*$//')
+
+          # `base64 -d` wants the length to be a multiple of four; an unpadded
+          # encoding (PowerShell writes one without `=` only when it is exact, a
+          # few other tools always do) is padded here rather than refused.
+          case $(( ${#clean} % 4 )) in
+            2) clean="$clean==" ;;
+            3) clean="$clean=" ;;
+          esac
+
+          outside=$(printf '%s' "$clean" | tr -d 'A-Za-z0-9+/=' | wc -c)
+          if [ "$outside" -ne 0 ]; then
+            echo "::error::RELEASE_KEYSTORE_BASE64 does not decode as base64 - $outside of its ${#clean} characters are outside the alphabet - so it is not the base64 of the .jks file. Re-set it from that file, see the README's release section."
+            exit 1
+          fi
+
+          printf '%s' "$clean" | base64 -d > "$RUNNER_TEMP/release.jks"
           chmod 600 "$RUNNER_TEMP/release.jks"
           test -s "$RUNNER_TEMP/release.jks"
+
+      # A keystore, a password and an alias that do not match each other would
+      # otherwise be found out by a Gradle build - or by an emulator boot - a few
+      # minutes from now. keytool answers here instead, and prints nothing of it.
+      - name: Check the keystore opens with those secrets
+        env:
+          STORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        run: |
+          test -n "$STORE_PASSWORD" || { echo "::error::RELEASE_KEYSTORE_PASSWORD is not set."; exit 1; }
+          test -n "$KEY_ALIAS" || { echo "::error::RELEASE_KEY_ALIAS is not set."; exit 1; }
+          keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" > /dev/null \
+            || { echo "::error::the decoded keystore does not open with RELEASE_KEYSTORE_PASSWORD and RELEASE_KEY_ALIAS - a stray newline or byte-order mark at the end of either one would do this."; exit 1; }
+          echo "the keystore opens and holds that alias"
 
       - name: Build the signed release APK
         env:
