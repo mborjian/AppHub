@@ -55,7 +55,7 @@ to it; every choice is stored in `SharedPreferences` (`Prefs`).
 | Layout direction | System / Right-to-left / Left-to-right |
 | Screen margins | **left / right / top / bottom**, each dialled on a wheel from 0 to half that side of the screen (512 dp across on this unit's 1024dp width, 284 dp down in its 568dp-tall window) — any whole value, not a list of steps — or **typed on the number keyboard** from the sheet's *Type the value* row. Moves this app's content away from the screen edges so a launcher overlay (shortcut rail, clock, climate strip) cannot cover it. Applied to the grid **and** to this settings screen itself, so the screen follows the value while it is still being chosen |
 | App window margins | a **screen of its own** (the grid's own app list, one row per app): a switch on each row turns that app's profile on or off, and the row opens its four numbers — left / right / top / bottom, in **pixels**, dialled on the same wheel as the screen margins or typed on the same keyboard. An app with a profile is moved into its rectangle whenever it comes to the front, from anywhere. The row's value reads `200 / 20 / 0 / 0 px`, or `Off` |
-| Usage access | shown **only while it is missing**; tapping it opens the system screen. Useful but not the same thing as the task list: it shows what was used recently, and on a device where it cannot be switched on at all (the unit) `adb shell appops set com.mahdi.apphub GET_USAGE_STATS allow` does the same job from a PC |
+| Usage access | shown **only while it is missing**; tapping it opens the system screen. Useful but not the same thing as the task list: it shows what was used recently, and on a device where it cannot be switched on at all (the unit) `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` does the same job from a PC |
 | Close all apps | closes the apps that are open where an exact view knows them, and every app in the list where none does - because on the unit this is a real force stop now, not a call the platform ignored |
 | Reset settings | back to the defaults; pinned apps are kept |
 | Back | the last row of the list; leaves the settings screen (same as the arrow in the header) |
@@ -341,7 +341,7 @@ the platform only allows for an APK signed with the framework's own certificate
 installing:
 
 ```bash
-adb shell dumpsys package com.mahdi.apphub | grep -E "REAL_GET_TASKS|FORCE_STOP_PACKAGES"
+adb shell dumpsys package com.mimskydo.apphub | grep -E "REAL_GET_TASKS|FORCE_STOP_PACKAGES"
 ```
 
 Both lines must read `granted=true`. With them the list is exact and *Close* is
@@ -352,8 +352,8 @@ a real force stop.
 to `pm` would save the reinstall entirely:
 
 ```bash
-adb shell pm grant com.mahdi.apphub android.permission.REAL_GET_TASKS
-adb shell pm grant com.mahdi.apphub android.permission.FORCE_STOP_PACKAGES
+adb shell pm grant com.mimskydo.apphub android.permission.REAL_GET_TASKS
+adb shell pm grant com.mimskydo.apphub android.permission.FORCE_STOP_PACKAGES
 ```
 
 On the Android 15 emulator used here both are refused (*"is not a changeable
@@ -365,7 +365,7 @@ that is known to work.
 without any Settings screen on the car (which the unit does not offer):
 
 ```bash
-adb shell appops set com.mahdi.apphub GET_USAGE_STATS allow
+adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow
 ```
 
 That lists *recently open* apps, and on Android 10 `killBackgroundProcesses()`
@@ -452,22 +452,24 @@ the task that is already in front are read back only now and then.
 
 ## Build
 
-Requirements: JDK 17–23 (this machine: `C:/Program Files/Android/Android Studio1/jbr`,
-JDK 21 — the JetBrains JBRs here are JDK 25 and Gradle 8.10 refuses to start on
-those) and the Android SDK (platform 35 + build-tools 35.0.0).
+Requirements: JDK 21 — the tracked `gradle/gradle-daemon-jvm.properties` asks the
+wrapper for a JetBrains 21 toolchain, which on this machine is
+`C:/Users/mahdi/.jdks/jbr-21.0.11`. The build itself is Gradle 9.7.1 with AGP
+9.4.1 (`compileSdk` 37 → SDK package `platforms;android-37.0`) and build-tools
+36.0.0.
 
 ```bash
 ./gradlew assembleDebug          # works with no flags, and no network
 ./gradlew --offline assembleDebug   # same, but also forbids any network access
 ```
 
-No build flags are needed. `app/build.gradle.kts` pins every AndroidX module to
-a version that exists in the local Gradle cache, because `dl.google.com` is
-unreachable from this machine (every request 404s, even for artifacts that do
-exist). Without those pins the graph resolves `appcompat:1.7.0`'s transitive
-`core:1.13.0` and `activity:1.7.0`, which are not cached and cannot be
-downloaded, so the build dies with a wall of
-`Could not find androidx.core:core:1.13.0` task failures.
+No build flags are needed. `app/build.gradle.kts` pins the two AndroidX modules
+(`appcompat:1.8.0`, `recyclerview:1.4.0`) to versions the local Gradle cache
+holds, because `dl.google.com` is unreachable from this machine (every request
+404s, even for artifacts that do exist); resolution goes through the Aliyun
+mirror that `settings.gradle.kts` puts first. A version that is neither cached
+nor on that mirror cannot be added — the build dies with a wall of
+`Could not find …` task failures instead.
 
 **Adding a new dependency:** check what versions the cache actually holds, then
 pin that version in the same block, or the build will fail the same way.
@@ -476,7 +478,36 @@ pin that version in the same block, or the build will fail the same way.
 ls ~/.gradle/caches/modules-2/files-2.1/androidx.core/core
 ```
 
+The same block applies to SDK packages: `gradle.properties` turns
+`android.builder.sdkDownload` off, and a missing package is installed from the
+mirror with `tools/sdkget.py`:
+
+```bash
+python tools/sdkget.py --list platforms           # what the mirror carries
+python tools/sdkget.py "platforms;android-37.0"   # install / update one
+```
+
 Output: `app/build/outputs/apk/debug/app-debug.apk` → `adb install -r <apk>`.
+
+`.github/workflows/android-debug.yml` runs this same build on every push and
+pull request, so a dependency that stops resolving cannot slip through: it
+installs JDK 21 (the JetBrains build the wrapper asks for) plus the SDK
+packages above, then builds the debug APK and uploads it as an artifact.
+
+**Debugging over Wi-Fi.** Android Studio's *Pair devices using Wi-Fi* dialog
+refuses to open while the adb server is older than platform-tools 37.0.0: it
+reports *"ADB Version Too Low"* even though `adb pair` itself would work. Check
+what the server says, and update it from the mirror if it is older:
+
+```bash
+adb version                              # "Version 37.0.1-…" is fine
+python tools/sdkget.py platform-tools    # installs the current one; then: adb kill-server
+```
+
+Pair an Android 11+ device with `adb pair <ip>:<pair-port>` (code from
+Developer options → Wireless debugging) and then `adb connect <ip>:<port>` —
+pairing and connecting use different ports. Devices older than 11 have no
+pairing UI and need one USB session of `adb tcpip 5555` first.
 
 ## Release & system install
 
@@ -517,7 +548,7 @@ user-data copy → `mkdir /system/priv-app/AppHub` → `cp` → `chown root:root
 app_hub/
 ├── app/src/main/
 │   ├── AndroidManifest.xml          permissions + the single activity
-│   ├── java/com/mahdi/apphub/
+│   ├── java/com/mimskydo/apphub/
 │   │   ├── BaseActivity.kt          applies theme + forced direction before views
 │   │   ├── MainActivity.kt          the grid (apps + the settings cell)
 │   │   ├── MainPage.kt              the page's order and cells, shared by grid + preview
@@ -541,8 +572,9 @@ app_hub/
 │   │   └── RootShell.kt             optional su, probes `-c` and `<uid>` forms
 │   └── res/                         layouts, drawables, theme, EN + FA strings
 ├── tools/release.py                 platform-signed release + optional install
-├── build.gradle.kts                 AGP 8.8.0 / Kotlin 2.1.10
-└── gradle/wrapper/                  Gradle 8.10.2 wrapper
+├── build.gradle.kts                 AGP 9.4.1 (built-in Kotlin, no Kotlin plugin)
+├── .github/workflows/               debug APK build on every push
+└── gradle/wrapper/                  Gradle 9.7.1 wrapper
 ```
 
 Dependencies are deliberately tiny — `androidx.appcompat` (theme +
@@ -612,7 +644,7 @@ The open-apps work was driven the same way, on an **Android 15 emulator**
 |---|---|
 | which permissions `adb` can hand over | `pm grant` accepts `PACKAGE_USAGE_STATS`, `DUMP` and `WRITE_SECURE_SETTINGS` (the `development` flag), and refuses the three this feature needs: `REAL_GET_TASKS` and `FORCE_STOP_PACKAGES` with *"is not a changeable permission type"*, `REMOVE_TASKS` with *"is managed by role"* (`dumpsys package permissions`: `REAL_GET_TASKS` = `signature\|privileged`, `REMOVE_TASKS` = `signature\|recents\|role`) |
 | the list, before | with usage access granted and three apps just opened and backgrounded, the screen said **"No open apps"** - the bug being fixed: `ACTIVITY_PAUSED` removed a package the moment it was covered, and the hub is always the app doing the covering |
-| the list, after | `adb shell appops set com.mahdi.apphub GET_USAGE_STATS allow` → Chrome, Photos, Settings and the hub's own neighbour app listed as *Recently open*, count `4 apps`, and the board's tile for the last one carried a hollow dot |
+| the list, after | `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` → Chrome, Photos, Settings and the hub's own neighbour app listed as *Recently open*, count `4 apps`, and the board's tile for the last one carried a hollow dot |
 | the banner says what it is | the task manager shows *Recently used, not open* with *"Usage access cannot tell an app that is open from one used a while ago…"*, and it is absent when an exact source answers |
 | the dots and the list agree | the board and the task manager are drawn from one read (`OpenApps`), so no tile can be marked while its row is missing |
 | a close that cannot work, reported honestly | on Android 15 (no root, no platform signature) tapping *Close* logs `layer=NONE` and toasts *"…is still open"*, instead of the old `killBackgroundProcesses()` call reported as a close |
@@ -636,7 +668,7 @@ to touch it):
 
 | Check | Result |
 |---|---|
-| every screen still opens | the board, the tools sheet, the settings screen, the shortcuts screen, the window margins screen, one app's edges sheet and the way back were all reached through the real UI: **7 of 7, 0 crashes** from `com.mahdi.apphub` |
+| every screen still opens | the board, the tools sheet, the settings screen, the shortcuts screen, the window margins screen, one app's edges sheet and the way back were all reached through the real UI: **7 of 7, 0 crashes** from `com.mimskydo.apphub` |
 | the shortcut screen used to throw | its empty-state panel had become a two-line `LinearLayout` in the layouts while the screen still held it as a `TextView`, so `onCreate` threw a `ClassCastException` and the screen never opened at all (`ShortcutsActivity.kt:73`). Fixed, and it opens |
 | the badge is on the icon's corner, not over it | at Medium the badge's 28dp circle is centred on the icon's top-right corner - it covers the art's corner quarter and hangs into the tile's whitespace - and it is placed against a box the adapter sizes, so the same is true at Small and at Extra large. Before the fix a 40dp circle sat across 60% of a 64dp icon, and at 72dp rows the card's six verbs ran off the bottom of the panel |
 | a clipped badge is a quarter of a circle | the badge deliberately paints outside its own view, so the tile, its inner column and the icon's box all had to stop clipping (`clipChildren` and `clipToPadding`): a screenshot of the lifted board is what showed the quarter |

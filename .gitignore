@@ -8,3 +8,5 @@ tools/signing.properties
 .DS_Store
 captures/
 .kotlin/
+.freebuff/
+AGENTS.md

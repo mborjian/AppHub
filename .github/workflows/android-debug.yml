@@ -1,0 +1,58 @@
+# Verifies on every push that the split-out repo still builds, so a dependency
+# that stops resolving fails here instead of on the unit.
+name: Build debug APK
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: debug-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  assemble-debug:
+    name: assembleDebug
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      # gradle/gradle-daemon-jvm.properties (tracked) asks for a JetBrains 21
+      # toolchain; installing exactly that keeps Gradle from provisioning one.
+      - name: Install the JDK the wrapper asks for
+        uses: actions/setup-java@v6
+        with:
+          distribution: jetbrains
+          java-version: '21'
+          cache: gradle
+
+      # The wrapper is committed without the executable bit, which only shows up
+      # on a fresh Linux checkout.
+      - name: Make the Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Set up the Android SDK
+        uses: android-actions/setup-android@v4
+
+      # gradle.properties sets android.builder.sdkDownload=false, so the build
+      # will not fetch these itself: 37.0 is what compileSdk = 37 resolves to,
+      # and 36.0.0 is the build-tools revision AGP 9.4.1 uses here.
+      - name: Install the platform and build-tools the build expects
+        run: sdkmanager --install "platforms;android-37.0" "build-tools;36.0.0"
+
+      - name: Build the debug APK
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
+
+      - name: Upload the APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
