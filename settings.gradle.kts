@@ -1,12 +1,17 @@
 pluginManagement {
     repositories {
-        // dl.google.com is unreachable from this network: Google's Maven repo
-        // answers 404 for *every* artifact, including AGP itself. The Aliyun
-        // mirror of Google Maven works, so it goes first; google() stays as the
-        // canonical fallback on machines that can reach it.
-        maven("https://maven.aliyun.com/repository/google")
+        // The canonical repositories go first, and the Aliyun mirror of Google
+        // Maven goes last. The mirror is only here because dl.google.com is
+        // unreachable from this network - it answers 404 for *every* artifact,
+        // including AGP itself - but it is a third party, and it used to go
+        // first. That is how a mirror outage (502 for one artifact, then for
+        // everything) stopped a release: Gradle 9 disables a repository that
+        // errors, so the fallbacks behind it never got a turn. On a runner the
+        // first two answer; on this machine they answer 404 or 200 and only
+        // what Google hosts falls through to the mirror.
         google()
         mavenCentral()
+        maven("https://maven.aliyun.com/repository/google")
         gradlePluginPortal()
     }
 }
@@ -17,9 +22,9 @@ plugins {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven("https://maven.aliyun.com/repository/google")
         google()
         mavenCentral()
+        maven("https://maven.aliyun.com/repository/google")
     }
 }
 
