@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The file manager: where the driver is, what is there, and the one thing
+     being carried from one folder to another.
+
+     Three pieces, in the order they are needed: a location row that says which
+     volume and which folder is open and changes it in one tap, the rows
+     themselves, and - only while a file has been picked up - the bar that says
+     so and offers to put it here. The bar floats over the list rather than
+     taking a line of it, which is what makes it a mode the driver cannot be in
+     without seeing. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/hub_page"
+    android:orientation="vertical">
+
+    <include
+        layout="@layout/view_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- Where this is: the volume, and the path under it. A settings row, because
+         that is what a row with a value and a chevron looks like here - and
+         because the sheet it opens is the same kind of sheet. -->
+    <LinearLayout
+        android:id="@+id/locationRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gutter_grid"
+        android:layout_marginTop="@dimen/space_2"
+        android:layout_marginEnd="@dimen/gutter_grid"
+        android:background="@drawable/bg_setting_row"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/row_min_height"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_4"
+        android:paddingTop="@dimen/space_3"
+        android:paddingEnd="@dimen/space_2"
+        android:paddingBottom="@dimen/space_3">
+
+        <ImageView
+            android:id="@+id/locationIcon"
+            android:layout_width="@dimen/icon_row"
+            android:layout_height="@dimen/icon_row"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_folder"
+            android:tint="@color/primary_text" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_3"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/locationTitle"
+                style="@style/Text.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="Internal storage" />
+
+            <TextView
+                android:id="@+id/locationSubtitle"
+                style="@style/Text.Meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                tools:text="Dashcam/2026-09-30" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/locationChevron"
+            android:layout_width="@dimen/icon_dense"
+            android:layout_height="@dimen/icon_dense"
+            android:layout_marginStart="@dimen/space_2"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_forward"
+            android:tint="@color/hub_ink_400" />
+    </LinearLayout>
+
+    <!-- The one thing this screen has to admit to: without the storage grant
+         there is nothing to browse, and a folder that looks empty is not the
+         same thing as a folder this app may not read. -->
+    <include
+        android:id="@+id/filesBanner"
+        layout="@layout/row_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="@dimen/space_4"
+        android:paddingEnd="@dimen/space_4"
+        android:paddingBottom="@dimen/space_3">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/fileList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="@dimen/space_3"
+            android:paddingBottom="@dimen/touch_car"
+            android:scrollbars="vertical" />
+
+        <!-- two lines, because "the folder is empty" and "this app may not read
+             it" are different answers and only one of them is about the folder -->
+        <LinearLayout
+            android:id="@+id/listEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/space_6"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/listEmptyTitle"
+                style="@style/Text.BodyStrong"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                tools:text="This folder cannot be read" />
+
+            <TextView
+                android:id="@+id/listEmptyMessage"
+                style="@style/Text.BodyS"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_1"
+                android:gravity="center"
+                tools:text="Android keeps this one shut." />
+        </LinearLayout>
+
+        <!-- The carry bar: the app's own inverted surface, so the mode it stands
+             for reads as a mode. It does not time out on its own the way the undo
+             bar does - there is a file in it, and a file does not expire. -->
+        <LinearLayout
+            android:id="@+id/carryBar"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/pill_height"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="@dimen/space_4"
+            android:background="@drawable/bg_undo"
+            android:elevation="@dimen/elev_floating"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/space_5"
+            android:paddingEnd="@dimen/space_1"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/carryText"
+                style="@style/Text.Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/hub_inverse_text"
+                tools:text="Holding “dashcam.mp4” to copy" />
+
+            <TextView
+                android:id="@+id/carryAction"
+                style="@style/Text.BodyStrong"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_4"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_min"
+                android:paddingStart="@dimen/space_3"
+                android:paddingEnd="@dimen/space_3"
+                android:text="@string/files_paste"
+                android:textColor="@color/hub_blue_300" />
+
+            <ImageView
+                android:id="@+id/carryClose"
+                android:layout_width="@dimen/touch_min"
+                android:layout_height="@dimen/touch_min"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="@string/dismiss"
+                android:focusable="true"
+                android:padding="@dimen/space_4"
+                android:src="@drawable/ic_close"
+                android:tint="@color/hub_inverse_text" />
+        </LinearLayout>
+    </FrameLayout>
+
+</LinearLayout>

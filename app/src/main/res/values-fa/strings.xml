@@ -31,6 +31,53 @@
     <string name="uninstall_asking_toast">حذف را در صفحه‌ای که باز شد کامل کنید</string>
     <string name="uninstall_refused_toast">%1$s حذف نشد</string>
 
+    <string name="files_title">فایل‌ها</string>
+    <string name="files_card_subtitle">فایل‌منیجر خود مرکز برنامه‌ها</string>
+    <string name="files_volume_internal">حافظهٔ داخلی</string>
+    <string name="files_volume_card">کارت حافظه</string>
+    <string name="files_volume_storage">حافظه</string>
+    <string name="files_free">%1$s آزاد</string>
+    <string name="files_working">در حال انجام…</string>
+    <string name="files_where_title">رفتن به</string>
+    <string name="files_row_meta">%1$s · %2$s</string>
+
+    <string name="files_install">نصب</string>
+    <string name="files_copy">کپی</string>
+    <string name="files_move">جابه‌جایی</string>
+    <string name="files_delete">حذف</string>
+    <string name="files_paste">اینجا بچسبان</string>
+    <string name="files_pick_copy">«%1$s» برای کپی برداشته شد</string>
+    <string name="files_pick_move">«%1$s» برای جابه‌جایی برداشته شد</string>
+
+    <string name="files_copied_toast">«%1$s» کپی شد</string>
+    <string name="files_copied_twice_toast">«%1$s» کپی شد و نسخهٔ اصلی هنوز سر جایش است</string>
+    <string name="files_moved_toast">«%1$s» جابه‌جا شد</string>
+    <string name="files_deleted_toast">«%1$s» حذف شد</string>
+    <string name="files_exists_toast">«%1$s» از قبل در آن پوشه هست</string>
+    <string name="files_copy_refused_toast">«%1$s» کپی نشد</string>
+    <string name="files_move_refused_toast">«%1$s» جابه‌جا نشد</string>
+    <string name="files_delete_refused_toast">«%1$s» حذف نشد</string>
+
+    <string name="files_delete_title">حذف «%1$s»؟</string>
+    <string name="files_delete_file_message">از این دستگاه پاک می‌شود و مرکز برنامه‌ها نمی‌تواند برگرداندش.</string>
+    <string name="files_delete_folder_message">پوشه و هرچه در آن است از این دستگاه پاک می‌شود و مرکز برنامه‌ها نمی‌تواند برگرداند.</string>
+    <string name="files_delete_confirm">حذف کن</string>
+
+    <string name="files_installing_toast">در حال نصب %1$s</string>
+    <string name="files_install_asking_toast">نصب را در صفحه‌ای که باز شد کامل کنید</string>
+    <string name="files_install_refused_toast">%1$s نصب نشد</string>
+
+    <string name="files_access_title">حافظه به روی مرکز برنامه‌ها بسته است</string>
+    <string name="files_access_message">اندروید یک اجازه پشت همهٔ حافظه گذاشته و این صفحه تا داده نشود چیزی نشان نمی‌دهد.</string>
+    <string name="files_none_title">حافظه‌ای برای نمایش نیست</string>
+    <string name="files_none_message">این دستگاه هیچ حافظه‌ای به مرکز برنامه‌ها معرفی نمی‌کند.</string>
+    <string name="files_gone_title">این پوشه دیگر نیست</string>
+    <string name="files_gone_message">دیگر روی دستگاه نیست؛ شاید کارت حافظه بیرون آمده باشد.</string>
+    <string name="files_denied_title">این پوشه خوانده نمی‌شود</string>
+    <string name="files_denied_message">اندروید این یکی را بسته نگه می‌دارد، حتی با دسترسی همهٔ فایل‌ها.</string>
+    <string name="files_empty_title">این پوشه خالی است</string>
+    <string name="files_empty_message">چیزی در آن ذخیره نشده.</string>
+
     <string name="close_all">بستن همه</string>
     <string name="close_all_done">%1$d برنامه بسته شد</string>
     <string name="close_all_none">برنامه‌ای برای بستن باز نیست</string>
@@ -122,6 +169,9 @@
 
     <string name="set_system_title">نمایش برنامه‌های سیستمی</string>
     <string name="set_system_subtitle">برنامه‌های کارخانه‌ای دستگاه هم نمایش داده شوند</string>
+
+    <string name="set_files_title">فایل‌منیجر</string>
+    <string name="set_files_subtitle">به شکل کاشی خودش روی صفحه اصلی می‌آید</string>
 
     <string name="set_theme_title">پوسته</string>
     <string name="set_theme_subtitle">روشن، تیره، یا همان تنظیم دستگاه</string>

@@ -348,7 +348,7 @@ on a car screen is the thing being touched.
 | Weight | **1.75dp stroke**, round cap, round join — outline, not Material-fill |
 | Sizes | 24 (rows, headers) · 20 (dense rows, chips) · 40 (status banners) · 48 (empty states) |
 | Colour | inherits tint: `ink_700`/`night_100` for structural, `blue_700`/`blue_300` for active, `warn`/`blocked` for status; never two colours in one glyph |
-| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `frame` (window), `eye-off` (hide), `trash` (uninstall), `grid`, `check-circle`, `warning`, `blocked`, `refresh` |
+| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `frame` (window), `eye-off` (hide), `trash` (uninstall), `grid`, `check-circle`, `warning`, `blocked`, `refresh`, and the file manager's `folder`, `folder-tile` (its own icon), `up`, `page` (a file), `package` (APK), `image`, `note` (music), `film` (video), `box` (archive), `sheets` (copy), `folder-in` (move) |
 | Running ring | not an icon: a shape drawable (`stroke 3dp`, `radius_l`) drawn behind the tile |
 
 The existing `ic_tune` (filled rectangles) and `ic_back` (Material filled arrow)
@@ -639,6 +639,55 @@ the explanation in `Text.BodyS` — and the row values go tabular so
 keeping 1024 physical px — which is exactly why the sheet widths, gutters and
 targets above are tokens: the same rule produces 4 columns of 2×-sized tiles
 instead of 8 cramped ones, and nothing needs a special case.
+
+### 4.11 The file manager — a folder browser, four verbs
+
+The fourth surface, and the first one that is a tool rather than a list of apps.
+It stands on the board as a tile of its own: the app's own blue sheet with a
+folder mark on it, drawn edge to edge and clipped by the icon-shape setting
+exactly like the icons beside it, so it is one of the tiles and not the one tile
+drawn differently. The switch that puts it there is *Settings → Behaviour → File
+manager*, and the tile's own card writes the same setting.
+
+```
+ ┌──────────────────────────────────────────────────────────────────────────────┐
+ │  ←   Dashcam                              12.4 GB free                      │  header: the folder's own name, the volume's free space
+ ├──────────────────────────────────────────────────────────────────────────────┤
+ │  ▤  Internal storage                                                   ›     │  the location row: `raised`, a settings row, 72dp
+ │     Dashcam/2026-09-30                                                      │  ... and the sheet behind it is the places sheet
+ ├──────────────────────────────────────────────────────────────────────────────┤
+ │  ↑  Internal storage                                                        │  the way up: always the first row, named after where it leads
+ │  ▤  Private                                                             ⋯   │  a folder: accent glyph, no meta line
+ │  ▫  dashcam-0930.mp4                    412 MB · 30 Sep 2026            ⋯   │  a file: 24dp glyph inside a 40dp box, `Text.Meta`, 56dp `⋯`
+ │  ▫  notes.txt                             2 KB · 12 Sep 2026            ⋯   │
+ ├──────────────────────────────────────────────────────────────────────────────┤
+ │     ⟨ Holding “dashcam-0930.mp4” to copy        Paste here   ✕ ⟩             │  the carry bar: `bg_undo`, floating, no timeout
+ └──────────────────────────────────────────────────────────────────────────────┘
+```
+
+* **The location row is a settings row on purpose** — same tone, same height,
+same chevron — because "where this is" and "which value this has" are the same
+kind of statement, and the sheet behind it is the same sheet. It holds the
+volumes first (each with its free space, the current one checked) and then every
+folder between here and that volume's root, so climbing is one tap per step.
+* **Four empty states, not one** (4.9's rule, applied to a folder): no storage at
+all, a folder that is gone, a folder the platform keeps shut, and a folder that
+is simply empty. All four use the task manager's `listEmpty` block.
+* **The way up is a plain arrow**, and always the first row. It was drawn as a
+folder with an arrow inside it until the glyphs were drawn as a sheet and looked
+at: *Move* is a folder with an arrow inside it too, and two rows that mean
+different things must not be read twice.
+* **The carry bar is the undo bar's twin** — the app's one inverted surface —
+with the one difference that matters: it does not time out, because there is a
+file in it and a file does not expire. So it carries its own dismiss, which the
+undo bar never needed.
+* **Folders take the accent, files take `ink_600`.** One tone per glyph, and the
+tone answers the one question a column of rows raises: which of these are places.
+* **`Install` is a row and not a shape**: the one file the platform installs by
+itself gets the verb that matches, and every other file gets the three it takes.
+* Rows are `Text.Body` + `Text.Meta`, targets are `touch_min`, and the list's
+`paddingBottom` is `touch_car` so the bar can never cover the last row — the same
+rules as every other list in the app.
 
 ---
 

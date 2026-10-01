@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One note: a stem, the flag it hangs, and the head it stands on. A card full
+     of music is a thing drivers plug in on purpose, so it earns a glyph of its
+     own rather than the page every other file gets. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M11.8,17.4 L11.8,5.8 M11.8,5.8 C14.6,6.5 16.8,8.3 16.8,11 M7.5,17.4 A2.2,1.7 0 1 1 11.9,17.4 A2.2,1.7 0 1 1 7.5,17.4 Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.75" />
+</vector>

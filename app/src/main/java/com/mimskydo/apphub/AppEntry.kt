@@ -34,4 +34,15 @@ data class AppEntry(
      * what keeps that offer and the board that drew it from disagreeing.
      */
     val system: Boolean = false,
+
+    /**
+     * True for one of App Hub's own screens, standing on the main page as a tile
+     * - today, the file manager.
+     *
+     * A tile and not an app, and the difference is read in two places: the card
+     * offers a screen what applies to a screen (open it, pin it, take the tile
+     * away) rather than what applies to an app, and the board never treats it as
+     * something that can be closed or uninstalled.
+     */
+    val tool: Boolean = false,
 )

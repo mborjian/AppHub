@@ -36,6 +36,66 @@
     <string name="uninstall_asking_toast">Finish the removal in the screen that opened</string>
     <string name="uninstall_refused_toast">%1$s could not be removed</string>
 
+    <!-- The file manager: the unit's own storage, and whatever card or stick is
+         plugged into it. Its tile stands on the main page while the settings
+         switch below is on, and these are the words it has for the four things
+         it can do to a file. -->
+    <string name="files_title">Files</string>
+    <string name="files_card_subtitle">App Hub\'s own file manager</string>
+    <string name="files_volume_internal">Internal storage</string>
+    <string name="files_volume_card">SD card</string>
+    <string name="files_volume_storage">Storage</string>
+    <string name="files_free">%1$s free</string>
+    <string name="files_working">Working…</string>
+    <string name="files_where_title">Go to</string>
+    <string name="files_row_meta">%1$s · %2$s</string>
+
+    <string name="files_install">Install</string>
+    <string name="files_copy">Copy</string>
+    <string name="files_move">Move</string>
+    <string name="files_delete">Delete</string>
+    <string name="files_paste">Paste here</string>
+    <string name="files_pick_copy">Holding “%1$s” to copy</string>
+    <string name="files_pick_move">Holding “%1$s” to move</string>
+
+    <!-- Five endings per verb, because they are genuinely different news: a
+         move across volumes that copied but could not take the original away has
+         left two of the file behind, and "moved" there would be a lie. -->
+    <string name="files_copied_toast">“%1$s” copied</string>
+    <string name="files_copied_twice_toast">“%1$s” copied, and the original is still there</string>
+    <string name="files_moved_toast">“%1$s” moved</string>
+    <string name="files_deleted_toast">“%1$s” deleted</string>
+    <string name="files_exists_toast">“%1$s” is already in that folder</string>
+    <string name="files_copy_refused_toast">“%1$s” could not be copied</string>
+    <string name="files_move_refused_toast">“%1$s” could not be moved</string>
+    <string name="files_delete_refused_toast">“%1$s” could not be deleted</string>
+
+    <!-- The one question the file manager asks. A folder means everything inside
+         it: there is no recycle bin on Android, so the question says what goes,
+         and the yes-button is the app's only red. -->
+    <string name="files_delete_title">Delete “%1$s”?</string>
+    <string name="files_delete_file_message">It comes off this unit, and App Hub cannot put it back.</string>
+    <string name="files_delete_folder_message">The folder and everything in it come off this unit, and App Hub cannot put them back.</string>
+    <string name="files_delete_confirm">Delete it</string>
+
+    <string name="files_installing_toast">Installing %1$s</string>
+    <string name="files_install_asking_toast">Finish the install in the screen that opened</string>
+    <string name="files_install_refused_toast">%1$s could not be installed</string>
+
+    <!-- The four ways a folder can have nothing to show. They are four different
+         answers - no storage, a folder that is gone, one the platform keeps shut,
+         and one that is simply empty - so they are four sets of words. -->
+    <string name="files_access_title">Storage is closed to App Hub</string>
+    <string name="files_access_message">Android keeps one permission in front of the whole of it, and this screen can show nothing until it is given.</string>
+    <string name="files_none_title">No storage to show</string>
+    <string name="files_none_message">This unit does not expose a storage volume to App Hub.</string>
+    <string name="files_gone_title">This folder is gone</string>
+    <string name="files_gone_message">It is not on the unit any more - a card that has been taken out, perhaps.</string>
+    <string name="files_denied_title">This folder cannot be read</string>
+    <string name="files_denied_message">Android keeps this one shut, even with all files access.</string>
+    <string name="files_empty_title">This folder is empty</string>
+    <string name="files_empty_message">Nothing is stored in it.</string>
+
     <string name="close_all">Close all</string>
     <string name="close_all_done">Closed %1$d apps</string>
     <string name="close_all_none">Nothing is open to close</string>
@@ -135,6 +195,9 @@
 
     <string name="set_system_title">Include system apps</string>
     <string name="set_system_subtitle">Also list the unit\'s factory apps</string>
+
+    <string name="set_files_title">File manager</string>
+    <string name="set_files_subtitle">Stands on the main page as a tile of its own</string>
 
     <string name="set_theme_title">Theme</string>
     <string name="set_theme_subtitle">Light, dark, or the unit\'s own setting</string>

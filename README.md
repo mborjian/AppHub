@@ -25,6 +25,7 @@ that document is what it *looks like* and why.
 | **Pin** | long press → *Pin to top*; pinned apps keep their place at the front, in the order you pinned them, and the choice survives restarts |
 | **Window margins** | long press → *Window margins*: give one app its own rectangle (**left / right / top / bottom**, in pixels) and it is moved inside it the moment it comes to the front - however it was started, from this grid or from the vehicle's own launcher. See [App window margins](#app-window-margins-one-rectangle-per-app) |
 | **Task manager** | the open apps, one row each with its own **Close**, and each row saying how it got on the list: *Running* (a process), *Open* (a task the system still holds) or *Recently open* (the usage view). Where the install cannot read the task list the screen says so, and where a close did not work it says that too, because in both cases the list is the news (see [What is open, and how App Hub knows](#what-is-open-and-how-app-hub-knows)) |
+| **Files** | this app's own file manager, standing on the board as a tile while the switch in the settings is on: the unit's storage and any attached card or stick, folders first, each row carrying its size and date. A row opens a folder, and its own menu **copies**, **moves**, **deletes** and - for a package - **installs** it. Its own card is a screen's card: *Open*, *Pin*, *Hide*. See [A file manager over the unit's storage](#a-file-manager-over-the-units-storage) |
 | **Tools pill** | a floating button in the bottom corner, always one tap away whatever the grid is scrolled to: **Find an app**, **Settings**, **Edit the page**, **Task manager**, **Close all**, **Close App Hub** - the last two behind a confirmation, the last one being the only thing the close layers cannot do for the app you are looking at |
 
 There is no header, no search row and no hint strip: the board is only the grid,
@@ -51,6 +52,7 @@ to it; every choice is stored in `SharedPreferences` (`Prefs`).
 | Grid | Auto (computed from the screen) or a fixed 2–6 columns |
 | Sort | Name A–Z / Z–A; pinned apps always stay first. Choosing one re-sorts the page, so it drops a hand-arranged order (and says so in the README rather than in the UI) |
 | Include system apps | off by default, so only your own apps are listed |
+| File manager | on by default: the **Files** tile on the main page. Off, the tile goes and nothing else changes - it is a screen of this app and not an installed package, so this switch hides a tile and not an app. The tile's own card writes the same setting |
 | Theme | System / Light / Dark |
 | Layout direction | System / Right-to-left / Left-to-right |
 | Screen margins | **left / right / top / bottom**, each dialled on a wheel from 0 to half that side of the screen (512 dp across on this unit's 1024dp width, 284 dp down in its 568dp-tall window) — any whole value, not a list of steps — or **typed on the number keyboard** from the sheet's *Type the value* row. Moves this app's content away from the screen edges so a launcher overlay (shortcut rail, clock, climate strip) cannot cover it. Applied to the grid **and** to this settings screen itself, so the screen follows the value while it is still being chosen |
@@ -314,6 +316,96 @@ re-opening cannot bring back. The red row inside that question is the app's only
 What the toast says is the layer's own news and never one sentence for all
 three: **uninstalled**, *finish the removal in the screen that opened*, or
 *not removed*.
+
+## A file manager over the unit's storage
+
+**Files** stands on the main page as a tile of its own, switched on and off from
+*Settings → Behaviour → File manager*. The tile is *made* rather than *found*
+(`MainPage.page`): the board skips App Hub's own package when it reads the
+launcher activities, so this app's own screens have no launcher entry to be
+found. That is also why the entry carries `AppEntry.tool` and not `system` - a
+tile and not an app - and why its card offers what is true of a screen (*Open*,
+*Pin*, *Hide*) and never *Close* (it is this app), *Uninstall* (that is this
+install) or a window rectangle (`WindowProfiles` protects App Hub's own
+package). Hiding it writes the setting the settings row writes, so the two cannot
+disagree about whether the tile is there.
+
+### What it can see, and how it is allowed to
+
+Real paths, not the Storage Access Framework: a file manager that cannot show a
+card until the driver has granted that card separately is a file manager with a
+form in front of it. Two versions of Android spell the whole of storage two ways,
+and the app declares both.
+
+| Android | What is asked for | What it gets |
+|---|---|---|
+| 10 and below (the unit) | `READ_EXTERNAL_STORAGE` + `WRITE_EXTERNAL_STORAGE`, at runtime, with `android:requestLegacyExternalStorage="true"` | real paths into shared storage on every volume. Android 10's `PackageParser` sets the legacy flag whenever that attribute is true, *whatever the app targets*; the mount is then decided by `OP_LEGACY_STORAGE`, so the sandbox never applies |
+| 11 and up | `MANAGE_EXTERNAL_STORAGE` (*All files access*), granted in a system screen of its own | real paths into shared storage on every volume, except `Android/data` and `Android/obb` |
+
+Volumes come from two places for the same reason. From Android 11 the platform's
+own `StorageManager` knows each volume's printed name ("SanDisk SD card") and
+whether it is the emulated one; below that the list is built from the directories
+this app was handed for each volume - one per attached volume - with the app's own
+corner of each cut off to leave the volume's root.
+
+Without the grant, **nothing is read at all** and the banner says so. That is not
+laziness: from Android 11 on, a folder this app may not read lists as *empty*
+rather than as refused, and a file manager that calls a full folder empty is
+worse than one that says it has not been let in yet. The banner's *Enable* opens
+Android's own per-app screen, or raises the runtime dialog on the versions that
+have one - and on the way back the state is read again rather than remembered.
+A folder that genuinely cannot be read (`Android/data`, from Android 11 on) says
+that instead, because *empty*, *gone*, *shut* and *no storage at all* are four
+different answers.
+
+### The four verbs
+
+One row per folder or file, folders first and then the same locale-aware collator
+the board sorts with. Tap a folder to go into it; the first row of every folder is
+the way back up, named after where it leads ("Internal storage", not "emulated").
+A row's verbs are behind the `...` on the row - and behind a long press, for a
+driver who tries that first.
+
+* **Copy** and **Move** are two taps in two places, so what has been picked up is
+drawn in a bar at the bottom of the screen until it is put down or dismissed.
+A copy stays in hand afterwards, because the same picture usually goes to more
+than one folder; a move does not. Within a volume a move is a rename and nothing
+is read or written; across volumes it is a copy and then a delete, and when the
+delete is refused the toast says **there are two of it now** rather than that it
+moved. A name that is already in the folder it is going to is refused, not
+overwritten.
+* **Delete** asks first and says what goes with it: a folder on Android means
+everything inside it, and there is no recycle bin to find it in afterwards. That
+question's yes-row is the app's only red.
+* **Install** is offered for a `.apk` and nothing else, because a package is the
+only file the platform will install by itself. (`.apkm` and `.xapk` are bundles
+*containing* APKs, so they are drawn and treated as the archives they are.)
+
+Nothing opens a file: there is no viewer, no editor and no *Open with*, and this
+README says so rather than the screen pretending otherwise.
+
+### Installing a package: one session, two endings
+
+`Install.install()` reads the APK itself and writes it into a `PackageInstaller`
+session. That is not a detour: a package on a card the driver has just plugged in
+has to be installable, and handing the installer a *URI* would mean a second
+provider able to serve any file on the unit - the door `update_paths.xml`
+deliberately keeps shut. A session takes the bytes from a path, and the path can
+be anywhere.
+
+| Layer | Needs | What happens |
+|---|---|---|
+| Silent | `INSTALL_PACKAGES` - `signature\|privileged`, so the platform-signed install or `/system/priv-app` | the session commits straight through and the platform puts the package on with no screen. The toast says *installing*, not *installed*: the platform carries the session out behind the tap |
+| Asking | nothing but `REQUEST_INSTALL_PACKAGES` | the commit comes back as `STATUS_PENDING_USER_ACTION` carrying the intent of Android's own install screen, and `InstallStatusReceiver` opens it. Nothing is on the unit until that screen is answered |
+
+The receiver is declared in the manifest rather than held by the screen, because
+that answer arrives on a binder thread after the tap that started the install -
+possibly after the file manager itself has gone. Every operation leaves one line
+for `adb logcat -s AppHub`, the way the close and the uninstall do:
+
+```
+copy <from> -> <to> <FileOp>      delete <path> <FileOp>      install session=<id> status=<n>
+```
 
 ## What is open, and how App Hub knows
 
@@ -738,6 +830,9 @@ app_hub/
 │   │   ├── ActivityStats.kt         usage-stats recency + access check
 │   │   ├── ForceStop.kt             the four close layers + the verified report
 │   │   ├── Uninstall.kt             the three removal layers, user-installed apps only
+│   │   ├── Files.kt                 volumes, folders and the copy/move/delete verbs
+│   │   ├── Install.kt               an APK into an installer session, + the status receiver
+│   │   ├── FileManagerActivity.kt   the file manager screen: rows, verbs, the carry bar
 │   │   ├── WindowProfiles.kt        per-app window rectangles (one per package)
 │   │   ├── WindowControl.kt         the root side: foreground, tasks, `am task resize`
 │   │   ├── WindowMarginService.kt   the watcher that applies them, + boot receiver
@@ -866,6 +961,26 @@ emulator nor an attached one. Its layers were checked against the platform
 sources and its permissions against the built APK; the first real removal will
 be the unit's.
 
+The file manager was not driven on a device either, for the same reason. What was
+checked from here is the build (`assembleDebug` and `assembleRelease`), the
+permissions and the two new components in the built APK, and the two things about
+a screen that no compiler checks:
+
+* **every `android:pathData` in every drawable parses against the SVG grammar**
+  Android's own `PathParser` reads at *runtime* - the resource compiler does not
+  check it, and a malformed path is not a build error, it is a crash when the
+  drawable is inflated. All 31 of the app's vectors were run through a parser
+  that reads the same grammar, arc flags included;
+* **the eleven new glyphs draw what they are meant to.** The app runs on a
+  vehicle that is not attached to this machine, so the sheet was drawn by hand:
+  the same paths, at 24dp and 40dp (and the tile's icon at 96dp), on light and on
+dark. That is how the way-up glyph was caught - as a folder with an arrow inside
+  it, it was near-indistinguishable from *Move* in a column, and it is now a plain
+  arrow.
+
+What no check from here can cover is the part that is the unit's: a real card,
+a real copy, a real delete, and Android's own installer doing the work.
+
 ## Honest limitations
 
 * **An in-app update needs the release key, not the platform one.** The *Updates* row
@@ -896,6 +1011,30 @@ be the unit's.
   emulator and none attached). The release build, the permissions in the APK
   badging and the platform behaviour of each layer are what verified it; the
   first real removal is the unit's.
+* **The file manager needs the whole of storage, and Android 11 and up call that
+  *All files access*.** Without it the screen shows the banner and reads nothing,
+  rather than listing folders as empty - which on Android 11 and up is exactly
+  what a folder it may not read looks like. On the unit's Android 10 there is no
+  such screen: it is the ordinary runtime pair.
+* **`Android/data` and `Android/obb` cannot be read from Android 11 on**, grant
+  or no grant. Opening one says so instead of drawing an empty folder.
+* **Writing to a card is the platform's decision, not this app's.** Android 10
+  writes to a secondary volume through the legacy mount; from Android 11 it is
+  all files access; and where a volume refuses, the operation reports the refusal
+  instead of leaving half a copy behind (a failed copy takes its own leftovers
+  back out).
+* **Three things the file manager deliberately does not do**: open a file (no
+  viewer, no editor, no *Open with*), work on more than one file at a time (no
+  multi-select, no *new folder*), and hold anything in its hands past the screen
+  it was picked up on.
+* **A package already installed under a different key cannot be replaced** from
+  here, and the install fails in the platform's own way - the toast says it did
+  not happen, and the installer's log line says why. This is not the self-update
+  path, which checks the release certificate before it downloads anything.
+* **The file manager was not driven on a device from this machine** either. The
+  build, the APK's permissions, the vector paths and a hand-drawn sheet of every
+  glyph are what verified it; the first real copy, move, delete and install are
+  the unit's.
 * **No exact "open" view without privileges.** On a plain install you get the
   `recent` state (needs the usage-access opt-in) or nothing; only the
   platform-signed install, a `/system/priv-app` install or root gives the real

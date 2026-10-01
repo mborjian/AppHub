@@ -239,7 +239,10 @@ class MainActivity : BaseActivity() {
     private fun cells(): List<GridItem> {
         if (failed) return listOf(GridItem.Panel(PanelKind.ERROR))
 
-        val all = MainPage.arrange(
+        // the page, not just the apps: App Hub's own file-manager tile stands on
+        // it too while that screen is switched on (see [MainPage.page])
+        val all = MainPage.page(
+            context = this,
             apps = loaded.filter { !prefs.isHidden(it.packageName) },
             order = prefs.pageOrder,
             pinned = pins.all(),
@@ -725,6 +728,15 @@ class MainActivity : BaseActivity() {
      * thought about - do it, arrange it, remove it.
      */
     private fun showActions(entry: AppEntry) {
+        // One of App Hub's own screens is not an app, and the card does not
+        // pretend it is: there is nothing to close (it is this app), nothing to
+        // uninstall (that is this install), and no window of another app to move.
+        // What is left is what is true of a screen.
+        if (entry.tool) {
+            showToolActions(entry)
+            return
+        }
+
         val rows = ArrayList<SheetRow>(7)
 
         rows += SheetRow(
@@ -799,12 +811,60 @@ class MainActivity : BaseActivity() {
         )
     }
 
+    /**
+     * The card for one of this app's own screens: do it, arrange it, take the
+     * tile away.
+     *
+     * Three rows and no more, because on this screen the two rows that would be
+     * missing are missing for the same reason - the tile is App Hub itself.
+     */
+    private fun showToolActions(entry: AppEntry) {
+        Sheet.show(
+            context = this,
+            title = entry.label,
+            subtitle = sheetSubtitle(entry),
+            appIcon = IconCache.drawn(
+                resources,
+                entry,
+                prefs.iconShape,
+                resources.getDimensionPixelSize(R.dimen.icon_banner),
+            ),
+            rows = listOf(
+                SheetRow(
+                    label = getString(R.string.action_open),
+                    icon = ContextCompat.getDrawable(this, R.drawable.ic_open),
+                    onClick = { openApp(entry) },
+                ),
+                SheetRow(
+                    label = getString(if (entry.pinned) R.string.action_unpin else R.string.action_pin),
+                    icon = ContextCompat.getDrawable(this, R.drawable.ic_pin),
+                    groupStart = true,
+                    onClick = { togglePin(entry) },
+                ),
+                SheetRow(
+                    label = getString(R.string.action_hide),
+                    icon = ContextCompat.getDrawable(this, R.drawable.ic_hide),
+                    danger = true,
+                    groupStart = true,
+                    onClick = { hideFromMainPage(entry) },
+                ),
+            ),
+        )
+    }
+
     /** the package, and what this app is doing, in the card's own header */
-    private fun sheetSubtitle(entry: AppEntry): CharSequence = when (entry.state) {
-        AppState.RUNNING -> getString(R.string.tile_running, entry.packageName)
-        AppState.OPEN -> getString(R.string.tile_open, entry.packageName)
-        AppState.RECENT -> getString(R.string.tile_recent, entry.packageName)
-        AppState.IDLE -> entry.packageName
+    private fun sheetSubtitle(entry: AppEntry): CharSequence = when {
+        // a tile of this app's own says what it is rather than repeating the
+        // package name the driver is already looking at
+        entry.tool -> getString(R.string.files_card_subtitle)
+        else -> sheetSubtitle(entry.state, entry.packageName)
+    }
+
+    private fun sheetSubtitle(state: AppState, packageName: String): CharSequence = when (state) {
+        AppState.RUNNING -> getString(R.string.tile_running, packageName)
+        AppState.OPEN -> getString(R.string.tile_open, packageName)
+        AppState.RECENT -> getString(R.string.tile_recent, packageName)
+        AppState.IDLE -> packageName
     }
 
     /**
@@ -813,6 +873,21 @@ class MainActivity : BaseActivity() {
      * back on - and the undo bar, for the five seconds it is up.
      */
     private fun hideFromMainPage(entry: AppEntry) {
+        // One of this app's own screens is taken off the page by the settings
+        // switch and not by the hidden-apps set: the switch is the one place the
+        // tile can be found again, and a tile whose two records live apart is a
+        // tile that comes back on its own. Which is also why the switch writes
+        // the same pref the settings row does.
+        if (entry.tool) {
+            prefs.showFileManager = false
+            render()
+            undo(getString(R.string.hidden_undo, entry.label)) {
+                prefs.showFileManager = true
+                render()
+            }
+            return
+        }
+
         prefs.setHidden(entry.packageName, true)
         render()
         undo(getString(R.string.hidden_undo, entry.label)) {

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Folder: the one glyph the file manager cannot do without. A tab, a body and
+     nothing else - the same 1.75dp outline as the rest of the set, one line,
+     because a folder is read at a glance from a moving seat. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M3,8.4 A1.7,1.7 0 0 1 4.7,6.7 L9.2,6.7 A1.7,1.7 0 0 1 10.4,7.3 L11.5,8.8 L19.3,8.8 A1.7,1.7 0 0 1 21,10.5 L21,17.3 A1.7,1.7 0 0 1 19.3,19 L4.7,19 A1.7,1.7 0 0 1 3,17.3 Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.75" />
+</vector>

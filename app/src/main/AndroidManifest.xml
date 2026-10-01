@@ -66,6 +66,31 @@
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
+    <!-- The file manager reads and writes the unit's own storage, and whatever
+         card or stick is plugged into it. Two versions of Android spell that two
+         ways, and this app declares both:
+
+           - Android 10 and below: the storage pair, at runtime, together with
+             the legacy flag on <application> below that is what makes the
+             platform hand real paths back. That is the unit's own Android 10;
+           - Android 11 and up: all files access, which is a switch in a system
+             screen of its own rather than a dialog - one grant for the whole of
+             storage, and the only way to see a card's real tree from 11 on.
+
+         Neither of them opens Android/data or Android/obb from Android 11 on -
+         not even all files access - and the file manager says so instead of
+         drawing an empty folder. Both are harmless on a version that does not
+         use them, which is why declaring the pair is not conditional. -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+
     <!-- The window-margins watcher has to run while *other* apps are on screen,
          which is exactly what a foreground service is for. The service only
          exists while at least one profile is switched on. -->
@@ -81,10 +106,18 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
+    <!-- The legacy flag. On Android 10 an app that asks for it is handed real
+         paths into shared storage instead of the sandboxed view, and that is the
+         whole of the file manager's access on the unit. Android 11 and up ignore
+         it - there the permission above is the mechanism - so it costs nothing
+         anywhere it does not apply. Without it, the file manager on the unit
+         would list a folder full of other apps' files as empty, which is the one
+         answer it is not allowed to give. -->
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppHub">
@@ -130,6 +163,15 @@
             android:exported="false"
             android:label="@string/window_title" />
 
+        <!-- The file manager: this app's own screen over the unit's storage.
+             Opened from its tile on the board rather than from a launcher, which
+             is why it carries no intent filter - and why the board's repository,
+             which reads launcher activities, never sees it. -->
+        <activity
+            android:name=".FileManagerActivity"
+            android:exported="false"
+            android:label="@string/files_title" />
+
         <!-- The watcher behind the app window margins: it applies a profile to
              its app the moment that app comes to the front, however it was
              started. Alive only while a profile is on - see
@@ -148,6 +190,20 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Where an install session's news arrives. A commit that needs the
+             driver's answer comes back as an intent this receiver has to open,
+             and it can arrive long after the tap that started the install - so
+             it is declared here rather than held by a screen. Not exported: the
+             only sender is this app's own session, through the pending intent it
+             created. -->
+        <receiver
+            android:name=".InstallStatusReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.mimskydo.apphub.INSTALL_STATUS" />
             </intent-filter>
         </receiver>
 

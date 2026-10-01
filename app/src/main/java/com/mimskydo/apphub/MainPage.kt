@@ -1,5 +1,8 @@
 package com.mimskydo.apphub
 
+import android.content.Context
+import androidx.core.content.ContextCompat
+
 /**
  * The main page as a value: which apps it shows, in which order, and which cells
  * it draws.
@@ -9,6 +12,48 @@ package com.mimskydo.apphub
  * arranges it itself.
  */
 object MainPage {
+
+    /**
+     * The page as both screens read it: the apps, and App Hub's own screens
+     * standing on it as tiles.
+     *
+     * The tile is made here rather than read from the package manager, because
+     * it *is* this app: the repository skips App Hub's own package when it reads
+     * the launcher activities, so its own screens have no launcher entry to be
+     * found. One place that decides what the page holds is what keeps the board
+     * and the preview from disagreeing about it.
+     */
+    fun page(
+        context: Context,
+        apps: List<AppEntry>,
+        order: List<String>,
+        pinned: List<String>,
+    ): List<AppEntry> {
+        val tile = toolTile(context, pinned)
+        return arrange(if (tile == null) apps else listOf(tile) + apps, order, pinned)
+    }
+
+    /**
+     * The file manager, as a tile, while the settings switch is on.
+     *
+     * In front of the apps in the list, which is where a page with no order of
+     * its own and nothing pinned draws it - and once the driver moves a tile
+     * anywhere the page has an order, and this is a tile in it like any other.
+     */
+    private fun toolTile(context: Context, pinned: List<String>): AppEntry? {
+        if (!Prefs(context).showFileManager) return null
+        val icon = ContextCompat.getDrawable(context, R.drawable.ic_folder_tile) ?: return null
+        return AppEntry(
+            label = context.getString(R.string.files_title),
+            // this app's own package, which is what a tile needs to be pinned,
+            // hidden and carried around the page by name
+            packageName = context.packageName,
+            activityName = FileManagerActivity::class.java.name,
+            icon = icon,
+            pinned = pinned.contains(context.packageName),
+            tool = true,
+        )
+    }
 
     /**
      * [apps] as the main page arranges them. [apps] arrives in the repository's

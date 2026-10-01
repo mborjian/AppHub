@@ -187,6 +187,19 @@ class Prefs(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_SYSTEM, value).apply()
 
     /**
+     * True while the file manager stands on the main page as a tile of its own.
+     *
+     * A setting and not an entry in the hidden-apps set, because the tile is not
+     * an app: App Hub's own screens are skipped when the board reads the
+     * launcher activities, so the switch on the settings screen and the tile on
+     * the page are one decision - and the tile's own card writes *this* one when
+     * it is hidden, which is what keeps the two from disagreeing.
+     */
+    var showFileManager: Boolean
+        get() = prefs.getBoolean(KEY_FILES, true)
+        set(value) = prefs.edit().putBoolean(KEY_FILES, value).apply()
+
+    /**
      * True once the offer to switch the running marks on has been waved away.
      *
      * The offer is a banner on the board rather than a row in the settings,
@@ -446,6 +459,7 @@ class Prefs(context: Context) {
         const val KEY_SHAPE = "icon_shape"
         const val KEY_COLUMNS = "columns"
         const val KEY_SYSTEM = "system_apps"
+        const val KEY_FILES = "file_manager"
         const val KEY_SORT = "sort"
         const val KEY_THEME = "theme"
         const val KEY_DIRECTION = "direction"
@@ -462,7 +476,7 @@ class Prefs(context: Context) {
 
         val SETTING_KEYS = listOf(
             KEY_NAMES, KEY_HIDDEN, KEY_ORDER, KEY_FILTER, KEY_ICON_SIZE,
-            KEY_SHAPE, KEY_COLUMNS, KEY_SYSTEM, KEY_SORT, KEY_THEME,
+            KEY_SHAPE, KEY_COLUMNS, KEY_SYSTEM, KEY_FILES, KEY_SORT, KEY_THEME,
             KEY_DIRECTION, KEY_ADAPT, KEY_DOTS_OFFER, KEY_TASKS_OFFER,
         ) + Margin.values().map { it.id }
     }

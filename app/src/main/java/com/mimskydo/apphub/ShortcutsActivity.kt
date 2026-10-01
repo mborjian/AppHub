@@ -151,7 +151,11 @@ class ShortcutsActivity : BaseActivity() {
     /** the main page as it will be drawn, in the pane that draws it */
     private fun submitPreview() {
         val all = apps ?: return
-        val ordered = MainPage.arrange(
+        // the whole page, this app's own file-manager tile included while that
+        // screen is switched on: the preview is a picture of the board, and a
+        // picture that is missing a tile is a picture of another board
+        val ordered = MainPage.page(
+            context = this,
             apps = all.filter { !prefs.isHidden(it.packageName) },
             order = prefs.pageOrder,
             pinned = pins.all(),

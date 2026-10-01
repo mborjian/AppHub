@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A picture: frame, sun, ridge. The two shapes inside the frame are what make
+     it a picture rather than an empty rectangle, and they are drawn to fit
+     inside it - clipped artwork would read as a mistake at 24dp. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M6,5.6 L18,5.6 A2,2 0 0 1 20,7.6 L20,16.4 A2,2 0 0 1 18,18.4 L6,18.4 A2,2 0 0 1 4,16.4 L4,7.6 A2,2 0 0 1 6,5.6 Z M8.6,8.4 A1,1 0 1 1 8.6,10.4 A1,1 0 1 1 8.6,8.4 Z M5.4,15 L9.4,11 L12.6,14.2 L15.2,11.6 L18.6,15"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.75" />
+</vector>

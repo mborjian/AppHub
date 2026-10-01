@@ -257,6 +257,14 @@ class SettingsActivity : BaseActivity() {
             loadApps()
         }
 
+        // Right under the apps the board draws, because it is one more thing the
+        // board draws: the file manager is App Hub's own screen and has no
+        // launcher entry to be found, so this switch is what puts its tile there.
+        addSwitchRow(
+            R.string.set_files_title, R.string.set_files_subtitle,
+            value = { prefs.showFileManager },
+        ) { prefs.showFileManager = it }
+
         addValueRow(
             R.string.set_window_title, R.string.set_window_subtitle,
             value = { windowMarginsValue() },

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A page of text: everything the file manager cannot name. Folder, picture,
+     tune, film, archive and package have glyphs of their own; a driver's card
+     is full of everything else, and one page for the rest is better than a
+     question mark. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M7.4,4.4 L14.2,4.4 L18.6,8.8 L18.6,18.6 A1.4,1.4 0 0 1 17.2,20 L7.4,20 A1.4,1.4 0 0 1 6,18.6 L6,5.8 A1.4,1.4 0 0 1 7.4,4.4 Z M14.2,4.4 L14.2,8.8 L18.6,8.8 M9.4,13.2 L15.2,13.2 M9.4,16.4 L15.2,16.4"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.75" />
+</vector>
