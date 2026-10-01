@@ -91,6 +91,27 @@ case "$crash" in
     *"$PACKAGE"*) fail "the crash buffer mentions $PACKAGE" ;;
 esac
 
+# The hand-off is the one door between the file manager's tree and another app,
+# and everything behind it is one file: a token this app minted for the row the
+# driver picked. The shell is an app that was never handed a URI, so this is the
+# one thing about the feature a device can be asked without a driver: a token
+# that was never minted has to come back refused, and not as a row of results.
+# What the provider is registered as is only evidence here - the manifest of the
+# APK itself is checked in the release job.
+adb shell dumpsys package "$PACKAGE" \
+    | grep -E 'HandoffProvider|\.handoff' \
+    | tee "$EVIDENCE_DIR/handoff-provider.txt" \
+    || echo "(no hand-off provider line in dumpsys)"
+
+probe=$(adb shell content query \
+    --uri "content://${PACKAGE}.handoff/00000000-0000-0000-0000-000000000000/never-handed-out.txt" \
+    2>&1 || true)
+printf '%s\n' "$probe" | tee "$EVIDENCE_DIR/handoff.txt"
+case "$probe" in
+    *"Row:"*) fail "the hand-off provider served a token it never minted, to an app it never granted" ;;
+esac
+echo "OK: the hand-off provider refused an ungranted read of a token it never minted"
+
 adb exec-out screencap -p > "$EVIDENCE_DIR/launcher.png" \
     || echo "screencap failed, keeping no screenshot"
 

@@ -782,13 +782,18 @@ git tag v1.0.1 && git push origin v1.0.1     # the next one
 
 There is nothing to bump first. The job refuses a tag that is not a plain
 `vX.Y.Z`, builds, checks the APK's own `versionName` against the tag, verifies
-the signature with `apksigner verify`, and then — before it publishes anything —
-installs that signed APK on an emulator (Android 11, Google APIs, headless) and
-requires the launcher activity `com.mimskydo.apphub/.MainActivity` to reach the
-front and stay there. Only then does it publish
+the signature with `apksigner verify`, and reads two things out of the APK that
+are not about its version: that the file manager's hand-off provider is declared
+unexported, granting per intent, and with no paths file behind it. Then — before
+it publishes anything — it installs that signed APK on an emulator (Android 11,
+Google APIs, headless) and requires the launcher activity
+`com.mimskydo.apphub/.MainActivity` to reach the front and stay there. The same
+run asks that unit's package manager about the hand-off provider and hands it a
+token nobody minted, which has to come back refused. Only then does it publish
 `AppHub-<version>-universal.apk` plus its `.sha256`. The emulator run leaves a
-screenshot and an activity dump in the `smoke-test-<tag>` artifact, and
-`tools/smoke-test-apk.sh` is the same check by hand:
+screenshot, an activity dump and the two hand-off answers in the
+`smoke-test-<tag>` artifact, and `tools/smoke-test-apk.sh` is the same check by
+hand:
 
 ```bash
 sh tools/smoke-test-apk.sh app/build/outputs/apk/release/app-release.apk
@@ -886,7 +891,8 @@ app_hub/
 │   │   └── RootShell.kt             optional su, probes `-c` and `<uid>` forms
 │   └── res/                         layouts, drawables, theme, EN + FA strings
 ├── tools/release.py                 platform-signed release + optional install
-├── tools/smoke-test-apk.sh          installs an APK on the emulator, proves it starts
+├── tools/smoke-test-apk.sh          installs an APK on the emulator, proves it starts,
+│                                    and probes the hand-off provider
 ├── build.gradle.kts                 AGP 9.4.1 (built-in Kotlin, no Kotlin plugin)
 ├── .github/actions/android-setup/   the JDK + SDK pins, shared by both workflows
 ├── .github/workflows/               debug APK on every push, release on a tag

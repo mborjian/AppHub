@@ -154,6 +154,55 @@ jobs:
             exit 1
           fi
 
+          # The file manager hands a file to another app, and the shape of that is
+          # the whole guarantee: one provider, serving one file per token this app
+          # minted for the row the driver picked, read-only, never exported, with
+          # no paths file behind it - a paths file is all of storage behind a
+          # provider, which is the door the update provider's single path exists to
+          # keep shut. The source says so; this reads the APK about to be published.
+          manifest=$("$aapt2" dump xmltree --file AndroidManifest.xml "$apk")
+          pkg=$(printf '%s\n' "$badging" | sed -n "s/^package: name='\([^']*\)'.*/\1/p")
+          # The provider's own element, children included, and nothing else. Two
+          # traps here, both found by running this check against a doctored dump:
+          # a window of neighbouring lines reaches the *next* provider, which is
+          # unexported too and would pass for this one, and a meta-data child is an
+          # element line of its own, so a capture that stopped at the next "E:"
+          # would never see a paths file sitting inside the provider.
+          handoff=$(printf '%s\n' "$manifest" | awk -v want="$pkg.handoff" '
+            function flush() {
+                if (pending != "" && index(pending, want) > 0) printf "%s", pending
+                pending = ""
+            }
+            /^[[:space:]]*E: / {
+                match($0, /^[[:space:]]*/)
+                if (pending != "" && RLENGTH <= pending_indent) flush()
+                pending_indent = RLENGTH
+                pending = pending $0 "\n"
+                next
+            }
+            { if (pending != "") pending = pending $0 "\n" }
+            END { flush() }
+          ')
+          if [ -z "$handoff" ]; then
+            echo "::error::the built manifest declares no $pkg.handoff provider - a file could not leave the app."
+            exit 1
+          fi
+          printf '%s\n' "$handoff"
+          case "$handoff" in
+            *'exported(0x01010010)=false'*) ;;
+            *) echo "::error::the hand-off provider is exported in the built APK."; exit 1 ;;
+          esac
+          case "$handoff" in
+            *'grantUriPermissions(0x0101001b)=true'*) ;;
+            *) echo "::error::the hand-off provider grants no per-intent URI permission."; exit 1 ;;
+          esac
+          case "$handoff" in
+            *FILE_PROVIDER_PATHS*)
+              echo "::error::the hand-off provider has a paths file behind it - it can serve more than the one file it was handed."
+              exit 1 ;;
+          esac
+          echo "the hand-off provider is one file per token, read-only and not exported"
+
           mkdir -p dist
           name="AppHub-${GITHUB_REF_NAME#v}-universal.apk"
           cp "$apk" "dist/$name"
