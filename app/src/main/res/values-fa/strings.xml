@@ -41,6 +41,7 @@
     <string name="files_where_title">رفتن به</string>
     <string name="files_row_meta">%1$s · %2$s</string>
 
+    <string name="files_open_with">باز کردن با</string>
     <string name="files_install">نصب</string>
     <string name="files_copy">کپی</string>
     <string name="files_move">جابه‌جایی</string>
@@ -66,6 +67,12 @@
     <string name="files_installing_toast">در حال نصب %1$s</string>
     <string name="files_install_asking_toast">نصب را در صفحه‌ای که باز شد کامل کنید</string>
     <string name="files_install_refused_toast">%1$s نصب نشد</string>
+
+    <string name="files_handed_toast">«%1$s» به برنامهٔ دیگری سپرده شد</string>
+    <string name="files_unclaimed_toast">هیچ برنامه‌ای روی این دستگاه «%1$s» را باز نمی‌کند</string>
+    <string name="files_missing_toast">«%1$s» دیگر روی دستگاه نیست</string>
+    <string name="files_open_refused_toast">«%1$s» باز نشد</string>
+    <string name="files_unclaimed_message">هیچ برنامه‌ای روی این دستگاه این نوع فایل را باز نمی‌کند.</string>
 
     <string name="files_access_title">حافظه به روی مرکز برنامه‌ها بسته است</string>
     <string name="files_access_message">اندروید یک اجازه پشت همهٔ حافظه گذاشته و این صفحه تا داده نشود چیزی نشان نمی‌دهد.</string>

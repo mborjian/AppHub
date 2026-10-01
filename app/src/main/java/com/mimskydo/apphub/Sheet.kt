@@ -104,8 +104,9 @@ object Sheet {
         context: Context,
         rows: List<SheetRow>,
         title: CharSequence? = null,
+        subtitle: CharSequence? = null,
     ): Dialog {
-        val frame = frame(context, title, null, null, null, Gravity.BOTTOM)
+        val frame = frame(context, title, subtitle, null, null, Gravity.BOTTOM)
         val inflater = LayoutInflater.from(context)
         for (row in rows) {
             if (row.groupStart) frame.rows.addView(divider(inflater, frame.rows))

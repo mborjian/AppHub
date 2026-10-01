@@ -21,9 +21,12 @@ import java.util.concurrent.Executors
  * The files on the unit, in the unit's own storage and on whatever card or stick
  * is plugged into it.
  *
- * A folder browser and not a picker: one row per folder or file, tap a folder to
- * go in, tap the "..." on a row for what can be done to it - copy it, move it,
- * take it off the unit, or install it, if it is a package. What is being carried
+ * A folder browser and not a picker: one row per folder or file, where a tap does
+ * the one obvious thing - a folder goes in, a file is handed to whichever app on
+ * the unit opens that kind of thing - and the "..." on the row holds everything
+ * else: *Open with* again, copy, move, take it off the unit, and install, if it is
+ * a package. A package is the one row whose tap opens that menu instead, because
+ * the menu is where the only thing to do with a package is. What is being carried
  * from one folder to another rides in a bar at the bottom, because a copy is two
  * taps in two places and the driver has to be able to see that the first one
  * happened.
@@ -33,9 +36,11 @@ import java.util.concurrent.Executors
  * being pulled out, must not be able to freeze the UI thread a driver is
  * steering with.
  *
- * Nothing here opens a file. There is no viewer, no editor and no "open with":
- * the one verb an installed app has for a file is installing a package, and the
- * rest are the three the driver asked for - copy, move, delete.
+ * Nothing here shows a file. There is no viewer and no editor, because this hub
+ * has no business being one: what a file can do instead is leave. [Handoff]
+ * hands the one file the driver picked to whichever app on the unit opens that
+ * kind of thing, through a URI carrying a token rather than a path - so what
+ * leaves this app is one file, and never the tree it came out of.
  */
 class FileManagerActivity : BaseActivity() {
 
@@ -309,10 +314,41 @@ class FileManagerActivity : BaseActivity() {
 
     // ----------------------------------------------------------- the places
 
-    /** a folder, entered; or the way back up, followed */
+    /**
+     * What a tap on a row does: the one obvious thing, and nothing else.
+     *
+     * A folder is entered, the way back up is followed, and a file is handed to
+     * another app to open. A package is the exception and falls through to the
+     * verbs, because installing is the only thing to do with one and it lives
+     * behind that sheet: putting an app on the unit is the one act on this screen
+     * a driver has to have gone looking for.
+     */
     private fun openRow(item: FileItem) {
-        if (item.kind == FileKind.UP || item.folder) goTo(item.file)
-        else showActions(item)
+        when {
+            item.kind == FileKind.UP || item.folder -> goTo(item.file)
+            item.kind == FileKind.APK -> showActions(item)
+            else -> tapFile(item)
+        }
+    }
+
+    /**
+     * A tap on a file: hand it over, and where the unit has nothing that opens it,
+     * put the verbs up instead of the toast.
+     *
+     * That is the one ending a tap cannot be left with. "Nothing here opens this"
+     * is news worth having, but a tap that ends on a toast and goes nowhere is a
+     * dead row - and the row has four other things it can do. So the same sentence
+     * becomes the sheet's subtitle, over those verbs. The other three endings - it
+     * is gone, it would not open, it was handed over - are about the file rather
+     * than about what to do next, and those stay toasts.
+     */
+    private fun tapFile(item: FileItem) {
+        val op = Handoff.open(this, item.file)
+        if (op == HandoffOp.UNCLAIMED) {
+            showActions(item, subtitle = getString(R.string.files_unclaimed_message))
+            return
+        }
+        toast(HandoffReport.text(this, op, item.name))
     }
 
     private fun goTo(dir: File) {
@@ -368,8 +404,14 @@ class FileManagerActivity : BaseActivity() {
 
     // ------------------------------------------------------------- the verbs
 
-    /** what can be done with one row, in the menu the board uses for an app */
-    private fun showActions(item: FileItem) {
+    /**
+     * What can be done with one row, in the menu the board uses for an app.
+     *
+     * [subtitle] is there for the one caller that has something to say on the way
+     * in: a tap on a file nothing on the unit can open arrives here, and the
+     * sentence that would have been the toast is the sheet's second line instead.
+     */
+    private fun showActions(item: FileItem, subtitle: String? = null) {
         val sheetRows = ArrayList<SheetRow>(6)
 
         // only a package gets this row, because it is the only kind of file the
@@ -386,6 +428,18 @@ class FileManagerActivity : BaseActivity() {
                 label = getString(R.string.action_open),
                 icon = ContextCompat.getDrawable(this, R.drawable.ic_folder),
                 onClick = { goTo(item.file) },
+            )
+        }
+        // a file can leave: whichever app on the unit opens that kind of thing is
+        // handed it (see [Handoff]). Two rows do not get this one - a package,
+        // because its Install row is already the way in and two rows leading to
+        // one installer is one too many, and the way back up, which is a place
+        // and not a file.
+        if (!item.folder && item.kind != FileKind.APK && item.kind != FileKind.UP) {
+            sheetRows += SheetRow(
+                label = getString(R.string.files_open_with),
+                icon = ContextCompat.getDrawable(this, R.drawable.ic_open),
+                onClick = { handoff(item.file) },
             )
         }
         sheetRows += SheetRow(
@@ -413,6 +467,7 @@ class FileManagerActivity : BaseActivity() {
         Sheet.showBottom(
             context = this,
             title = item.name,
+            subtitle = subtitle,
             rows = sheetRows,
         )
     }
@@ -510,6 +565,21 @@ class FileManagerActivity : BaseActivity() {
             busy = false
             render()
         }
+    }
+
+    /**
+     * Hand the file to another app on the unit to open it - a player for a film, a
+     * reader for a page, a viewer for a picture.
+     *
+     * Nothing is copied and nothing is moved: what leaves this app is a URI for
+     * the one file the driver picked, behind a token minted for it (see [Handoff]),
+     * so a film on a card is opened from the card. No worker and no busy flag
+     * either, because there are no bytes to carry - the whole of this verb is a
+     * lookup and an intent.
+     */
+    private fun handoff(file: File) {
+        val label = file.name ?: ""
+        toast(HandoffReport.text(this, Handoff.open(this, file), label))
     }
 
     /**

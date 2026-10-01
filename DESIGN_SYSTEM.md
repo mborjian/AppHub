@@ -348,11 +348,15 @@ on a car screen is the thing being touched.
 | Weight | **1.75dp stroke**, round cap, round join — outline, not Material-fill |
 | Sizes | 24 (rows, headers) · 20 (dense rows, chips) · 40 (status banners) · 48 (empty states) |
 | Colour | inherits tint: `ink_700`/`night_100` for structural, `blue_700`/`blue_300` for active, `warn`/`blocked` for status; never two colours in one glyph |
-| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `frame` (window), `eye-off` (hide), `trash` (uninstall), `grid`, `check-circle`, `warning`, `blocked`, `refresh`, and the file manager's `folder`, `folder-tile` (its own icon), `up`, `page` (a file), `package` (APK), `image`, `note` (music), `film` (video), `box` (archive), `sheets` (copy), `folder-in` (move) |
+| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `frame` (window), `eye-off` (hide), `trash` (uninstall), `grid`, `check-circle`, `warning`, `blocked`, `refresh`, `open` (a page with a way out of it: the app card's *Open*, and the file manager's *Open with*), and the file manager's `folder`, `folder-tile` (its own icon), `up`, `page` (a file), `package` (APK), `image`, `note` (music), `film` (video), `box` (archive), `sheets` (copy), `folder-in` (move) |
 | Running ring | not an icon: a shape drawable (`stroke 3dp`, `radius_l`) drawn behind the tile |
 
 The existing `ic_tune` (filled rectangles) and `ic_back` (Material filled arrow)
 are the two glyphs that most date the app; both are redrawn as 1.75dp outlines.
+`ic_open` was drawn before the file manager's set existed and kept a 1dp corner
+radius; it now carries the set's 2.9 corner, because the file manager's *Open
+with* row made it a glyph that has to sit beside `folder`, `folder-in` and
+`sheets` rather than on an app card of its own.
 
 ---
 
@@ -640,7 +644,7 @@ keeping 1024 physical px — which is exactly why the sheet widths, gutters and
 targets above are tokens: the same rule produces 4 columns of 2×-sized tiles
 instead of 8 cramped ones, and nothing needs a special case.
 
-### 4.11 The file manager — a folder browser, four verbs
+### 4.11 The file manager — a folder browser, five verbs
 
 The fourth surface, and the first one that is a tool rather than a list of apps.
 It stands on the board as a tile of its own: the app's own blue sheet with a
@@ -681,10 +685,30 @@ different things must not be read twice.
 with the one difference that matters: it does not time out, because there is a
 file in it and a file does not expire. So it carries its own dismiss, which the
 undo bar never needed.
+* **A row's tap is the one obvious verb; the `⋯` is everything else.** A folder
+opens, a file is handed over, and a package opens the menu - the one row whose tap
+leads to the sheet, because *Install* is the only thing to do with a package and
+putting an app on the unit is the one act here a driver has to have gone looking
+for. A file that no app on the unit opens leads to that same sheet - the one place
+a subtitle is carried into a menu rather than into a question: the sentence that
+would have been the toast, over the verbs, because a tap that ends on a toast has
+gone nowhere. The `⋯` keeps its own 56dp target, so the row's tap and its menu
+never fight for the same finger.
 * **Folders take the accent, files take `ink_600`.** One tone per glyph, and the
 tone answers the one question a column of rows raises: which of these are places.
+* **`Open with` is the one verb that leaves the app, and it is drawn as leaving**:
+a page with its top-right corner open and an arrow going out through the gap - the
+shape every other screen on the unit uses for it. A folder's *Open* keeps the
+folder glyph, because that one stays in here.
 * **`Install` is a row and not a shape**: the one file the platform installs by
-itself gets the verb that matches, and every other file gets the three it takes.
+itself gets the verb that matches, and no *Open with* beside it - two rows leading
+to one installer is one too many - while every other file gets *Open with* first
+and then the three it takes.
+* **A file leaves as itself and not as a copy of itself.** *Open with* hands the
+receiving app this app's own URI for that one file, a token minted for the row the
+driver picked, so a film on a card is not written into the app's cache on its way
+to a player. Never a `FileProvider` over storage: that provider is the door the
+update provider's single path exists to keep shut.
 * Rows are `Text.Body` + `Text.Meta`, targets are `touch_min`, and the list's
 `paddingBottom` is `touch_car` so the bar can never cover the last row — the same
 rules as every other list in the app.

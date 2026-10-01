@@ -25,7 +25,7 @@ that document is what it *looks like* and why.
 | **Pin** | long press → *Pin to top*; pinned apps keep their place at the front, in the order you pinned them, and the choice survives restarts |
 | **Window margins** | long press → *Window margins*: give one app its own rectangle (**left / right / top / bottom**, in pixels) and it is moved inside it the moment it comes to the front - however it was started, from this grid or from the vehicle's own launcher. See [App window margins](#app-window-margins-one-rectangle-per-app) |
 | **Task manager** | the open apps, one row each with its own **Close**, and each row saying how it got on the list: *Running* (a process), *Open* (a task the system still holds) or *Recently open* (the usage view). Where the install cannot read the task list the screen says so, and where a close did not work it says that too, because in both cases the list is the news (see [What is open, and how App Hub knows](#what-is-open-and-how-app-hub-knows)) |
-| **Files** | this app's own file manager, standing on the board as a tile while the switch in the settings is on: the unit's storage and any attached card or stick, folders first, each row carrying its size and date. A row opens a folder, and its own menu **copies**, **moves**, **deletes** and - for a package - **installs** it. Its own card is a screen's card: *Open*, *Pin*, *Hide*. See [A file manager over the unit's storage](#a-file-manager-over-the-units-storage) |
+| **Files** | this app's own file manager, standing on the board as a tile while the switch in the settings is on: the unit's storage and any attached card or stick, folders first, each row carrying its size and date. A tap enters a folder or hands a file to another app to open, and the row's own menu **opens**, **copies**, **moves**, **deletes** and - for a package - **installs** it. Its own card is a screen's card: *Open*, *Pin*, *Hide*. See [A file manager over the unit's storage](#a-file-manager-over-the-units-storage) |
 | **Tools pill** | a floating button in the bottom corner, always one tap away whatever the grid is scrolled to: **Find an app**, **Settings**, **Edit the page**, **Task manager**, **Close all**, **Close App Hub** - the last two behind a confirmation, the last one being the only thing the close layers cannot do for the app you are looking at |
 
 There is no header, no search row and no hint strip: the board is only the grid,
@@ -358,14 +358,23 @@ A folder that genuinely cannot be read (`Android/data`, from Android 11 on) says
 that instead, because *empty*, *gone*, *shut* and *no storage at all* are four
 different answers.
 
-### The four verbs
+### The five verbs
 
 One row per folder or file, folders first and then the same locale-aware collator
 the board sorts with. Tap a folder to go into it; the first row of every folder is
 the way back up, named after where it leads ("Internal storage", not "emulated").
-A row's verbs are behind the `...` on the row - and behind a long press, for a
-driver who tries that first.
+A tap on a *file* does the obvious thing with it and hands it to another app to
+open; a package is the one row whose tap opens the menu instead, because
+installing is the thing a driver wants from a package and that lives in the menu.
+A file that nothing on the unit opens puts that same menu up - with the sentence
+saying so on its second line - because a tap that ends on a toast has gone
+nowhere. Every row's verbs are behind the `...` on the row - *Open with* among
+them - and behind a long press, for a driver who tries that first.
 
+* **Open** is the one verb that leaves this app: a file is handed to whichever app
+on the unit opens that kind of thing, which is the one piece of this screen that
+had a real decision in it and therefore has a section of its own below. A folder's
+*Open* is the ordinary one - it goes in.
 * **Copy** and **Move** are two taps in two places, so what has been picked up is
 drawn in a bar at the bottom of the screen until it is put down or dismissed.
 A copy stays in hand afterwards, because the same picture usually goes to more
@@ -381,8 +390,43 @@ question's yes-row is the app's only red.
 only file the platform will install by itself. (`.apkm` and `.xapk` are bundles
 *containing* APKs, so they are drawn and treated as the archives they are.)
 
-Nothing opens a file: there is no viewer, no editor and no *Open with*, and this
-README says so rather than the screen pretending otherwise.
+Nothing here *shows* a file. There is no viewer and no editor - this hub is not
+one - but there is a way out: *Open with* hands the file over instead. A package
+is the one row that does not get it, because *Install* is already a way in for
+that kind of file and two rows leading to one installer would be one too many.
+
+### Handing a file to another app, without handing over storage
+
+Android crosses a process boundary with a `content://` URI and never with a path,
+which for a file manager that reads real paths is the one problem this screen has.
+The obvious answer is a second provider rooted at storage, and it is the answer
+this app refuses: `update_paths.xml` is the standing rule - *a provider that can
+serve any file is a door* - and every URI such a provider minted would be a read
+handle into whatever sat under its root, the card in the slot included.
+
+`Handoff.kt` is what it does instead, and it is shorter than the objection: **the
+one file the driver picked is the file that leaves.** A tap mints a token for that
+row and writes down the path it belongs to; what goes out to the other app is
+`content://<package>.handoff/<token>/<name>`. `HandoffProvider` has no `paths` and
+no root - it answers a token, one file per token, read-only, and a token this app
+did not just mint means nothing at all.
+
+| Ending | When |
+|---|---|
+| *handed to another app* | the platform found something to open it with, and that app is opening now |
+| *nothing on the unit can open it* | not one app claims that kind of file. News rather than a failure, and from a tap it becomes the verbs sheet's second line instead of a toast, so the tap still leads somewhere |
+| *not on the unit any more* | the card came out, or the file went behind us |
+| *could not be opened* | the file is there and would not be read, or the platform refused the hand-off |
+
+No chooser of this app's own is raised: the platform's resolver *is* the "open
+with" screen, and it is the one that offers *just once* against *always* - a
+choice that belongs to the driver. Nothing is copied on the way out either, so a
+film is opened from the stick it is on, through a descriptor this app opens and
+the other app reads. That descriptor is read-only, and it carries the file's own
+length, because the app on the other side is often a player drawing a seek bar.
+A hand-out is kept for a day and never more than eight of them, since a token is a
+read handle on one file and a handle nobody can still be holding is worth less
+than the room its name takes.
 
 ### Installing a package: one session, two endings
 
@@ -405,6 +449,7 @@ for `adb logcat -s AppHub`, the way the close and the uninstall do:
 
 ```
 copy <from> -> <to> <FileOp>      delete <path> <FileOp>      install session=<id> status=<n>
+handoff <path> <HandoffOp>
 ```
 
 ## What is open, and how App Hub knows
@@ -832,6 +877,7 @@ app_hub/
 │   │   ├── Uninstall.kt             the three removal layers, user-installed apps only
 │   │   ├── Files.kt                 volumes, folders and the copy/move/delete verbs
 │   │   ├── Install.kt               an APK into an installer session, + the status receiver
+│   │   ├── Handoff.kt               one file out to another app: a token, a provider, four endings
 │   │   ├── FileManagerActivity.kt   the file manager screen: rows, verbs, the carry bar
 │   │   ├── WindowProfiles.kt        per-app window rectangles (one per package)
 │   │   ├── WindowControl.kt         the root side: foreground, tasks, `am task resize`
@@ -971,12 +1017,14 @@ a screen that no compiler checks:
   check it, and a malformed path is not a build error, it is a crash when the
   drawable is inflated. All 31 of the app's vectors were run through a parser
   that reads the same grammar, arc flags included;
-* **the eleven new glyphs draw what they are meant to.** The app runs on a
+* **the twelve new glyphs draw what they are meant to.** The app runs on a
   vehicle that is not attached to this machine, so the sheet was drawn by hand:
   the same paths, at 24dp and 40dp (and the tile's icon at 96dp), on light and on
 dark. That is how the way-up glyph was caught - as a folder with an arrow inside
   it, it was near-indistinguishable from *Move* in a column, and it is now a plain
-  arrow.
+  arrow. The hand-off arrow went through the same sheet as well - at 96dp and at
+  24dp - because a glyph that has to say "another app" is exactly the kind that
+  does not survive a row by accident.
 
 What no check from here can cover is the part that is the unit's: a real card,
 a real copy, a real delete, and Android's own installer doing the work.
@@ -1023,10 +1071,22 @@ a real copy, a real delete, and Android's own installer doing the work.
   all files access; and where a volume refuses, the operation reports the refusal
   instead of leaving half a copy behind (a failed copy takes its own leftovers
   back out).
-* **Three things the file manager deliberately does not do**: open a file (no
-  viewer, no editor, no *Open with*), work on more than one file at a time (no
-  multi-select, no *new folder*), and hold anything in its hands past the screen
-  it was picked up on.
+* **Three things the file manager deliberately does not do**: show a file (no
+  viewer and no editor - *Open with* hands it to one of those instead, which is
+  not the same thing), work on more than one file at a time (no multi-select, no
+  *new folder*), and hold anything in its hands past the screen it was picked up
+  on.
+* **Nothing was ever handed to a second app from this machine.** The hand-off's
+  four endings, the token provider and the read grant are the parts of the file
+  manager that need another app on the unit to be exercised at all, and there is
+  no emulator here and nothing attached. What verified them is the build, the
+  provider as it stands in the built APK, and the platform source behind the
+  grant; the first real *Open with* on the unit will be the unit's.
+* **A receiving app has to understand a `content://` URI.** Everything on the unit
+  is handed a file this way, by URI and never by path - which is what Android
+  requires, and what keeps a provider over all of storage out of this app. An old
+  app that only knows how to open a path simply is not in the list the platform
+  offers: the file is still there, and the other verbs still work on it.
 * **A package already installed under a different key cannot be replaced** from
   here, and the install fails in the platform's own way - the toast says it did
   not happen, and the installer's log line says why. This is not the self-update

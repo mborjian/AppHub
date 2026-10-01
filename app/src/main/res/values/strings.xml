@@ -50,6 +50,7 @@
     <string name="files_where_title">Go to</string>
     <string name="files_row_meta">%1$s · %2$s</string>
 
+    <string name="files_open_with">Open with</string>
     <string name="files_install">Install</string>
     <string name="files_copy">Copy</string>
     <string name="files_move">Move</string>
@@ -81,6 +82,19 @@
     <string name="files_installing_toast">Installing %1$s</string>
     <string name="files_install_asking_toast">Finish the install in the screen that opened</string>
     <string name="files_install_refused_toast">%1$s could not be installed</string>
+
+    <!-- The hand-off, and its four endings. "Handed" and not "opened" in the one
+         good case: another app is opening it now, and whether the file is on
+         screen yet is that app's news. The empty unit is in here as news of its
+         own, because "nothing here opens a .mkv" is not a failure. -->
+    <string name="files_handed_toast">“%1$s” handed to another app</string>
+    <string name="files_unclaimed_toast">No app on this unit can open “%1$s”</string>
+    <string name="files_missing_toast">“%1$s” is not on the unit any more</string>
+    <string name="files_open_refused_toast">“%1$s” could not be opened</string>
+
+    <!-- The same sentence as the toast above, without the name: it is the second
+         line of the verbs sheet when a tap on a file finds nothing to open it. -->
+    <string name="files_unclaimed_message">No app on this unit opens this kind of file.</string>
 
     <!-- The four ways a folder can have nothing to show. They are four different
          answers - no storage, a folder that is gone, one the platform keeps shut,

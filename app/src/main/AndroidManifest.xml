@@ -220,6 +220,19 @@
                 android:resource="@xml/update_paths" />
         </provider>
 
+        <!-- Handing one file to another app to open. Note what is missing: no
+             FILE_PROVIDER_PATHS, so there is no tree and no root to resolve a
+             name against. A URI here carries a token this app minted for the one
+             file the driver picked, and the file manager copies nothing - a film
+             on a stick is opened from the stick (see Handoff.kt, and
+             update_paths.xml for the rule this keeps). Not exported, permission
+             granted per intent, like the provider above. -->
+        <provider
+            android:name=".HandoffProvider"
+            android:authorities="${applicationId}.handoff"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+
     </application>
 
 </manifest>
