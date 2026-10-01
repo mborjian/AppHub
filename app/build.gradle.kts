@@ -87,6 +87,16 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    testOptions {
+        // A JVM test runs against the stubbed android.jar, which throws on
+        // every call: Log.i is used by the code under test to leave a line for
+        // `adb logcat -s AppHub`, so the stub answers with its default value
+        // instead of shouting. Android behaviour is not what these tests are
+        // about - the rules they pin are pure - and this keeps the line in the
+        // shipping build rather than taking it out to please a test.
+        unitTests.isReturnDefaultValues = true
+    }
+
     lint {
         // "vital" lint runs as part of assembleRelease and needs its own
         // Maven artifacts (com.android.tools.lint:lint-gradle). They are not

@@ -3,6 +3,7 @@ package com.mimskydo.apphub
 import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 
 /**
  * How a package came to be in the list, best first.
@@ -24,7 +25,13 @@ enum class OpenSource {
 }
 
 /** One app that is open - or, for [OpenSource.USAGE], was open not long ago. */
-data class OpenApp(val packageName: String, val source: OpenSource, val taskId: Int?)
+data class OpenApp(
+    val packageName: String,
+    val source: OpenSource,
+    val taskId: Int?,
+    /** what the process table could read about its memory, when it could */
+    val bytes: Long? = null,
+)
 
 /**
  * What this *install* may read and close, asked once and shown to the driver.
@@ -42,6 +49,8 @@ data class OpenAccess(
     val forceStop: Boolean,
     /** root, or `REMOVE_TASKS`: a task can be closed like a swipe in recents */
     val removeTask: Boolean,
+    /** root: which also reads the process table and force-stops anything */
+    val root: Boolean,
 ) {
 
 }
@@ -65,6 +74,11 @@ data class OpenSnapshot(
     val access: OpenAccess,
     /** null when nothing could see anything */
     val source: OpenSource?,
+    /**
+     * the packages whose own process is the one in front, so a row can say
+     * *Running* rather than *Open*; empty for the sources that cannot tell
+     */
+    val foreground: Set<String> = emptySet(),
 ) {
 
     private val byPackage: Map<String, OpenApp> by lazy {
@@ -74,13 +88,22 @@ data class OpenSnapshot(
     /** the task id behind an app, when the tasks source answered */
     fun taskId(packageName: String): Int? = byPackage[packageName]?.taskId
 
-    /** how the board draws this app: a process beats a task beats usage */
+    /**
+     * How the board draws this app, strongest first: the process in front is
+     * *Running*, any other live process and any task the system still holds are
+     * *Open*, and the usage view is *Recently open*. The word matters - it is
+     * the difference between a promise and a guess.
+     */
     fun state(packageName: String): AppState = when {
-        packageName in running -> AppState.RUNNING
+        packageName in foreground -> AppState.RUNNING
+        packageName in running -> AppState.OPEN
         byPackage[packageName]?.source == OpenSource.TASK -> AppState.OPEN
         byPackage.containsKey(packageName) -> AppState.RECENT
         else -> AppState.IDLE
     }
+
+    /** the memory the process table read for an app, when it could read one */
+    fun bytes(packageName: String): Long? = byPackage[packageName]?.bytes
 
     /** an exact view (tasks or processes) rather than the recent-use proxy */
     val exact: Boolean get() = source == OpenSource.TASK || source == OpenSource.PROCESS
@@ -101,7 +124,12 @@ data class OpenSnapshot(
  *     `REAL_GET_TASKS`, or `ps -A` under root. A process is *more* than open
  *     (an app can be running with no window) and *less* than open (a task can
  *     outlive its process), which is why both are reported as they are.
- *  3. **[OpenSource.USAGE]** - the usage-access opt-in, last, and labelled for
+ *  3. **[OpenSource.PROCESS]** again - [ProcTable], which reads `/proc` itself
+ *     and maps uids and process names back to packages. On the releases where
+ *     that table is still world-readable this is the same truth as layer 2
+ *     without needing anything the install does not have; the reader proves it
+ *     can see another app before it is believed.
+ *  4. **[OpenSource.USAGE]** - the usage-access opt-in, last, and labelled for
  *     what it is: apps that were brought to the front recently.
  *
  * `getRecentTasks()` is deprecated, and it is still the only non-root door to
@@ -118,6 +146,9 @@ object OpenApps {
 
     private const val MAX_TASKS = 40
 
+    /** the tag `adb logcat -s AppHub` filters by */
+    private const val TAG = "AppHub"
+
     private const val PERMISSION_TASKS = "android.permission.REAL_GET_TASKS"
     private const val PERMISSION_FORCE_STOP = "android.permission.FORCE_STOP_PACKAGES"
     private const val PERMISSION_REMOVE_TASKS = "android.permission.REMOVE_TASKS"
@@ -130,6 +161,7 @@ object OpenApps {
             usage = ActivityStats.hasAccess(context),
             forceStop = granted(context, PERMISSION_FORCE_STOP) || root,
             removeTask = granted(context, PERMISSION_REMOVE_TASKS) || root,
+            root = root,
         )
     }
 
@@ -171,6 +203,23 @@ object OpenApps {
             )
         }
 
+        // 2b. the process table, read straight out of /proc. On the releases
+        //     where it is still world-readable - Android 9 among them, and the
+        //     unit is one - this is the whole answer, with no permission and no
+        //     root. The reader only claims what it can prove: a table showing
+        //     nobody but this app is a table that is not answering, and an
+        //     empty answer here must not become "nothing is running".
+        val table = ProcTable.read(context, packages)
+        if (table.isNotEmpty()) {
+            return OpenSnapshot(
+                open = table.map { OpenApp(it.packageName, OpenSource.PROCESS, null, it.bytes) },
+                running = table.map { it.packageName }.toSet(),
+                access = access,
+                source = OpenSource.PROCESS,
+                foreground = table.filter { it.foreground }.map { it.packageName }.toSet(),
+            )
+        }
+
         // 3. the process table under root - the one layer that bypasses the
         //    framework's own visibility rules
         if (RootShell.isAvailable()) {
@@ -200,6 +249,15 @@ object OpenApps {
             )
         }
 
+        // Nothing answered, and this line is the only place that says *why*.
+        // The screen can only repeat that it cannot see: a unit with no root, no
+        // privileged install, no process table and no usage opt-in is four
+        // problems that look identical from the driver's seat.
+        Log.i(
+            TAG,
+            "open apps: nothing answered (tasks=${access.tasks} root=${access.root} " +
+                "usage=${access.usage})",
+        )
         return OpenSnapshot(emptyList(), emptySet(), access, null)
     }
 

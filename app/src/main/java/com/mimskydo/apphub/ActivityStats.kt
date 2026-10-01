@@ -5,7 +5,9 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Process
+import android.util.Log
 import android.provider.Settings
 import java.util.HashMap
 
@@ -67,14 +69,46 @@ object ActivityStats {
         emptyMap()
     }
 
-    /** @return true when a usage-access screen could be opened. */
-    fun openAccessSettings(context: Context): Boolean = try {
-        context.startActivity(
-            Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        )
-        true
-    } catch (t: Throwable) {
-        false
+    /**
+     * The nearest door to the usage-access switch, or false when this unit has
+     * none at all.
+     *
+     * The platform's own screen is tried first, and on a phone that is the whole
+     * story. A head unit is not a phone: its ROM trims the Settings app, and on
+     * this unit `ACTION_USAGE_ACCESS_SETTINGS` resolves to nothing - the driver
+     * got "that settings screen is not available on this device" and no way to
+     * turn the opt-in on. So the ladder goes on, and only ever to real screens:
+     * this app's own details page (which on Android 9 leads on to *Special
+     * access*), and the top of Settings itself. The last rung is not the screen
+     * that was asked for and is not claimed to be - the row's own copy says what
+     * to look for - but it beats a toast on a unit where the exact screen does
+     * not exist.
+     *
+     * @return true when one of them opened.
+     */
+    fun openAccessSettings(context: Context): Boolean {
+        for (intent in accessScreens(context)) {
+            try {
+                context.startActivity(intent)
+                Log.i(TAG, "settings opened for ${intent.action}")
+                return true
+            } catch (t: Throwable) {
+                Log.i(TAG, "settings screen refused: $t")
+            }
+        }
+        return false
     }
+
+    /** The ladder, best first; every rung exists on an ordinary build. */
+    private fun accessScreens(context: Context): List<Intent> = listOf(
+        Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS),
+        Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.parse("package:${context.packageName}"),
+        ),
+        Intent(Settings.ACTION_SETTINGS),
+    ).map { it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+
+    /** the tag `adb logcat -s AppHub` filters by */
+    private const val TAG = "AppHub"
 }

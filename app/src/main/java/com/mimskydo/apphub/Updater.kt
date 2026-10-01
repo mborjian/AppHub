@@ -13,6 +13,9 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.util.Locale
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLSocketFactory
 
 /** This build, in the two numbers the release pipeline packs from its tag. */
 data class Version(val name: String, val code: Long)
@@ -151,7 +154,7 @@ object Updater {
     fun check(context: Context): Check {
         val installed = version(context)
         val body = try {
-            get(LATEST_RELEASE, "application/vnd.github+json") { connection ->
+            get(context, LATEST_RELEASE, "application/vnd.github+json") { connection ->
                 // GitHub answers 404 while the repository has no release at all,
                 // and that is not a failure.
                 val code = connection.responseCode
@@ -245,7 +248,7 @@ object Updater {
     fun download(context: Context, release: Release, onPercent: (Int) -> Unit): Download {
         val file = File(context.cacheDir, FILE_NAME)
         try {
-            get(release.apkUrl, "application/octet-stream") { connection ->
+            get(context, release.apkUrl, "application/octet-stream") { connection ->
                 val code = connection.responseCode
                 if (code != HttpURLConnection.HTTP_OK) throw IOException("HTTP $code")
                 val total = connection.contentLengthLong
@@ -279,7 +282,7 @@ object Updater {
         // signature already matches; a checksum that *disagrees* is.
         val published = release.digestUrl?.let { url ->
             try {
-                get(url, "text/plain") { it.inputStream.bufferedReader().use { it.readText() } }
+                get(context, url, "text/plain") { it.inputStream.bufferedReader().use { it.readText() } }
             } catch (e: IOException) {
                 null
             }
@@ -443,22 +446,81 @@ object Updater {
     /**
      * One request, with the headers GitHub insists on: it refuses a call with no
      * user agent, and the [accept] header is which of its two answers is wanted.
+     *
+     * The hops are walked here rather than by [HttpURLConnection], for two
+     * reasons. Every hop has to go through [GithubTls]'s socket factory: a
+     * redirect carries a connection's own factory only as far as the library
+     * decides to, and the APK download's second hop lands on a different CA
+     * family than the first. And a hop is checked against [isGithub] before it is
+     * followed at all - the asset URLs come out of the API's own JSON, so the
+     * answer itself could otherwise point the download anywhere.
      */
-    private fun <T> get(url: String, accept: String, read: (HttpURLConnection) -> T): T {
-        var connection: HttpURLConnection? = null
-        try {
-            connection = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = 15_000
-                readTimeout = 30_000
-                instanceFollowRedirects = true
-                setRequestProperty("User-Agent", "AppHub")
-                setRequestProperty("Accept", accept)
+    private fun <T> get(
+        context: Context,
+        url: String,
+        accept: String,
+        read: (HttpURLConnection) -> T,
+    ): T {
+        if (!isGithub(url)) throw IOException("not a GitHub address: $url")
+        val factory = GithubTls.socketFactory(context)
+        var target = url
+        var hops = 0
+        while (true) {
+            val connection = open(target, accept, factory)
+            try {
+                val code = connection.responseCode
+                val location = if (code in REDIRECTS) connection.getHeaderField("Location") else null
+                if (location == null) return read(connection)
+                if (++hops > MAX_HOPS) throw IOException("too many redirects")
+                target = redirectTarget(target, location)
+                    ?: throw IOException("redirected off GitHub: $location")
+            } finally {
+                connection.disconnect()
             }
-            return read(connection)
-        } finally {
-            connection?.disconnect()
         }
     }
+
+    /** One hop, opened but not read yet. */
+    private fun open(url: String, accept: String, factory: SSLSocketFactory?): HttpURLConnection =
+        (URL(url).openConnection() as HttpsURLConnection).apply {
+            connectTimeout = 15_000
+            readTimeout = 30_000
+            instanceFollowRedirects = false
+            setRequestProperty("User-Agent", "AppHub")
+            setRequestProperty("Accept", accept)
+            // the platform's own answer first; null leaves the defaults alone
+            if (factory != null) sslSocketFactory = factory
+        }
+
+    /**
+     * Where a redirect points, or null when that is somewhere this app will not
+     * go. A relative target is resolved against the hop that sent it.
+     */
+    internal fun redirectTarget(from: String, location: String): String? = try {
+        val target = URL(URL(from), location).toString()
+        if (isGithub(target)) target else null
+    } catch (t: Throwable) {
+        null
+    }
+
+    /** True for the addresses the update path is allowed to talk to. */
+    internal fun isGithub(url: String): Boolean = try {
+        val parsed = URL(url)
+        val host = parsed.host?.lowercase(Locale.US).orEmpty()
+        parsed.protocol == "https" && (
+            host == "github.com" ||
+                host == "api.github.com" ||
+                host == "githubusercontent.com" ||
+                host.endsWith(".githubusercontent.com")
+            )
+    } catch (t: Throwable) {
+        false
+    }
+
+    private const val MAX_HOPS = 5
+
+    /** the codes that mean "somewhere else", and nothing else */
+    private val REDIRECTS = setOf(301, 302, 303, 307, 308)
 
     /** The first checksum in a `.sha256` asset, or null when it holds none. */
     private fun publishedDigestOf(asset: String): String? =

@@ -7,10 +7,11 @@
     <string name="task_state_open">باز</string>
     <string name="task_state_recent">اخیراً باز</string>
     <string name="task_row_meta">%1$s · %2$s</string>
+    <string name="task_row_meta_size">%1$s · %2$s · %3$s</string>
     <string name="task_empty_title">برنامه‌ای باز نیست</string>
     <string name="task_empty_message">برنامه‌ها تا وقتی باز هستند اینجا نمایش داده می‌شوند.</string>
     <string name="task_blind_title">برنامه‌های باز دیده نمی‌شوند</string>
-    <string name="task_blind_message">این نصب اجازه ندارد فهرست برنامه‌های باز را بخواند. دسترسی استفاده را روشن کنید تا ببینید اخیراً چه چیزی باز شده، یا مرکز برنامه‌ها را به‌صورت برنامهٔ سیستمی نصب کنید تا همهٔ برنامه‌های باز دیده و بسته شوند.</string>
+    <string name="task_blind_message">این نصب نمی‌تواند برنامه‌های باز را بخواند: این دستگاه نه فهرست کارها را در اختیار می‌گذارد و نه جدول پردازش‌ها را. دسترسی استفاده نشان می‌دهد اخیراً چه چیزی استفاده شده، و نصب سیستمی همهٔ برنامه‌های باز را نشان می‌دهد و می‌بندد.</string>
     <string name="task_recent_banner_title">اخیراً استفاده‌شده، نه باز</string>
     <string name="task_recent_banner_message">دسترسی استفاده نمی‌تواند برنامهٔ باز را از برنامه‌ای که مدتی پیش استفاده شده تشخیص دهد. نصب سیستمی همهٔ برنامه‌های باز را نشان می‌دهد و می‌بندد.</string>
     <string name="close_refused_toast">%1$s هنوز باز است</string>
@@ -255,7 +256,7 @@
     <string name="margin_bottom">پایین</string>
 
     <string name="set_usage_title">دسترسی استفاده</string>
-    <string name="set_usage_subtitle">برای نشان‌دادن برنامه‌های باز لازم است</string>
+    <string name="set_usage_subtitle">اختیاری: آنچه به‌تازگی استفاده شده، وقتی جدول پردازش‌ها خوانده نمی‌شود</string>
 
     <string name="set_reset_title">بازگرداندن تنظیمات</string>
     <string name="set_reset_subtitle">بازگشت به حالت پیش‌فرض؛ نشان‌ها حفظ می‌شوند</string>

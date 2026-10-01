@@ -1491,3 +1491,30 @@ was a bare `200dp` (`number_column`), and `ic_more.xml`'s comment still claimed 
 * Part 6's **skeleton shimmer** is opacity-only breathing (the document argued for
   exactly this, and it is what shipped); a true skeleton would need the real
   layout's shape per cell, which is a per-app-layout query on the UI thread.
+
+### 9.11 What the unit's own platform forced
+
+* **A trust store is a snapshot, and a car never updates it.** The update screen
+  could not reach GitHub at all - *Chain validation failed* - because `github.com`
+  is served by a Sectigo E46 chain and the release assets by a Let's Encrypt "YR"
+  chain, neither of which existed when the unit was built. The fix is additive,
+  and that is the only shape worth having: the platform's trust manager is still
+  asked first and keeps the last word, and three self-signed roots in
+  `res/raw/github_roots.pem` - each verified against the live chains with
+  `openssl verify` before it was added - are heard only after it refuses. No
+  check was relaxed, and there is still no *continue anyway* anywhere in this app.
+* **A list of processes beats a list of memories, and it needed a door nobody had
+  tried.** The usage view answers *used lately*, which is not the question, and
+  the screen that could grant the better answer does not exist on that ROM.
+  `/proc` is readable by a plain install on the unit's release, so the task
+  manager walks it: the process name names the app, the uid finds the package,
+  `oom_score_adj` decides between *Running* and *Open*, and `VmRSS` gives a row
+  the memory figure the list never had. The reader has to find somebody else's
+  process before it is believed, and says nothing at all when it cannot - the
+  difference between a screen that is empty and a screen that is lying.
+* **A toast is not a destination.** Tapping *Enable* on the offer banner ended on
+  "that settings screen is not available", because the ROM carries no
+  usage-access screen. The row now walks a ladder - the platform's screen, this
+  app's own details page, the top of Settings - and says in one log line where it
+  got to. The last rung is not the screen that was asked for, and the copy does
+  not pretend it is; it is simply better than nothing happening.

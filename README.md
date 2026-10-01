@@ -60,7 +60,7 @@ to it; every choice is stored in `SharedPreferences` (`Prefs`).
 | Layout direction | System / Right-to-left / Left-to-right |
 | Screen margins | **left / right / top / bottom**, each dialled on a wheel from 0 to half that side of the screen (512 dp across on this unit's 1024dp width, 284 dp down in its 568dp-tall window) — any whole value, not a list of steps — or **typed on the number keyboard** from the sheet's *Type the value* row. Moves this app's content away from the screen edges so a launcher overlay (shortcut rail, clock, climate strip) cannot cover it. Applied to the grid **and** to this settings screen itself, so the screen follows the value while it is still being chosen |
 | App window margins | a **screen of its own** (the grid's own app list, one row per app): a switch on each row turns that app's profile on or off, and the row opens its four numbers — left / right / top / bottom, in **pixels**, dialled on the same wheel as the screen margins or typed on the same keyboard. An app with a profile is moved into its rectangle whenever it comes to the front, from anywhere. The row's value reads `200 / 20 / 0 / 0 px`, or `Off` |
-| Usage access | shown **only while it is missing**; tapping it opens the system screen. Useful but not the same thing as the task list: it shows what was used recently, and on a device where it cannot be switched on at all (the unit) `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` does the same job from a PC |
+| Usage access | shown **only while it is missing**; tapping it walks a ladder - the platform's usage-access screen, then this app's own details page, then the top of Settings - because a car ROM may not carry the first one, and a toast is what the driver used to get instead. It is not what makes the task manager work on the unit any more: `ProcTable` reads `/proc` there. Where the process table *is* hidden it still shows what was used recently, and `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` does the same from a PC |
 | Close all apps | closes the apps that are open where an exact view knows them, and every app in the list where none does - because on the unit this is a real force stop now, not a call the platform ignored |
 | Reset settings | back to the defaults; pinned apps are kept |
 | Back | the last row of the list; leaves the settings screen (same as the arrow in the header) |
@@ -608,8 +608,9 @@ apps exist.
 |---|---|---|---|
 | 1 | `ActivityManager.getRecentTasks()` | **exactly what is open**: every task the system still holds, with its id | `REAL_GET_TASKS` — `signature\|privileged`, so a platform-signed install or `/system/priv-app` |
 | 2 | `getRunningAppProcesses()` | apps with a **process** right now | the same permission, or root |
-| 3 | `su -c ps -A -o NAME` | the same, without asking the framework | a usable `su` |
-| 4 | `UsageStats` events | apps brought to the front in the last 30 minutes | the one-time *Usage access* opt-in |
+| 3 | `/proc`, read directly (`ProcTable`) | the same, without asking anybody | a release whose process table is still world-readable - Android 9 is one, and the unit is one |
+| 4 | `su -c ps -A -o NAME` | the same, without asking the framework | a usable `su` |
+| 5 | `UsageStats` events | apps brought to the front in the last 30 minutes | the one-time *Usage access* opt-in |
 
 Three things about that table are worth keeping.
 
@@ -626,10 +627,26 @@ least its own task; both would otherwise read as "nothing is open on this
 device". So each cheap source has to prove itself — a foreign package for the
 process table, a task at all (its own included) for the recents list — and a
 source that cannot prove anything is skipped rather than reported as an empty
-device. Where no source can answer at all, the board simply shows no dots and
-the task manager says *cannot see open apps* and names the two ways out.
+device. Where no source can answer at all, the board simply shows no dotsand the task manager says *cannot see open apps* and names the two ways out.
+
+**The process table is the door nobody closed.** Every framework door to "what
+is running" is shut to a plain install: the task list needs a signature
+permission, `getRunningAppProcesses()` has answered with one app's own processes
+since API 22, and the usage view is a different question. `/proc` is still
+readable on the releases that mount it plainly, so `ProcTable` walks it: the
+process name names the app, the `Uid` line says which packages share it,
+`VmRSS` adds up to the row's memory, and `oom_score_adj` decides the word -
+0-200 is the app in front (*Running*), anything else with a process is *Open*.
+It has to find a process that is not this app's own before it claims anything,
+so a unit that hides the table is answered with silence rather than with
+"nothing is running", and a name that is not an installed app is dropped
+instead of drawn as a mystery row. When nothing answers at all, one log line
+says which doors were shut - `open apps: nothing answered (tasks=false
+root=false usage=false)` - because those four problems look identical from the
+driver's seat and only one of them is fixed from a PC.
 
 **Usage access is a view of the past, and is labelled as one.**
+
 `ACTIVITY_RESUMED` is the whole signal. The first version of this removed a
 package again on `ACTIVITY_PAUSED`, which reads like "it left" but is not: an
 app is paused *every* time it is covered — including by this hub — so with the
@@ -651,7 +668,13 @@ Android 15 emulator: *"not a changeable permission type"*; `FORCE_STOP_PACKAGES`
 is refused the same way, and `REMOVE_TASKS` is *"managed by role"*). What works,
 per device:
 
-**The unit (Android 10, platform key in hand).** Install the platform-signed
+**The unit, on a plain install first.** Nothing to install and nothing to
+grant: on the releases where `/proc` is world-readable - Android 9, the unit's
+class - the list is real processes with their memory, which is the change that
+made this screen work at all on a car whose Settings app has no usage-access
+screen to open and whose install could not be given a permission.
+
+**The unit (platform key in hand).** Install the platform-signed
 build. It costs no root at runtime and writes nothing to `/system`:
 
 ```bash
@@ -685,8 +708,8 @@ permission type"*) because the protection level carries no `development` flag �
 the grant is the cheap experiment, and the platform-signed install is the one
 that is known to work.
 
-**The unit, still on a debug build.** One adb command opens the fallback view
-without any Settings screen on the car (which the unit does not offer):
+**A unit that hides the process table (Android 10 and up, or a ROM that closed
+it).** One adb command opens the fallback view without any Settings screen:
 
 ```bash
 adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow
@@ -965,6 +988,25 @@ nothing is installed until all four of these hold:
 Android will not replace a package with a differently-signed one either, but
 that is the platform's answer after the fact; the pin is what lets the row say
 *why* instead.
+
+**The chain, and why an old unit could not build it.** A car's trust store is a
+snapshot of the year it shipped, and GitHub has moved on: `github.com` is served
+by a Sectigo E46 chain, and the release asset hosts by a Let's Encrypt "YR"
+chain - authorities that did not exist when an Android 9 unit was built. The
+platform's answer is `SSLHandshakeException: Chain validation failed`, and this
+app reported it as *GitHub did not answer: Chain validation failed*: true, and
+useless. `GithubTls` is the fix. The platform's own trust manager is asked first
+and keeps the last word; `res/raw/github_roots.pem` - three self-signed roots,
+each checked against the live chains with `openssl verify` when it was added -
+is heard only after the platform has refused. The same pass pins the addresses
+the update path may talk to (`github.com`, `api.github.com`,
+`*.githubusercontent.com`) and follows a redirect only inside those names,
+because the APK's URL comes out of the API's own JSON. One log line says when
+the bundled anchors were the ones that answered:
+
+```
+the platform refused the update host's chain, trying the bundled anchors: <why>
+```
 
 The install itself has two paths, in this order: on a unit with root, the file is
 copied to `/data/local/tmp` and installed with `su -c pm install -r`, which is the

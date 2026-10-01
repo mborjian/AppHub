@@ -21,9 +21,12 @@ import java.util.concurrent.Executors
  *
  * Reachable from the tools menu, this is the selective counterpart of
  * "Close all". What it lists comes from [OpenApps], which tries the system's own
- * recents list first and the usage-access view last, and the screen says which
- * one answered: a row reads *Running*, *Open* or *Recently open*, because those
- * are three different claims about an app and only the first two are promises.
+ * recents list first, then the process table - the framework's or [ProcTable]'s
+ * own read of `/proc` - and the usage-access view last; the screen says which
+ * one answered. A row reads *Running*, *Open* or *Recently open*, because those
+ * are three different claims about an app and only the first two are promises,
+ * and a row the process table answered carries the app's memory beside them,
+ * read from the same `/proc` entry the row itself came from.
  *
  * That is also what the banner is for. Where the install cannot read the task
  * list - a plain APK on a phone, with only the usage opt-in - the rows are real
@@ -116,7 +119,7 @@ class TaskManagerActivity : BaseActivity() {
     }
 
     /** what the list draws, and what could see it */
-    private class Result(val open: List<AppEntry>, val snapshot: OpenSnapshot?)
+    private class Result(val rows: List<TaskRow>, val snapshot: OpenSnapshot?)
 
     /**
      * The open apps, strongest source first, and only apps this screen may
@@ -135,27 +138,28 @@ class TaskManagerActivity : BaseActivity() {
             null
         } ?: return Result(emptyList(), null)
 
-        // the states sort it: a process, then a task, then the usage view - so
-        // what is certainly open is at the top of the list
-        val open = apps
+        // the states sort it: the process in front, then a process, then a task,
+        // then the usage view - what is certainly open is at the top of the list
+        val rows = apps
             .filter { !windowProfiles.isProtected(it.packageName) }
             .mapNotNull { entry ->
                 val state = snapshot.state(entry.packageName)
-                if (state == AppState.IDLE) null else entry.copy(state = state)
+                if (state == AppState.IDLE) null
+                else TaskRow(entry.copy(state = state), snapshot.bytes(entry.packageName))
             }
-            .sortedWith(compareBy({ it.state.ordinal }, { it.label.lowercase() }))
+            .sortedWith(compareBy({ it.entry.state.ordinal }, { it.entry.label.lowercase() }))
 
-        return Result(open, snapshot)
+        return Result(rows, snapshot)
     }
 
     private fun draw(result: Result) {
         snapshot = result.snapshot
-        adapter.submit(result.open)
+        adapter.submit(result.rows)
         count.text = resources.getQuantityString(
-            R.plurals.apps_count, result.open.size, result.open.size,
+            R.plurals.apps_count, result.rows.size, result.rows.size,
         )
 
-        val none = result.open.isEmpty()
+        val none = result.rows.isEmpty()
         empty.isVisible = none
         if (none) {
             // "nothing is open" and "nothing can be seen" are different things,
@@ -222,7 +226,7 @@ class TaskManagerActivity : BaseActivity() {
                 // keeps listing an app that was used, closed or not, so reading
                 // it back would turn "closed" into "still open" every time
                 val stillOpen = result.snapshot?.exact == true &&
-                    result.open.any { it.packageName == entry.packageName }
+                    result.rows.any { it.entry.packageName == entry.packageName }
                 // the one line worth leaving in a build that ships to a car:
                 // 'adb logcat -s AppHub' answers "which layer ran, and did it
                 // work" without a debugger and without guessing
@@ -264,16 +268,23 @@ class TaskManagerActivity : BaseActivity() {
  * is the source's own: *Running* for a process, *Open* for a task the system
  * still holds, *Recently open* for the usage view.
  */
+/**
+ * One row of the open-apps list: the app, and the memory the process table was
+ * able to read for it - null for the sources that cannot read one, so the row
+ * says less rather than saying a number nobody took.
+ */
+private class TaskRow(val entry: AppEntry, val bytes: Long?)
+
 private class TaskAdapter(
     private val shape: () -> IconShape,
     private val onClose: (AppEntry) -> Unit,
 ) : RecyclerView.Adapter<TaskAdapter.Row>() {
 
-    private val items = ArrayList<AppEntry>()
+    private val items = ArrayList<TaskRow>()
 
-    fun submit(open: List<AppEntry>) {
+    fun submit(rows: List<TaskRow>) {
         items.clear()
-        items.addAll(open)
+        items.addAll(rows)
         notifyDataSetChanged()
     }
 
@@ -286,6 +297,9 @@ private class TaskAdapter(
         holder.bind(items[position])
     }
 
+    /** "214 MB": resident memory, in the one unit a driver reads */
+    private fun megabytes(bytes: Long): String = "${maxOf(1L, bytes / (1024L * 1024L))} MB"
+
     inner class Row(view: View) : RecyclerView.ViewHolder(view) {
 
         private val icon = view.findViewById<ImageView>(R.id.rowIcon)
@@ -295,7 +309,8 @@ private class TaskAdapter(
 
         private val rowIconPx = view.resources.getDimensionPixelSize(R.dimen.icon_app_row)
 
-        fun bind(entry: AppEntry) {
+        fun bind(row: TaskRow) {
+            val entry = row.entry
             // drawn in the shape the board is using, so the row shows the same
             // icon the tile would
             icon.setImageDrawable(
@@ -309,9 +324,16 @@ private class TaskAdapter(
                     else -> R.string.task_state_recent
                 },
             )
-            subtitle.text = itemView.resources.getString(
-                R.string.task_row_meta, entry.packageName, state,
-            )
+            // the memory is only there when a source could read it: a blank
+            // field would read as zero, and a zero would be a lie
+            val size = row.bytes?.let { megabytes(it) }
+            subtitle.text = if (size == null) {
+                itemView.resources.getString(R.string.task_row_meta, entry.packageName, state)
+            } else {
+                itemView.resources.getString(
+                    R.string.task_row_meta_size, entry.packageName, state, size,
+                )
+            }
 
             itemView.contentDescription = entry.label
             close.setOnClickListener { onClose(entry) }
