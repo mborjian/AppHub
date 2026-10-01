@@ -160,6 +160,15 @@
     <string name="browser_download_started">Downloading %1$s</string>
     <string name="browser_download_unnamed">That link is not a file the unit can fetch</string>
     <string name="browser_download_refused">%1$s could not be downloaded</string>
+    <string name="browser_show_downloads">Show in Files</string>
+    <string name="browser_download_failed">The download did not finish</string>
+
+    <!-- The home role, offered once: the row disappears once the system agrees,
+         exactly like the usage-access row. -->
+    <string name="set_home_title">Make App Hub the home screen</string>
+    <string name="set_home_subtitle">The board comes up on its own after a boot, and the factory launcher stays installed</string>
+    <string name="set_home_action">Choose</string>
+    <string name="set_home_refused">Android did not offer the choice</string>
 
     <string name="close_all">Close all</string>
     <string name="close_all_done">Closed %1$d apps</string>

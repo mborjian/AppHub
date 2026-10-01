@@ -2,6 +2,7 @@ package com.mimskydo.apphub
 
 import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -51,7 +52,31 @@ object Web {
         if (text.isEmpty()) return ""
         if (text.contains("://") || text.startsWith("about:") || text.startsWith("data:")) return text
         val host = looksLikeHost(text)
-        return if (host) SCHEME + text else SEARCH + Uri.encode(text)
+        return if (host) SCHEME + text else SEARCH + encode(text)
+    }
+
+    /**
+     * Percent-encode for a query parameter, by the same rule `Uri.encode(text)`
+     * applies - unreserved ASCII kept, everything else UTF-8 and escaped.
+     *
+     * Written out rather than borrowed from `android.net.Uri` for one reason:
+     * this rule is the one piece of the browser that has to be readable - and
+     * testable - on its own, and a JVM test cannot touch an android.jar stub.
+     * The two agree byte for byte; if that ever stops being true, the tests
+     * that pin this file are the place the difference shows up.
+     */
+    private fun encode(text: String): String {
+        val out = StringBuilder(text.length)
+        for (byte in text.toByteArray(Charsets.UTF_8)) {
+            val c = byte.toInt().toChar()
+            if (c in 'a'..'z' || c in 'A'..'Z' || c in '0'..'9' || c in "_-.!~*'()") {
+                out.append(c)
+            } else {
+                out.append('%').append("0123456789ABCDEF"[(byte.toInt() shr 4) and 0xF])
+                    .append("0123456789ABCDEF"[byte.toInt() and 0xF])
+            }
+        }
+        return out.toString()
     }
 
     /** the host of [url], for the header's trailing line */
@@ -67,11 +92,25 @@ object Web {
      * A dot with letters after it: `example.com` is a host, `how do i` is not,
      * and a bare word is a search - which is the one case where guessing "host"
      * would send a driver to a domain squat instead of a result page.
+     *
+     * Two addresses get in by kind rather than by shape, because a head unit is
+     * pointed at them more often than at any named site: `localhost` (with or
+     * without a port), and an address that is only digits and dots - a router,
+     * a dashcam, the factory interface. Sending `192.168.1.1` to a search
+     * engine is the one wrong answer this rule must not give, and the
+     * suffix-shaped rule above misses it: the address's last dot stands before
+     * a one-letter final group.
      */
     private fun looksLikeHost(text: String): Boolean {
         if (text.any { it.isWhitespace() }) return false
-        val host = text.substringBefore('/').substringBefore('?').substringBefore('#')
+        val authority = text.substringBefore('/').substringBefore('?').substringBefore('#')
+        // a port says where to connect, not what was typed: the host is judged
+        // without it, and the port rides along into the answer
+        val host = authority.substringBefore(':')
         if (host.equals("localhost", ignoreCase = true)) return true
+        if (host.contains('.') && host.any { it.isDigit() } && host.all { it.isDigit() || it == '.' }) {
+            return true
+        }
         val dot = host.lastIndexOf('.')
         if (dot <= 0 || dot == host.length - 1) return false
         val suffix = host.substring(dot + 1)
@@ -255,4 +294,40 @@ object DownloadReport {
         DownloadOp.UNNAMED -> context.getString(R.string.browser_download_unnamed)
         DownloadOp.REFUSED -> context.getString(R.string.browser_download_refused, name)
     }
+}
+
+/**
+ * Where the two features meet: the browser's downloads and the file manager's
+ * rows are the same folder, so one screen can hand the driver to the other.
+ *
+ * The file manager reads real paths and takes no address, so the hand-over is
+ * the folder and not the file: [Environment.DIRECTORY_DOWNLOADS] on the primary
+ * volume is where [BrowserDownloads] aims every request, and the receiver that
+ * listens for the download landing is what makes the timing make sense - the
+ * browser knows a file is *in* there before it opens the door to it.
+ */
+object BrowserToFiles {
+
+    /**
+     * Open the file manager on the unit's Downloads folder.
+     *
+     * Answering where it could not is as much a part of this as opening it: a
+     * row that does nothing when tapped is a row that lies.
+     */
+    fun showDownloads(context: Context): Boolean {
+        val downloads = Environment
+            .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val intent = Intent(context, FileManagerActivity::class.java)
+            .putExtra(FileManagerActivity.EXTRA_START_DIR, downloads.absolutePath)
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (t: Throwable) {
+            Log.i(TAG, "show downloads refused: $t")
+            false
+        }
+    }
+
+    /** the tag `adb logcat -s AppHub` filters by */
+    private const val TAG = "AppHub"
 }

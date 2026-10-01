@@ -1,6 +1,7 @@
 package com.mimskydo.apphub
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -47,6 +48,8 @@ class SettingsActivity : BaseActivity() {
     private val switchRows = ArrayList<Pair<View, () -> Boolean>>()
 
     private lateinit var usageRow: View
+
+    private lateinit var homeRow: View
 
     private lateinit var updateRow: View
 
@@ -273,6 +276,16 @@ class SettingsActivity : BaseActivity() {
             value = { prefs.showBrowser },
         ) { prefs.showBrowser = it }
 
+        // The home role, offered once and gone once taken: the system decides
+        // this, not this app, and the row's job is only to open the chooser.
+        // Like the usage-access row it disappears when its work is done, so a
+        // unit already booting to the board carries no row offering to do what
+        // is already done.
+        homeRow = addActionRow(
+            R.string.set_home_title, R.string.set_home_subtitle,
+            action = getString(R.string.set_home_action),
+        ) { requestHomeRole() }
+
         addValueRow(
             R.string.set_window_title, R.string.set_window_subtitle,
             value = { windowMarginsValue() },
@@ -453,6 +466,7 @@ class SettingsActivity : BaseActivity() {
         refreshing = false
 
         usageRow.isVisible = !ActivityStats.hasAccess(this)
+        homeRow.isVisible = !isDefaultHome()
     }
 
     /** "Auto (4 columns)" or "4 columns", from the stored option */
@@ -805,6 +819,45 @@ class SettingsActivity : BaseActivity() {
     private fun openUsageAccess() {
         if (ActivityStats.openAccessSettings(this)) return
         toast(getString(R.string.settings_unavailable))
+    }
+
+    // -------------------------------------------------------------- home role
+
+    /**
+     * Whether the platform already answers the home intent with this app - read
+     * rather than stored, because the default can be changed from outside this
+     * app entirely (the system settings, a factory reset), and a stored answer
+     * would go stale the moment it did.
+     */
+    private fun isDefaultHome(): Boolean {
+        val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        return try {
+            packageManager.resolveActivity(home, PackageManager.MATCH_DEFAULT_ONLY)
+                ?.activityInfo?.packageName == packageName
+        } catch (t: Throwable) {
+            false
+        }
+    }
+
+    /**
+     * Android's own chooser for the home role - the only screen that can decide
+     * this, and the one that offers the factory launcher beside this app.
+     *
+     * Refusing silently is the one answer this row cannot give: a row that does
+     * nothing when tapped reads as broken, so a platform with no chooser to
+     * offer (rare, but a locked-down unit is exactly where that could happen)
+     * gets told so.
+     */
+    private fun requestHomeRole() {
+        val chooser = Intent(Intent.ACTION_CHOOSER).apply {
+            putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
+            putExtra(Intent.EXTRA_TITLE, getString(R.string.set_home_title))
+        }
+        try {
+            startActivity(chooser)
+        } catch (t: Throwable) {
+            toast(getString(R.string.set_home_refused))
+        }
     }
 
     private fun confirmReset() {

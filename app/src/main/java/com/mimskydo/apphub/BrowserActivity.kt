@@ -127,8 +127,19 @@ class BrowserActivity : BaseActivity() {
         configure()
         wireBanner()
 
+        // Where the first page comes from: a screen being put back together
+        // keeps its page, an address handed in by whoever started this screen
+        // (the release probe, or another screen of this app) is loaded, and
+        // otherwise the start block. The data is gated through the same
+        // address-or-search rule as a typed one, so a `file:` intent has no
+        // more power here than a typed one does.
         val restored = savedInstanceState?.getString(KEY_URL)
-        if (restored.isNullOrEmpty()) showStart() else go(restored)
+        val handedIn = intent?.data?.toString().orEmpty()
+        when {
+            !restored.isNullOrEmpty() -> go(restored)
+            handedIn.isNotEmpty() -> go(handedIn)
+            else -> showStart()
+        }
     }
 
     // ------------------------------------------------------------- the engine
@@ -209,6 +220,9 @@ class BrowserActivity : BaseActivity() {
             progress.isVisible = false
             // a page is a place the driver went: this is what the history is
             BrowserStore.record(this@BrowserActivity, view.title.orEmpty(), url)
+            // one line per finished page, beside the download and ssl lines:
+            // this is what the release probe reads to say a page really loads
+            Log.i(TAG, "page done $url")
             refresh(url)
         }
 
@@ -236,6 +250,12 @@ class BrowserActivity : BaseActivity() {
             loading = false
             progress.isVisible = false
             Log.i(TAG, "ssl refused: ${error.url}")
+            // The banner has a reload action of its own; while the loader is
+            // being refused the page behind it may still be mid-flight, so the
+            // spinner is stopped here as well - otherwise the action button is
+            // still drawing its “stop” face while nothing is loading.
+            page.stopLoading()
+            refresh(current)
             showBanner(getString(R.string.browser_error_secure))
         }
     }
@@ -380,6 +400,19 @@ class BrowserActivity : BaseActivity() {
                 onClick = { copyAddress(url) },
             )
         }
+        // The two features meet here: a download goes to Downloads, and this
+        // row is the way back to it, offered whether or not one is running -
+        // because the question the row answers is “where did that file go”,
+        // which is asked long after the tap that started it.
+        rows += SheetRow(
+            label = getString(R.string.browser_show_downloads),
+            icon = ContextCompat.getDrawable(this, R.drawable.ic_folder),
+            onClick = {
+                if (!BrowserToFiles.showDownloads(this)) {
+                    toast(getString(R.string.settings_unavailable))
+                }
+            },
+        )
         rows += SheetRow(
             label = getString(R.string.browser_history_clear),
             icon = ContextCompat.getDrawable(this, R.drawable.ic_uninstall),

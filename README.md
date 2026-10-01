@@ -55,6 +55,7 @@ to it; every choice is stored in `SharedPreferences` (`Prefs`).
 | Include system apps | off by default, so only your own apps are listed |
 | File manager | on by default: the **Files** tile on the main page. Off, the tile goes and nothing else changes - it is a screen of this app and not an installed package, so this switch hides a tile and not an app. The tile's own card writes the same setting |
 | Web browser | on by default: the **Web** tile on the main page. The same kind of switch as *File manager* - it hides a screen of this app and not an installed package, so off means the tile goes and nothing else changes. The tile's own card writes the same setting |
+| Home screen | offered, not taken: a row that opens Android's own chooser for the home role, and disappears once the system answers the home intent with this app - read back fresh on every resume rather than stored, because the default can be changed from outside this app entirely. See [The home screen, on offer](#the-home-screen-on-offer) |
 | Theme | System / Light / Dark |
 | Layout direction | System / Right-to-left / Left-to-right |
 | Screen margins | **left / right / top / bottom**, each dialled on a wheel from 0 to half that side of the screen (512 dp across on this unit's 1024dp width, 284 dp down in its 568dp-tall window) — any whole value, not a list of steps — or **typed on the number keyboard** from the sheet's *Type the value* row. Moves this app's content away from the screen edges so a launcher overlay (shortcut rail, clock, climate strip) cannot cover it. Applied to the grid **and** to this settings screen itself, so the screen follows the value while it is still being chosen |
@@ -501,11 +502,21 @@ look. The browser's own cookie and user agent are copied onto the request,
 because the downloader has its own HTTP client and has never seen the session the
 page is holding: without them a file behind a login arrives as a sign-in page.
 
+The ending is this app's news too, not only the platform's. The downloader names
+App Hub as the receiver of its own completion broadcast, and `DownloadReports`
+asks the downloader's record what actually happened: a file that landed already
+has the platform's notification and says nothing more, and a transfer that failed
+gets the one sentence it would otherwise never earn. The menu's *Show in Files*
+row is the way back to it - the browser knows a file is *in* Downloads before it
+opens the door to the folder the file manager draws, which is what makes the two
+features one path rather than two.
+
 | Ending | When |
 |---|---|
 | *downloading* | the downloader has the request and the file is on its way, which is not the same as being on the unit - the platform's own notification says when it lands |
 | *not a link that can be fetched* | a `blob:` or a `data:` address, or a name the platform cannot guess: those exist only while the page does, so this is news rather than a failure |
 | *the downloader refused it* | it would not take the request, or there is no downloader on this unit |
+| *did not finish* | the downloader's own record, asked when the platform reports the transfer over: a failed download is the one ending a driver finds out about an hour later otherwise, looking in the folder for a file that is not there |
 
 ### History and bookmarks: two lists in one file
 
@@ -558,12 +569,31 @@ password store, no file upload (a page asking for a file is told plainly that th
 browser has none). Each of those is a feature with a screen of its own, and this
 is the browser a driver uses for one address at a time.
 
+### The home screen, on offer
+
+The manifest carries a second intent filter on `MainActivity` - `category.HOME`
+beside `category.LAUNCHER` - and that is all it carries: declaring the category is
+what lets Android's own chooser list this app, and nothing is made the default by
+declaring it. The row in *Settings* opens that chooser; once the system answers
+the home intent with App Hub, the row is gone, and the board is what comes up
+after a boot.
+
+The row's condition is read, not stored: `resolveActivity` on the home intent is
+asked fresh on every resume, because the default can be changed from outside this
+app entirely - the system settings, or a factory reset - and a stored answer would
+go stale the moment it did. The choice stays the system's and stays reversible
+one tap away; the factory launcher is not touched, and the factory launcher's
+shortcut rail, if the unit draws one, is what *Screen margins* already exists to
+work around.
+
 One line per download and per refused certificate for `adb logcat -s AppHub`,
 beside the file manager's own:
 
 ```
+page done <url>
 download id=<id> name=<name> url=<url>
 download <url> <DownloadOp>
+download complete id=<id> <DownloadEnd>
 ssl refused: <url>
 ```
 

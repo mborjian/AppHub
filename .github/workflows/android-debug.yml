@@ -36,6 +36,12 @@ jobs:
       - name: Build the debug APK
         run: ./gradlew --no-daemon --stacktrace assembleDebug
 
+      # The JVM test source set: pure logic only (the address-or-search rule,
+      # the MIME table agreement), so it needs no emulator and runs on every
+      # push. A regression in either lands here instead of on a unit.
+      - name: Run the unit tests
+        run: ./gradlew --no-daemon --stacktrace testDebugUnitTest
+
       - name: Upload the APK
         uses: actions/upload-artifact@v7
         with:

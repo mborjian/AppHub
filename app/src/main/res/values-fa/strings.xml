@@ -128,6 +128,13 @@
     <string name="browser_download_started">در حال دانلود %1$s</string>
     <string name="browser_download_unnamed">آن پیوند فایلی نیست که دستگاه بتواند بگیرد</string>
     <string name="browser_download_refused">%1$s دانلود نشد</string>
+    <string name="browser_show_downloads">نمایش در فایل‌ها</string>
+    <string name="browser_download_failed">دانلود تمام نشد</string>
+
+    <string name="set_home_title">مرکز برنامهها صفحهی خانگی شود</string>
+    <string name="set_home_subtitle">صفحهی اصلی بعد از هر روشن شدن خودش بالا میآید، و لانچر کارخانه نصب شده میماند</string>
+    <string name="set_home_action">انتخاب</string>
+    <string name="set_home_refused">اندروید این انتخاب را نشان نداد</string>
 
     <string name="close_all">بستن همه</string>
     <string name="close_all_done">%1$d برنامه بسته شد</string>

@@ -768,10 +768,18 @@ tile's own card writes the same setting.
   (`SHEET_ROWS`) and both fall back to the `listEmpty` block when empty, the same
   block the task manager and every folder in the file manager use.
 * **The menu is one sheet with three kinds of row**: the page (*Keep this page* /
-  *Drop it*, and *Copy address*), the two lists, and `Clear history` in the
-  sheet's hazard group behind a question that says the bookmarks are not going with
-  it. It is the action card's grammar — do / arrange / remove, amber last — in a
-  screen that has fewer verbs to group.
+  *Drop it*, and *Copy address*), the two lists, *Show in Files* — the way back to
+  the folder the platform's downloader writes into, which is the folder the file
+  manager already draws, so the two features meet in one row — and `Clear history`
+  in the sheet's hazard group behind a question that says the bookmarks are not
+  going with it. It is the action card's grammar — do / arrange / remove, amber
+  last — in a screen that has fewer verbs to group.
+* **A failed download is said out loud, once.** The downloader names this app as
+  the receiver of its own completion broadcast; the landing needs no second voice
+  (the platform's notification said it), and the failure is the one ending a
+  driver would otherwise find out about by looking for a file that is not there.
+  The receiver's answer comes from the downloader's own record — a record it does
+  not hold is a *forgotten*, not a *failed*.
 
 ---
 
@@ -1455,7 +1463,22 @@ match `TitleM` / `TitleL` while being neither (they are `Text.Field` and
 was a bare `200dp` (`number_column`), and `ic_more.xml`'s comment still claimed a
 28dp glyph on a 48dp target.
 
-### 9.9 What this leaves open
+### 9.9 What building the browser round changed
+
+* **The tests found the address the rule missed.** The first JVM test source set
+  pinned the address-or-search rule as a table, and two rows failed: `192.168.1.1`
+  — the router-and-dashcam address the README names as a core use — went to the
+  search engine, because its last dot stands before a one-letter group and the
+  suffix rule wanted letters; and `localhost:8080` failed for the same reason a
+  port is not letters. Both are fixed in the rule now, and both are rows in the
+  table: the test that catches a bug is the one that keeps it caught.
+* **A gate that never ran against its failure is a decoration.** The smoke
+  script's browser probe was proven both ways before it shipped — a stub `adb`
+  answered as a browser that loads the page and as one that never does, and the
+  probe exits 0 for the first and 1 with a named error for the second. That is
+  the hand-off check's lesson, applied again.
+
+### 9.10 What this leaves open
 
 * The **haptic map** (Part 5) is implemented for the lift, the drag commit and the
   sheet rows; the undo bar's confirmation tap is not, and on a unit with no

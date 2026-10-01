@@ -99,4 +99,9 @@ android {
 dependencies {
     implementation("androidx.appcompat:appcompat:1.8.0")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
+
+    // The one JVM test source set: pure logic only, because a test that needs
+    // instruments needs an emulator, and the emulator lives in CI. junit was
+    // already in the local cache; hamcrest comes with it.
+    testImplementation("junit:junit:4.13.2")
 }

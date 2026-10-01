@@ -112,6 +112,52 @@ case "$probe" in
 esac
 echo "OK: the hand-off provider refused an ungranted read of a token it never minted"
 
+# The browser is the one screen that reaches outside the unit, and a release is
+# the first time the feature ever meets a page - so it meets one here. The page
+# is served by the runner itself and reverse-forwarded, so the check needs no
+# network at all: the emulator reaches it as its own localhost, over exactly
+# the path a real page takes (the client's scheme gate, the load, the history
+# record and the "page done" line the assertion reads). A non-exported activity
+# only answers `am start` from root, which the google_apis image allows.
+PAGE_DIR="$EVIDENCE_DIR/web"
+mkdir -p "$PAGE_DIR"
+printf '<!doctype html><html><head><title>AppHub smoke page</title></head><body><h1>smoke</h1></body></html>\n' \
+    > "$PAGE_DIR/page.html"
+
+WEB_PORT=${WEB_PORT:-8080}
+python3 -m http.server "$WEB_PORT" --bind 127.0.0.1 --directory "$PAGE_DIR" >/dev/null 2>&1 &
+WEB_SERVER=$!
+cleanup() {
+    kill "$WEB_SERVER" 2>/dev/null || true
+    adb reverse --remove "tcp:$WEB_PORT" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+adb root >/dev/null 2>&1 || true
+adb wait-for-device
+adb reverse "tcp:$WEB_PORT" "tcp:$WEB_PORT" \
+    || fail "adb reverse failed - the emulator cannot reach the runner's page server"
+
+adb logcat -c || true
+adb shell am start -W -n "$PACKAGE/.BrowserActivity" -d "http://127.0.0.1:$WEB_PORT/page.html" \
+    | tee "$EVIDENCE_DIR/browser-start.txt"
+
+page_done=""
+left=$WAIT_SECONDS
+while [ "$left" -gt 0 ]; do
+    page_done=$(adb logcat -d -s AppHub:* 2>/dev/null \
+        | grep "page done http://127.0.0.1:$WEB_PORT/page.html" || true)
+    [ -n "$page_done" ] && break
+    sleep 1
+    left=$((left - 1))
+done
+printf '%s\n' "${page_done:-<no page done line>}" | tee "$EVIDENCE_DIR/browser.txt"
+[ -n "$page_done" ] || fail "the browser never finished loading the smoke page"
+echo "OK: the browser loaded a page end to end"
+
+adb exec-out screencap -p > "$EVIDENCE_DIR/browser.png" \
+    || echo "screencap failed, keeping no browser screenshot"
+
 adb exec-out screencap -p > "$EVIDENCE_DIR/launcher.png" \
     || echo "screencap failed, keeping no screenshot"
 

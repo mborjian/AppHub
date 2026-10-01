@@ -144,6 +144,15 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- The home role, offered - not taken. Adding this category is what
+                 lets the system's HOME chooser list this app; nothing is made
+                 the default by declaring it, and the row in Settings that opens
+                 that chooser is the only thing that does. -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <activity
@@ -212,6 +221,22 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- What the platform's downloader says when it is done with a browser
+             download. This app enqueues the request, so this broadcast is
+             addressed to it by name - which is why it is exempt from the
+             implicit-broadcast ban and safe to declare statically. The
+             receiver only ever reports: the file landing has its own
+             notification already, and a failed download is the one ending the
+             driver would otherwise find out about by looking for a file that
+             is not there. -->
+        <receiver
+            android:name=".DownloadReports"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.app.action.DOWNLOAD_COMPLETE" />
             </intent-filter>
         </receiver>
 

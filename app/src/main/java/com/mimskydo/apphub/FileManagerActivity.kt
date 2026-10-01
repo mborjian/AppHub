@@ -114,9 +114,13 @@ class FileManagerActivity : BaseActivity() {
         carryBar = findViewById(R.id.carryBar)
         carryText = findViewById(R.id.carryText)
 
-        // a screen that was put down in a folder comes back to it, and to
-        // whatever was still in its hands
-        savedInstanceState?.getString(KEY_DIR)?.let { here = File(it) }
+        // Where the screen opens: a bridge from the browser lands on the folder
+        // the download went into, and a screen that was put down in a folder
+        // comes back to that one - saved state wins over both the launch extra
+        // and the volume root.
+        savedInstanceState?.getString(KEY_DIR)
+            ?: intent.getStringExtra(EXTRA_START_DIR)
+            ?.let { here = File(it) }
         savedInstanceState?.getString(KEY_CARRY)?.let { carry = File(it) }
         carryMove = savedInstanceState?.getBoolean(KEY_MOVE) == true
 
@@ -619,9 +623,12 @@ class FileManagerActivity : BaseActivity() {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
     }
 
-    private companion object {
+    companion object {
         /** the tag `adb logcat -s AppHub` filters by */
         private const val TAG = "AppHub"
+
+        /** an optional folder to open instead of the volume root (from the browser) */
+        const val EXTRA_START_DIR = "files_start_dir"
 
         private const val KEY_DIR = "files_dir"
         private const val KEY_CARRY = "files_carry"
