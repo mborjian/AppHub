@@ -243,7 +243,7 @@ class MainActivity : BaseActivity() {
         // it too while that screen is switched on (see [MainPage.page])
         val all = MainPage.page(
             context = this,
-            apps = loaded.filter { !prefs.isHidden(it.packageName) },
+            apps = loaded.filter { !prefs.isHidden(it.key) },
             order = prefs.pageOrder,
             pinned = pins.all(),
         )
@@ -255,7 +255,7 @@ class MainActivity : BaseActivity() {
         }
 
         shown = if (needle.isEmpty()) all
-        else all.filter { Filter.matches(Filter.key(it.label, it.packageName), needle) }
+        else all.filter { Filter.matches(Filter.key(it.label, it.key), needle) }
 
         return when {
             all.isEmpty() -> listOf(GridItem.Panel(PanelKind.EMPTY))
@@ -732,7 +732,7 @@ class MainActivity : BaseActivity() {
         // pretend it is: there is nothing to close (it is this app), nothing to
         // uninstall (that is this install), and no window of another app to move.
         // What is left is what is true of a screen.
-        if (entry.tool) {
+        if (entry.tool != null) {
             showToolActions(entry)
             return
         }
@@ -853,11 +853,12 @@ class MainActivity : BaseActivity() {
     }
 
     /** the package, and what this app is doing, in the card's own header */
-    private fun sheetSubtitle(entry: AppEntry): CharSequence = when {
-        // a tile of this app's own says what it is rather than repeating the
-        // package name the driver is already looking at
-        entry.tool -> getString(R.string.files_card_subtitle)
-        else -> sheetSubtitle(entry.state, entry.packageName)
+    private fun sheetSubtitle(entry: AppEntry): CharSequence {
+        // a tile of this app's own says which screen it is rather than repeating
+        // the package name the driver is already looking at
+        val tool = entry.tool
+        return if (tool != null) getString(tool.subtitle)
+        else sheetSubtitle(entry.state, entry.packageName)
     }
 
     private fun sheetSubtitle(state: AppState, packageName: String): CharSequence = when (state) {
@@ -877,12 +878,14 @@ class MainActivity : BaseActivity() {
         // switch and not by the hidden-apps set: the switch is the one place the
         // tile can be found again, and a tile whose two records live apart is a
         // tile that comes back on its own. Which is also why the switch writes
-        // the same pref the settings row does.
-        if (entry.tool) {
-            prefs.showFileManager = false
+        // the tile's own switch, which is the same pref the settings row writes:
+        // one decision, one record, whichever screen made it (see [Tool.show])
+        val tool = entry.tool
+        if (tool != null) {
+            tool.show(prefs, false)
             render()
             undo(getString(R.string.hidden_undo, entry.label)) {
-                prefs.showFileManager = true
+                tool.show(prefs, true)
                 render()
             }
             return
@@ -896,24 +899,29 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    /**
+     * Pin or unpin one cell.
+     *
+     * By [AppEntry.key] and not by package: the board's own tiles share this app's
+     * package name, so pinning on that name would pin both of them at once.
+     */
     private fun togglePin(entry: AppEntry) {
-        val wasPinned = pins.isPinned(entry.packageName)
+        val wasPinned = pins.isPinned(entry.key)
         if (wasPinned) {
-            pins.unpin(entry.packageName)
+            pins.unpin(entry.key)
         } else {
-            pins.pin(entry.packageName)
+            pins.pin(entry.key)
             // Once the page has an order of its own, the pin ranking no longer
             // decides anything, so "pin to top" has to mean the front of that
             // order instead - otherwise the row would promise something it does
             // not do any more.
             val order = prefs.pageOrder
             if (order.isNotEmpty()) {
-                prefs.pageOrder =
-                    listOf(entry.packageName) + order.filter { it != entry.packageName }
+                prefs.pageOrder = listOf(entry.key) + order.filter { it != entry.key }
             }
         }
         loaded = loaded.map {
-            if (it.packageName == entry.packageName) it.copy(pinned = !entry.pinned) else it
+            if (it.key == entry.key) it.copy(pinned = !entry.pinned) else it
         }
         render()
         undo(
@@ -922,7 +930,7 @@ class MainActivity : BaseActivity() {
                 entry.label,
             )
         ) {
-            if (wasPinned) pins.pin(entry.packageName) else pins.unpin(entry.packageName)
+            if (wasPinned) pins.pin(entry.key) else pins.unpin(entry.key)
             render()
         }
     }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The web browser as a tile, drawn exactly like the file manager's: a filled
+     sheet in the app's own blue, edge to edge (the icon-shape setting clips the
+     outside of this file, so anything short of the edges would show the board
+     through a rounded corner), with the mark inset by a fraction so it keeps
+     its share of an icon that is itself a setting. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/hub_blue_600"
+        android:pathData="M0,0 L24,0 L24,24 L0,24 Z" />
+    <group
+        android:pivotX="12"
+        android:pivotY="12"
+        android:scaleX="0.62"
+        android:scaleY="0.62">
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M12,3.2 A8.8,8.8 0 0 0 3.2,12 A8.8,8.8 0 0 0 12,20.8 A8.8,8.8 0 0 0 20.8,12 A8.8,8.8 0 0 0 12,3.2 Z M12,3.2 A4.2,8.8 0 0 0 7.8,12 A4.2,8.8 0 0 0 12,20.8 A4.2,8.8 0 0 0 16.2,12 A4.2,8.8 0 0 0 12,3.2 Z M3.2,12 L20.8,12"
+            android:strokeColor="#FFFFFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="2.6" />
+    </group>
+</vector>

@@ -265,6 +265,14 @@ class SettingsActivity : BaseActivity() {
             value = { prefs.showFileManager },
         ) { prefs.showFileManager = it }
 
+        // The second of this app's own screens: the same kind of row for the same
+        // kind of tile, one under the other, because they answer one question -
+        // which of this app's tools stand on the board.
+        addSwitchRow(
+            R.string.set_browser_title, R.string.set_browser_subtitle,
+            value = { prefs.showBrowser },
+        ) { prefs.showBrowser = it }
+
         addValueRow(
             R.string.set_window_title, R.string.set_window_subtitle,
             value = { windowMarginsValue() },

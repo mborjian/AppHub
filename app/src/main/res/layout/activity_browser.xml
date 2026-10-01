@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The web browser: the app's own header, one toolbar carrying the way back,
+     the way forward, the address and the menu, and the page under them.
+
+     The toolbar is the settings row the rest of the app is built from - same
+     fill, same radius, same height - because an address a driver has to aim at
+     is a row like any other, and a second kind of field would be a second kind of
+     finger. The buttons either side are 48dp targets with nothing drawn behind
+     them, the way the header's back is.
+
+     The start block is this screen's empty state, and it is the app's empty
+     state shape rather than a web page: a glyph, a sentence, and the two places a
+     driver who has not typed anything yet actually wants. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/hub_page"
+    android:orientation="vertical">
+
+    <include
+        layout="@layout/view_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- what the page could not do: one sentence, with the platform's own words
+         in it where it gave any -->
+    <include
+        android:id="@+id/webBanner"
+        layout="@layout/row_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        tools:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_2"
+        android:paddingTop="@dimen/space_2"
+        android:paddingEnd="@dimen/space_2"
+        android:paddingBottom="@dimen/space_2">
+
+        <ImageView
+            android:id="@+id/webBack"
+            android:layout_width="@dimen/touch_ring"
+            android:layout_height="@dimen/touch_ring"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="@string/browser_back"
+            android:focusable="true"
+            android:padding="@dimen/space_3"
+            android:src="@drawable/ic_back"
+            android:tint="@color/text_primary" />
+
+        <ImageView
+            android:id="@+id/webForward"
+            android:layout_width="@dimen/touch_ring"
+            android:layout_height="@dimen/touch_ring"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="@string/browser_forward"
+            android:focusable="true"
+            android:padding="@dimen/space_3"
+            android:src="@drawable/ic_forward"
+            android:tint="@color/text_primary" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="@dimen/touch_ring"
+            android:layout_marginStart="@dimen/space_1"
+            android:layout_marginEnd="@dimen/space_1"
+            android:layout_weight="1"
+            android:background="@drawable/bg_pill"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/space_3"
+            android:paddingEnd="@dimen/space_3">
+
+            <ImageView
+                android:layout_width="@dimen/icon_dense"
+                android:layout_height="@dimen/icon_dense"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_search"
+                android:tint="@color/hub_ink_400" />
+
+            <EditText
+                android:id="@+id/webAddress"
+                style="@style/Text.Body"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/space_2"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="@string/browser_address_hint"
+                android:imeOptions="actionGo"
+                android:importantForAutofill="no"
+                android:inputType="textUri"
+                android:maxLines="1"
+                android:selectAllOnFocus="true"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/hub_ink_400"
+                tools:ignore="Autofill" />
+        </LinearLayout>
+
+        <!-- reload, or stop while it is loading: one target, two readings -->
+        <ImageView
+            android:id="@+id/webAction"
+            android:layout_width="@dimen/touch_ring"
+            android:layout_height="@dimen/touch_ring"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="@string/browser_reload"
+            android:focusable="true"
+            android:padding="@dimen/space_3"
+            android:src="@drawable/ic_reload"
+            android:tint="@color/text_primary" />
+
+        <ImageView
+            android:id="@+id/webMore"
+            android:layout_width="@dimen/touch_ring"
+            android:layout_height="@dimen/touch_ring"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="@string/more_actions"
+            android:focusable="true"
+            android:padding="@dimen/space_3"
+            android:src="@drawable/ic_more"
+            android:tint="@color/text_primary" />
+    </LinearLayout>
+
+    <!-- the app's one visible stroke width, borrowed: a loading line has to be
+         readable from a moving seat, not tasteful -->
+    <ProgressBar
+        android:id="@+id/webProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/ring_width"
+        android:max="100"
+        android:progressTint="@color/primary_text"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <WebView
+            android:id="@+id/webPage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/hub_page"
+            android:visibility="gone"
+            tools:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/webStart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/space_5"
+            android:paddingTop="@dimen/space_6"
+            android:paddingEnd="@dimen/space_5">
+
+            <ImageView
+                android:layout_width="@dimen/icon_empty"
+                android:layout_height="@dimen/icon_empty"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_web"
+                android:tint="@color/primary_text" />
+
+            <TextView
+                android:id="@+id/webStartTitle"
+                style="@style/Text.BodyStrong"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_3"
+                android:gravity="center"
+                android:text="@string/browser_start_title" />
+
+            <TextView
+                android:id="@+id/webStartMessage"
+                style="@style/Text.BodyS"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_1"
+                android:gravity="center"
+                android:text="@string/browser_start_message" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_5"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/webStartBookmarks"
+                    style="@style/Text.BodyStrong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_min"
+                    android:background="@drawable/bg_pill_quiet"
+                    android:clickable="true"
+                    android:drawableStart="@drawable/ic_bookmark"
+                    android:drawablePadding="@dimen/space_2"
+                    android:drawableTint="@color/primary_text"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingStart="@dimen/space_5"
+                    android:paddingEnd="@dimen/space_5"
+                    android:text="@string/browser_bookmarks"
+                    android:textColor="@color/primary_text" />
+
+                <TextView
+                    android:id="@+id/webStartHistory"
+                    style="@style/Text.BodyStrong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_min"
+                    android:layout_marginStart="@dimen/space_3"
+                    android:background="@drawable/bg_pill_quiet"
+                    android:clickable="true"
+                    android:drawableStart="@drawable/ic_tasks"
+                    android:drawablePadding="@dimen/space_2"
+                    android:drawableTint="@color/primary_text"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingStart="@dimen/space_5"
+                    android:paddingEnd="@dimen/space_5"
+                    android:text="@string/browser_history"
+                    android:textColor="@color/primary_text" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+</LinearLayout>

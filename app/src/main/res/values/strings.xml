@@ -110,6 +110,57 @@
     <string name="files_empty_title">This folder is empty</string>
     <string name="files_empty_message">Nothing is stored in it.</string>
 
+    <!-- The web browser: the second screen of this app that stands on the board
+         as a tile, switched on and off from Settings - Behaviour. It is a real
+         browser over the platform's WebView, so what is stringed here is the
+         chrome around the page rather than the page. -->
+    <string name="browser_title">Web</string>
+    <string name="browser_card_subtitle">App Hub\'s own web browser</string>
+    <string name="set_browser_title">Web browser</string>
+    <string name="set_browser_subtitle">Stands on the main page as a tile of its own</string>
+
+    <string name="browser_address_hint">Address or search</string>
+    <string name="browser_back">Back</string>
+    <string name="browser_forward">Forward</string>
+    <string name="browser_reload">Reload</string>
+    <string name="browser_stop">Stop loading</string>
+    <string name="browser_copy_address">Copy address</string>
+    <string name="browser_address_copied">Address copied</string>
+
+    <string name="browser_start_title">Where to?</string>
+    <string name="browser_start_message">Type an address above - or a few words, and they will be searched for.</string>
+
+    <string name="browser_bookmarks">Bookmarks</string>
+    <string name="browser_bookmark_add">Bookmark this page</string>
+    <string name="browser_bookmark_remove">Remove bookmark</string>
+    <string name="browser_bookmark_kept">“%1$s” bookmarked</string>
+    <string name="browser_bookmark_dropped">Bookmark removed</string>
+    <string name="browser_bookmarks_empty_title">Nothing kept yet</string>
+    <string name="browser_bookmarks_empty_message">Open a page and keep it from the … menu, and it will be waiting here.</string>
+
+    <string name="browser_history">History</string>
+    <string name="browser_history_empty_title">Nothing visited yet</string>
+    <string name="browser_history_empty_message">The pages this browser opens are listed here, newest first.</string>
+    <string name="browser_history_clear">Clear history</string>
+    <string name="browser_history_cleared">History cleared</string>
+    <string name="browser_history_clear_title">Clear the history?</string>
+    <string name="browser_history_clear_message">Every visit in the list goes. The bookmarks stay.</string>
+    <string name="browser_history_clear_confirm">Clear it</string>
+
+    <!-- What the page could not do. The platform's own words for the failure are
+         used where it gave any, so these two are the fallback and the one case
+         with no description of its own: a certificate. -->
+    <string name="browser_error_title">That page did not load</string>
+    <string name="browser_error_message">The unit could not reach it.</string>
+    <string name="browser_error_secure">The certificate for that page is not one the unit will accept.</string>
+    <string name="browser_link_handed">Link handed to another app</string>
+    <string name="browser_link_refused">Nothing on the unit opens that link</string>
+    <string name="browser_upload_refused">This page asks for a file, and this browser has no picker.</string>
+
+    <string name="browser_download_started">Downloading %1$s</string>
+    <string name="browser_download_unnamed">That link is not a file the unit can fetch</string>
+    <string name="browser_download_refused">%1$s could not be downloaded</string>
+
     <string name="close_all">Close all</string>
     <string name="close_all_done">Closed %1$d apps</string>
     <string name="close_all_none">Nothing is open to close</string>

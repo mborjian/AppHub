@@ -110,9 +110,9 @@ class AppAdapter(
         notifyItemMoved(from, to)
     }
 
-    /** the app cells' packages, in the order the board is holding them */
+    /** the app cells' keys, in the order the board is holding them */
     fun appPackages(): List<String> =
-        items.filterIsInstance<GridItem.App>().map { it.entry.packageName }
+        items.filterIsInstance<GridItem.App>().map { it.entry.key }
 
     override fun getItemViewType(position: Int): Int = when (items[position]) {
         is GridItem.App -> TYPE_APP

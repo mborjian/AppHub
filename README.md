@@ -26,6 +26,7 @@ that document is what it *looks like* and why.
 | **Window margins** | long press → *Window margins*: give one app its own rectangle (**left / right / top / bottom**, in pixels) and it is moved inside it the moment it comes to the front - however it was started, from this grid or from the vehicle's own launcher. See [App window margins](#app-window-margins-one-rectangle-per-app) |
 | **Task manager** | the open apps, one row each with its own **Close**, and each row saying how it got on the list: *Running* (a process), *Open* (a task the system still holds) or *Recently open* (the usage view). Where the install cannot read the task list the screen says so, and where a close did not work it says that too, because in both cases the list is the news (see [What is open, and how App Hub knows](#what-is-open-and-how-app-hub-knows)) |
 | **Files** | this app's own file manager, standing on the board as a tile while the switch in the settings is on: the unit's storage and any attached card or stick, folders first, each row carrying its size and date. A tap enters a folder or hands a file to another app to open, and the row's own menu **opens**, **copies**, **moves**, **deletes** and - for a package - **installs** it. Its own card is a screen's card: *Open*, *Pin*, *Hide*. See [A file manager over the unit's storage](#a-file-manager-over-the-units-storage) |
+| **Web** | this app's own browser, standing on the board as a second tile while the switch in the settings is on: the unit's own `WebView` under this app's chrome - a header, a toolbar drawn out of the same row settings are drawn in, and one address field that takes either an address or a search. *History* and *bookmarks* are the same sheets every other list here opens in, and a link that is a download goes to the platform's downloader and lands in *Downloads*, the folder the file manager draws. Every link that is not a web page is handed to the platform instead. See [A web browser over the unit's own WebView](#a-web-browser-over-the-units-own-webview) |
 | **Tools pill** | a floating button in the bottom corner, always one tap away whatever the grid is scrolled to: **Find an app**, **Settings**, **Edit the page**, **Task manager**, **Close all**, **Close App Hub** - the last two behind a confirmation, the last one being the only thing the close layers cannot do for the app you are looking at |
 
 There is no header, no search row and no hint strip: the board is only the grid,
@@ -53,6 +54,7 @@ to it; every choice is stored in `SharedPreferences` (`Prefs`).
 | Sort | Name A–Z / Z–A; pinned apps always stay first. Choosing one re-sorts the page, so it drops a hand-arranged order (and says so in the README rather than in the UI) |
 | Include system apps | off by default, so only your own apps are listed |
 | File manager | on by default: the **Files** tile on the main page. Off, the tile goes and nothing else changes - it is a screen of this app and not an installed package, so this switch hides a tile and not an app. The tile's own card writes the same setting |
+| Web browser | on by default: the **Web** tile on the main page. The same kind of switch as *File manager* - it hides a screen of this app and not an installed package, so off means the tile goes and nothing else changes. The tile's own card writes the same setting |
 | Theme | System / Light / Dark |
 | Layout direction | System / Right-to-left / Left-to-right |
 | Screen margins | **left / right / top / bottom**, each dialled on a wheel from 0 to half that side of the screen (512 dp across on this unit's 1024dp width, 284 dp down in its 568dp-tall window) — any whole value, not a list of steps — or **typed on the number keyboard** from the sheet's *Type the value* row. Moves this app's content away from the screen edges so a launcher overlay (shortcut rail, clock, climate strip) cannot cover it. Applied to the grid **and** to this settings screen itself, so the screen follows the value while it is still being chosen |
@@ -450,6 +452,119 @@ for `adb logcat -s AppHub`, the way the close and the uninstall do:
 ```
 copy <from> -> <to> <FileOp>      delete <path> <FileOp>      install session=<id> status=<n>
 handoff <path> <HandoffOp>
+```
+
+## A web browser over the unit's own WebView
+
+**Web** stands on the main page beside **Files**, switched on and off from
+*Settings → Behaviour → Web browser*, and made the same way: the board skips App
+Hub's own package when it reads the launcher activities, so a screen of this app
+has no entry of its own to be found, and the tile is built from `Tool.BROWSER`
+instead. The engine is the unit's own `WebView` - the platform ships one, so this
+app adds no library for a browser - and what this screen is, then, is this app's
+chrome around it: the header every screen has, a toolbar built out of the same
+row a setting is drawn in, the same sheets for history and bookmarks, and a start
+block in place of a blank page.
+
+### One field, two jobs
+
+An address bar has to answer the one question nobody can answer for the driver:
+was that an address or a search? `Web.target` is that rule, in one place so it
+can be read on its own. A scheme that is there is obeyed - `https://…`,
+`about:blank`, a `data:` page - and never quietly rewritten into a search.
+Without one, `localhost` is a host, a single word with a dot and letters after it
+is a host, and everything else is a search: words with spaces in them, or a bare
+word with no dot. Guessing *host* for a bare word is the reading worth avoiding,
+because it sends a driver to a domain squat instead of a result page.
+
+Searches go to DuckDuckGo's own HTML endpoint, which answers without JavaScript -
+the difference between a result list and a blank screen on a head unit - and it
+is one constant in `Web`, so moving it is one edit.
+
+### What a tap on a link can do
+
+| What the link is | What happens |
+|---|---|
+| a web page (`http`, `https`, `about`, `data`) | it loads, here |
+| a download | the platform's own `DownloadManager` takes it |
+| `mailto:`, `intent:`, `market:`, `tel:` | handed to the platform, which is the only thing on the unit that knows what those are |
+| `file:`, or anything else | never loaded here: a page may not ask this browser to open the unit's filesystem |
+
+### Downloads land where the file manager looks
+
+A link off the web goes to the platform's downloader and not into this app: it
+fetches the bytes, keeps the transfer alive after the browser is closed under it,
+and - the reason it is the right tool - puts the file in the unit's *Downloads*
+folder, which is the folder the file manager already draws. A driver downloads a
+map and then opens it, with the two features meeting where both of them would
+look. The browser's own cookie and user agent are copied onto the request,
+because the downloader has its own HTTP client and has never seen the session the
+page is holding: without them a file behind a login arrives as a sign-in page.
+
+| Ending | When |
+|---|---|
+| *downloading* | the downloader has the request and the file is on its way, which is not the same as being on the unit - the platform's own notification says when it lands |
+| *not a link that can be fetched* | a `blob:` or a `data:` address, or a name the platform cannot guess: those exist only while the page does, so this is news rather than a failure |
+| *the downloader refused it* | it would not take the request, or there is no downloader on this unit |
+
+### History and bookmarks: two lists in one file
+
+Both live in the `browser` preferences file as JSON, read by the framework's own
+`org.json` for the same reason `Updater` uses it - two lists of three fields do
+not justify a library. History keeps the last 200 visits, newest first, and a page
+that is already the newest is replaced rather than repeated: a reload, or coming
+back to the tab, is not a new visit, and a history that says otherwise is a
+history nobody can read. Only `http` and `https` are written down at all -
+`about:blank`, a `data:` page and this app's start block are not places the driver
+went. Bookmarks carry the same three fields, newest first, so keeping a page again
+moves it back to the top.
+
+Both are read defensively. A memory that cannot be parsed is an empty one, because
+a browser that will not open is a worse answer than a browser with no history -
+the one place in this feature where the app forgives instead of insisting.
+
+Everything is behind the `...` beside the address: keep this page or drop it (one
+row, two readings), then the two lists, then *Copy address*, then *Clear history*
+in the sheet's hazard group. Both lists are sheets and not screens - one column of
+addresses over the page the driver is already looking at, and a list that wants a
+screen of its own has stopped being about the page. *Clear history* asks first,
+and the question says the bookmarks stay, because the two are separate memories
+and a driver clearing one means exactly one.
+
+### Three decisions worth keeping
+
+* **An SSL error is never taken.** There is no *proceed anyway* anywhere in this
+  app: `onReceivedSslError` cancels the load and the banner says so. A certificate
+  the platform will not accept is the one thing a browser must not be talked out
+  of, so the row that would offer otherwise does not exist.
+* **A page cannot open a window of its own.** New windows are off, so a link that
+  wants one loads in the page it was tapped in - a popup this screen could not see
+  again would be a popup the driver cannot close.
+* **The page draws in software.** `setLayerType(LAYER_TYPE_SOFTWARE)` is
+  deliberate: a head unit's GPU driver is where a `WebView` meets hardware it was
+  never tested against, and a page that draws a little slower beats a page that
+  draws wrong. The page's own background is the app's page colour, so a dark
+  screen is not met by a white flash at night.
+
+Plain `http` is allowed - `android:usesCleartextTraffic="true"` on `<application>`
+- because a browser on a unit has to reach a router's own page, a dashcam at
+`192.168.x.x` and the factory head unit's own interface, none of which has a
+certificate. It is the browser's half of the app only: the update path is
+unchanged and still checks the release certificate by digest before it installs
+anything.
+
+What it does not do is worth as much as what it does: no tabs, no private mode, no
+password store, no file upload (a page asking for a file is told plainly that this
+browser has none). Each of those is a feature with a screen of its own, and this
+is the browser a driver uses for one address at a time.
+
+One line per download and per refused certificate for `adb logcat -s AppHub`,
+beside the file manager's own:
+
+```
+download id=<id> name=<name> url=<url>
+download <url> <DownloadOp>
+ssl refused: <url>
 ```
 
 ## What is open, and how App Hub knows
@@ -884,6 +999,8 @@ app_hub/
 │   │   ├── Install.kt               an APK into an installer session, + the status receiver
 │   │   ├── Handoff.kt               one file out to another app: a token, a provider, four endings
 │   │   ├── FileManagerActivity.kt   the file manager screen: rows, verbs, the carry bar
+│   │   ├── Web.kt                   the browser's rules: address-or-search, memory, downloads
+│   │   ├── BrowserActivity.kt       the browser screen: toolbar, WebView, history + bookmarks
 │   │   ├── WindowProfiles.kt        per-app window rectangles (one per package)
 │   │   ├── WindowControl.kt         the root side: foreground, tasks, `am task resize`
 │   │   ├── WindowMarginService.kt   the watcher that applies them, + boot receiver
@@ -1032,6 +1149,13 @@ dark. That is how the way-up glyph was caught - as a folder with an arrow inside
   24dp - because a glyph that has to say "another app" is exactly the kind that
   does not survive a row by accident.
 
+The browser is in the same position, and was checked the same way: the build, the
+manifest and resources read out of the built APK, and the four new glyphs (`web`,
+the blue `web-tile`, `bookmark`, `reload`) drawn as a sheet at the sizes the
+screens use - 96dp and 24dp for the outlines, and the tile at 96, 64 and 48dp -
+and looked at, because a globe is a shape that either reads at row size or does
+not. The three outlines and the blue sheet all held up.
+
 What no check from here can cover is the part that is the unit's: a real card,
 a real copy, a real delete, and Android's own installer doing the work.
 
@@ -1101,6 +1225,34 @@ a real copy, a real delete, and Android's own installer doing the work.
   build, the APK's permissions, the vector paths and a hand-drawn sheet of every
   glyph are what verified it; the first real copy, move, delete and install are
   the unit's.
+* **The browser has no tabs, no private mode, no password store and no file
+  upload.** Each is a feature with a screen of its own, and this is the browser a
+  driver uses for one address at a time. A page that asks for a file is told
+  plainly that this browser has none.
+* **A download is the platform's job, and so is where it lands.** The link goes to
+  `DownloadManager`, the bytes are its business, and the file arrives in
+  *Downloads* — the folder the file manager draws — with the platform's own
+  notification saying when. A download that exists only while its page does
+  (`blob:`, `data:`) cannot be fetched at all and says so. Nothing about a transfer
+  is remembered here: the downloader survives the browser being closed, which is
+  the point of handing it over.
+* **History and bookmarks live on this install and go with it.** Up to 200 visits
+  in the `browser` preferences file as JSON, with the bookmarks beside them;
+  uninstalling App Hub takes both, and clearing the history leaves the bookmarks
+  exactly where they are, as the confirmation says.
+* **An SSL error always stops the load.** There is no *proceed anyway* anywhere in
+  this app — a certificate the platform will not accept ends on the banner, by
+  design, and the row that would offer otherwise does not exist.
+* **The browser allows plain `http`.** A router's own page, a dashcam at
+  `192.168.x.x` and the factory head unit's interface have no certificate, and a
+  browser that refused them would be a browser that cannot reach the unit's own
+  network. The update path is untouched and still pins the release certificate by
+  digest; cleartext is the browser's half of the app only.
+* **The browser was never opened on a device from this machine** — no emulator
+  here and none attached. What verified it is the build, the manifest and the
+  resources read out of the built APK, the four new glyphs drawn as a sheet, and
+  the platform's documented `WebView` and `DownloadManager` behaviour; the first
+  page load, the first download and the first refused certificate are the unit's.
 * **No exact "open" view without privileges.** On a plain install you get the
   `recent` state (needs the usage-access opt-in) or nothing; only the
   platform-signed install, a `/system/priv-app` install or root gives the real

@@ -348,7 +348,7 @@ on a car screen is the thing being touched.
 | Weight | **1.75dp stroke**, round cap, round join — outline, not Material-fill |
 | Sizes | 24 (rows, headers) · 20 (dense rows, chips) · 40 (status banners) · 48 (empty states) |
 | Colour | inherits tint: `ink_700`/`night_100` for structural, `blue_700`/`blue_300` for active, `warn`/`blocked` for status; never two colours in one glyph |
-| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `frame` (window), `eye-off` (hide), `trash` (uninstall), `grid`, `check-circle`, `warning`, `blocked`, `refresh`, `open` (a page with a way out of it: the app card's *Open*, and the file manager's *Open with*), and the file manager's `folder`, `folder-tile` (its own icon), `up`, `page` (a file), `package` (APK), `image`, `note` (music), `film` (video), `box` (archive), `sheets` (copy), `folder-in` (move) |
+| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `frame` (window), `eye-off` (hide), `trash` (uninstall), `grid`, `check-circle`, `warning`, `blocked`, `refresh`, `open` (a page with a way out of it: the app card's *Open*, and the file manager's *Open with*), and the file manager's `folder`, `folder-tile` (its own icon), `up`, `page` (a file), `package` (APK), `image`, `note` (music), `film` (video), `box` (archive), `sheets` (copy), `folder-in` (move), and the browser's `web`, `web-tile` (its own icon), `bookmark`, `reload` |
 | Running ring | not an icon: a shape drawable (`stroke 3dp`, `radius_l`) drawn behind the tile |
 
 The existing `ic_tune` (filled rectangles) and `ic_back` (Material filled arrow)
@@ -357,6 +357,14 @@ are the two glyphs that most date the app; both are redrawn as 1.75dp outlines.
 radius; it now carries the set's 2.9 corner, because the file manager's *Open
 with* row made it a glyph that has to sit beside `folder`, `folder-in` and
 `sheets` rather than on an app card of its own.
+
+The browser's four are the same kind of addition, in the opposite direction:
+`web` is a globe at the set's 1.75dp weight, `web-tile` is that globe on the app's
+blue sheet at the folder tile's own scale, and `bookmark` and `reload` are the two
+verbs the feature has — a kept page, and a page asked for again. All four were
+drawn as a sheet and looked at before they were added (96dp and 24dp for the
+outlines, the tile at 96, 64 and 48): a globe is exactly the shape that meets
+itself at row size, where the meridian and the equator cross.
 
 ---
 
@@ -712,6 +720,58 @@ update provider's single path exists to keep shut.
 * Rows are `Text.Body` + `Text.Meta`, targets are `touch_min`, and the list's
 `paddingBottom` is `touch_car` so the bar can never cover the last row — the same
 rules as every other list in the app.
+
+### 4.12 The web browser — a toolbar, a page, and a start block
+
+The fifth surface, and the second tool standing on the board: the unit's own
+`WebView` under this app's chrome, drawn as the app's blue sheet with a globe on
+it, beside **Files**. The switch is *Settings → Behaviour → Web browser*, and the
+tile's own card writes the same setting.
+
+```
+ ┌──────────────────────────────────────────────────────────────────────────────┐
+ │  ←   The Weather Channel                     weather.com                ⋯   │  header: the page's title, its host
+ ├──────────────────────────────────────────────────────────────────────────────┤
+ │  ‹   ›   ⌕  weather.com                                        ⟳             │  toolbar: one row, `raised`, 56dp targets
+ │  ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔                                              │  progress: `ring_width` bar, `primary_text`
+ ├──────────────────────────────────────────────────────────────────────────────┤
+ │                                                                              │
+ │                             the page itself                                  │
+ │                                                                              │
+ └──────────────────────────────────────────────────────────────────────────────┘
+```
+
+* **The toolbar is a row, not a chrome bar.** It is built from the same `raised`
+  surface and `touch_min` targets as every `row_setting`, because the one thing
+  the screen has to teach is where the address is: back, forward, an address
+  *pill* (`bg_pill` + `search`, `imeOptions=actionGo`) and one shared target on the
+  right that is `reload` while a page is loading and `close` while it is not.
+  Nothing else competes with the page for the width.
+* **The address field is the app's only text input, and it is inside a pill.**
+  `refresh` never rewrites it while it still has focus: a driver mid-word does not
+  want the field changed under the keyboard.
+* **The start block is the empty state, drawn with both hands.** The `listEmpty`
+  block's own shape — 48dp glyph, `Text.TitleL`, `Text.Body` — plus two pills out
+  of the sheet rows (*Bookmarks*, *History*), so the screen does something before
+  the first address rather than standing blank.
+* **The page sits on the app's page colour.** `hub_page` is set before the first
+  load, so a dark screen is not met by a white flash at night, and the software
+  layer (`LAYER_TYPE_SOFTWARE`) keeps the unit's GPU driver out of a `WebView` it
+  was never tested against.
+* **A failure is a banner, not a page.** A main-frame error and a refused
+  certificate both come up as `row_banner` over the page, with *reload* as the
+  action and a dismiss; the certificate's wording says the load was stopped,
+  because there is no *proceed anyway* in this app to offer.
+* **History and bookmarks are sheets, not screens.** One column of addresses and
+  nothing else, over the page the driver is already looking at — a list that wants
+  a screen of its own has stopped being about the page. Both cap at 40 rows
+  (`SHEET_ROWS`) and both fall back to the `listEmpty` block when empty, the same
+  block the task manager and every folder in the file manager use.
+* **The menu is one sheet with three kinds of row**: the page (*Keep this page* /
+  *Drop it*, and *Copy address*), the two lists, and `Clear history` in the
+  sheet's hazard group behind a question that says the bookmarks are not going with
+  it. It is the action card's grammar — do / arrange / remove, amber last — in a
+  screen that has fewer verbs to group.
 
 ---
 

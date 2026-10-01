@@ -54,7 +54,7 @@ class ShortcutsActivity : BaseActivity() {
     private lateinit var preview: RecyclerView
 
     private val listAdapter = ShortcutAdapter(
-        checked = { entry -> !prefs.isHidden(entry.packageName) },
+        checked = { entry -> !prefs.isHidden(entry.key) },
         onToggle = ::toggle,
         shape = { prefs.iconShape },
     )
@@ -140,7 +140,7 @@ class ShortcutsActivity : BaseActivity() {
     private fun countText(): CharSequence {
         val all = apps ?: return getString(R.string.loading)
         if (all.isEmpty()) return getString(R.string.none)
-        val shown = all.count { !prefs.isHidden(it.packageName) }
+        val shown = all.count { !prefs.isHidden(it.key) }
         return if (shown == all.size) {
             getString(R.string.shortcuts_all, all.size)
         } else {
@@ -156,7 +156,7 @@ class ShortcutsActivity : BaseActivity() {
         // picture that is missing a tile is a picture of another board
         val ordered = MainPage.page(
             context = this,
-            apps = all.filter { !prefs.isHidden(it.packageName) },
+            apps = all.filter { !prefs.isHidden(it.key) },
             order = prefs.pageOrder,
             pinned = pins.all(),
         )
@@ -210,19 +210,19 @@ class ShortcutsActivity : BaseActivity() {
         val none = findViewById<TextView>(R.id.selectNone)
 
         all.setOnClickListener {
-            val packages = apps?.map { it.packageName } ?: return@setOnClickListener
+            val packages = apps?.map { it.key } ?: return@setOnClickListener
             prefs.setHiddenAll(packages, hidden = false)
             refresh()
         }
         none.setOnClickListener {
-            val packages = apps?.map { it.packageName } ?: return@setOnClickListener
+            val packages = apps?.map { it.key } ?: return@setOnClickListener
             prefs.setHiddenAll(packages, hidden = true)
             refresh()
         }
     }
 
     private fun toggle(entry: AppEntry) {
-        prefs.setHidden(entry.packageName, !prefs.isHidden(entry.packageName))
+        prefs.setHidden(entry.key, !prefs.isHidden(entry.key))
         refresh()
     }
 
@@ -363,7 +363,7 @@ private class ShortcutAdapter(
         all.clear()
         all.addAll(apps)
         keys.clear()
-        for (entry in apps) keys[entry.packageName] = Filter.key(entry.label, entry.packageName)
+        for (entry in apps) keys[entry.key] = Filter.key(entry.label, entry.key)
         showing.clear()
         showing.addAll(apps)
         notifyDataSetChanged()
@@ -373,7 +373,7 @@ private class ShortcutAdapter(
     fun filter(needle: String) {
         showing.clear()
         for (entry in all) {
-            if (needle.isEmpty() || keys[entry.packageName]?.contains(needle) == true) {
+            if (needle.isEmpty() || keys[entry.key]?.contains(needle) == true) {
                 showing += entry
             }
         }

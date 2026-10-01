@@ -17,10 +17,10 @@ object MainPage {
      * The page as both screens read it: the apps, and App Hub's own screens
      * standing on it as tiles.
      *
-     * The tile is made here rather than read from the package manager, because
-     * it *is* this app: the repository skips App Hub's own package when it reads
-     * the launcher activities, so its own screens have no launcher entry to be
-     * found. One place that decides what the page holds is what keeps the board
+     * The tiles are made here rather than read from the package manager, because
+     * they *are* this app: the repository skips App Hub's own package when it
+     * reads the launcher activities, so its own screens have no launcher entry to
+     * be found. One place that decides what the page holds is what keeps the board
      * and the preview from disagreeing about it.
      */
     fun page(
@@ -28,31 +28,33 @@ object MainPage {
         apps: List<AppEntry>,
         order: List<String>,
         pinned: List<String>,
-    ): List<AppEntry> {
-        val tile = toolTile(context, pinned)
-        return arrange(if (tile == null) apps else listOf(tile) + apps, order, pinned)
-    }
+    ): List<AppEntry> = arrange(toolTiles(context, pinned) + apps, order, pinned)
 
     /**
-     * The file manager, as a tile, while the settings switch is on.
+     * App Hub's own screens, as tiles, while their switches are on - in front of
+     * the apps, which is where a page with no order of its own and nothing pinned
+     * draws them. Once the driver moves a tile anywhere the page has an order, and
+     * a tile is in it like anything else.
      *
-     * In front of the apps in the list, which is where a page with no order of
-     * its own and nothing pinned draws it - and once the driver moves a tile
-     * anywhere the page has an order, and this is a tile in it like any other.
+     * Which screens there are, what they are called and which switch owns them is
+     * [Tool]'s business; this only turns them into cells.
      */
-    private fun toolTile(context: Context, pinned: List<String>): AppEntry? {
-        if (!Prefs(context).showFileManager) return null
-        val icon = ContextCompat.getDrawable(context, R.drawable.ic_folder_tile) ?: return null
-        return AppEntry(
-            label = context.getString(R.string.files_title),
-            // this app's own package, which is what a tile needs to be pinned,
-            // hidden and carried around the page by name
-            packageName = context.packageName,
-            activityName = FileManagerActivity::class.java.name,
-            icon = icon,
-            pinned = pinned.contains(context.packageName),
-            tool = true,
-        )
+    private fun toolTiles(context: Context, pinned: List<String>): List<AppEntry> {
+        val prefs = Prefs(context)
+        return Tool.entries.filter { it.shown(prefs) }.mapNotNull { tool ->
+            val icon = ContextCompat.getDrawable(context, tool.icon) ?: return@mapNotNull null
+            AppEntry(
+                label = context.getString(tool.title),
+                // the package the screen is really installed in, so the card can
+                // start it - while the *key* is what the page knows it by, since
+                // every tile here shares this one package name
+                packageName = context.packageName,
+                activityName = tool.screen.name,
+                icon = icon,
+                pinned = pinned.contains(tool.key),
+                tool = tool,
+            )
+        }
     }
 
     /**
@@ -70,13 +72,15 @@ object MainPage {
      * drawn them. The sort is stable, so equal ranks keep the repository's order.
      */
     fun arrange(apps: List<AppEntry>, order: List<String>, pinned: List<String>): List<AppEntry> {
+        // a tile is ranked by key, not by package: both of this app's own tiles
+        // are installed as the same package, so a name would rank them together
         val rank = HashMap<String, Int>(apps.size * 2)
         if (order.isEmpty()) {
             pinned.forEachIndexed { index, pkg -> rank[pkg] = index }
         } else {
             order.forEachIndexed { index, pkg -> rank[pkg] = index }
         }
-        return apps.sortedWith(compareBy { rank[it.packageName] ?: Int.MAX_VALUE })
+        return apps.sortedWith(compareBy { rank[it.key] ?: Int.MAX_VALUE })
     }
 
     /**

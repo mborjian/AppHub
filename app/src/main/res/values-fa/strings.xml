@@ -85,6 +85,50 @@
     <string name="files_empty_title">این پوشه خالی است</string>
     <string name="files_empty_message">چیزی در آن ذخیره نشده.</string>
 
+    <string name="browser_title">وب</string>
+    <string name="browser_card_subtitle">مرورگر وب خود مرکز برنامه‌ها</string>
+    <string name="set_browser_title">مرورگر وب</string>
+    <string name="set_browser_subtitle">به‌عنوان کاشی خودش روی صفحهٔ اصلی می‌ایستد</string>
+
+    <string name="browser_address_hint">نشانی یا جست‌وجو</string>
+    <string name="browser_back">عقب</string>
+    <string name="browser_forward">جلو</string>
+    <string name="browser_reload">بارگذاری دوباره</string>
+    <string name="browser_stop">توقف بارگذاری</string>
+    <string name="browser_copy_address">کپی نشانی</string>
+    <string name="browser_address_copied">نشانی کپی شد</string>
+
+    <string name="browser_start_title">کجا؟</string>
+    <string name="browser_start_message">نشانی را بالا بنویسید؛ یا چند کلمه، که جست‌وجو می‌شود.</string>
+
+    <string name="browser_bookmarks">نشانک‌ها</string>
+    <string name="browser_bookmark_add">نشانک کردن این صفحه</string>
+    <string name="browser_bookmark_remove">برداشتن نشانک</string>
+    <string name="browser_bookmark_kept">«%1$s» نشانک شد</string>
+    <string name="browser_bookmark_dropped">نشانک برداشته شد</string>
+    <string name="browser_bookmarks_empty_title">هنوز چیزی نگه نداشته‌اید</string>
+    <string name="browser_bookmarks_empty_message">صفحه‌ای را باز کنید و از منوی … نگهش دارید تا اینجا بماند.</string>
+
+    <string name="browser_history">تاریخچه</string>
+    <string name="browser_history_empty_title">هنوز جایی باز نشده</string>
+    <string name="browser_history_empty_message">صفحه‌هایی که این مرورگر باز می‌کند اینجا فهرست می‌شوند، تازه‌ترین اول.</string>
+    <string name="browser_history_clear">پاک کردن تاریخچه</string>
+    <string name="browser_history_cleared">تاریخچه پاک شد</string>
+    <string name="browser_history_clear_title">تاریخچه پاک شود؟</string>
+    <string name="browser_history_clear_message">هر بازدید در فهرست پاک می‌شود؛ نشانک‌ها می‌مانند.</string>
+    <string name="browser_history_clear_confirm">پاک کن</string>
+
+    <string name="browser_error_title">آن صفحه باز نشد</string>
+    <string name="browser_error_message">دستگاه نتوانست به آن برسد.</string>
+    <string name="browser_error_secure">گواهی آن صفحه چیزی نیست که دستگاه بپذیرد.</string>
+    <string name="browser_link_handed">پیوند به برنامهٔ دیگری سپرده شد</string>
+    <string name="browser_link_refused">چیزی روی دستگاه آن پیوند را باز نمی‌کند</string>
+    <string name="browser_upload_refused">این صفحه فایلی می‌خواهد و این مرورگر انتخابگر فایل ندارد.</string>
+
+    <string name="browser_download_started">در حال دانلود %1$s</string>
+    <string name="browser_download_unnamed">آن پیوند فایلی نیست که دستگاه بتواند بگیرد</string>
+    <string name="browser_download_refused">%1$s دانلود نشد</string>
+
     <string name="close_all">بستن همه</string>
     <string name="close_all_done">%1$d برنامه بسته شد</string>
     <string name="close_all_none">برنامه‌ای برای بستن باز نیست</string>

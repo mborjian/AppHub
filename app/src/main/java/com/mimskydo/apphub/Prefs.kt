@@ -200,6 +200,17 @@ class Prefs(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_FILES, value).apply()
 
     /**
+     * True while the web browser tile stands on the main page.
+     *
+     * Its own switch, beside the file manager's, and the tile's own card writes
+     * this same one when it is hidden - one decision, one record, whichever
+     * screen made it.
+     */
+    var showBrowser: Boolean
+        get() = prefs.getBoolean(KEY_BROWSER, true)
+        set(value) = prefs.edit().putBoolean(KEY_BROWSER, value).apply()
+
+    /**
      * True once the offer to switch the running marks on has been waved away.
      *
      * The offer is a banner on the board rather than a row in the settings,
@@ -460,6 +471,7 @@ class Prefs(context: Context) {
         const val KEY_COLUMNS = "columns"
         const val KEY_SYSTEM = "system_apps"
         const val KEY_FILES = "file_manager"
+        const val KEY_BROWSER = "web_browser"
         const val KEY_SORT = "sort"
         const val KEY_THEME = "theme"
         const val KEY_DIRECTION = "direction"
@@ -476,8 +488,8 @@ class Prefs(context: Context) {
 
         val SETTING_KEYS = listOf(
             KEY_NAMES, KEY_HIDDEN, KEY_ORDER, KEY_FILTER, KEY_ICON_SIZE,
-            KEY_SHAPE, KEY_COLUMNS, KEY_SYSTEM, KEY_FILES, KEY_SORT, KEY_THEME,
-            KEY_DIRECTION, KEY_ADAPT, KEY_DOTS_OFFER, KEY_TASKS_OFFER,
+            KEY_SHAPE, KEY_COLUMNS, KEY_SYSTEM, KEY_FILES, KEY_BROWSER, KEY_SORT,
+            KEY_THEME, KEY_DIRECTION, KEY_ADAPT, KEY_DOTS_OFFER, KEY_TASKS_OFFER,
         ) + Margin.values().map { it.id }
     }
 }

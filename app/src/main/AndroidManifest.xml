@@ -112,12 +112,21 @@
          it - there the permission above is the mechanism - so it costs nothing
          anywhere it does not apply. Without it, the file manager on the unit
          would list a folder full of other apps' files as empty, which is the one
-         answer it is not allowed to give. -->
+         answer it is not allowed to give.
+
+         `usesCleartextTraffic` is here for the browser and for nothing else: a
+         browser that refuses `http://` is not a browser, and the addresses a head
+         unit is most often pointed at - a router, a dashcam, a page on the car's
+         own network - are plain `http` with no certificate to offer. It changes
+         nothing anywhere else in the app: the updater talks `https` to one host it
+         pins by certificate digest, and the file manager never talks to anything.
+         Without it every `http` page would fail with the platform's own refusal. -->
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
+        android:usesCleartextTraffic="true"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppHub">
@@ -162,6 +171,19 @@
             android:name=".WindowMarginsActivity"
             android:exported="false"
             android:label="@string/window_title" />
+
+        <!-- The web browser: this app's own screen over the WebView, opened from
+             its tile on the board for the same reason the file manager is - it is
+             not an app, so there is no launcher entry for the repository to find
+             and no intent filter for one. Software rendering is forced on: this
+             runs on a head unit whose driver is looking at the screen, not at
+             frames per second, and a hardware layer that misreads a page is worse
+             than a page that scrolls a little slower. -->
+        <activity
+            android:name=".BrowserActivity"
+            android:exported="false"
+            android:label="@string/browser_title"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- The file manager: this app's own screen over the unit's storage.
              Opened from its tile on the board rather than from a launcher, which
