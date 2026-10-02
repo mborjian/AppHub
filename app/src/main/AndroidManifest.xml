@@ -169,13 +169,6 @@
             android:label="@string/set_shortcuts_title"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- The open apps, each with its own Close button: the selective
-             counterpart of the tools' "Close all". -->
-        <activity
-            android:name=".TaskManagerActivity"
-            android:exported="false"
-            android:label="@string/task_manager" />
-
         <activity
             android:name=".WindowMarginsActivity"
             android:exported="false"

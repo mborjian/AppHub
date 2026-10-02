@@ -3,17 +3,6 @@
     <string name="app_name">مرکز برنامه‌ها</string>
     <string name="empty">هنوز برنامه‌ای برای نمایش نیست</string>
     <string name="cannot_open">%1$s باز نشد</string>
-    <string name="running_marker">در حال اجرا</string>
-    <string name="task_state_open">باز</string>
-    <string name="task_state_recent">اخیراً باز</string>
-    <string name="task_row_meta">%1$s · %2$s</string>
-    <string name="task_row_meta_size">%1$s · %2$s · %3$s</string>
-    <string name="task_empty_title">برنامه‌ای باز نیست</string>
-    <string name="task_empty_message">برنامه‌ها تا وقتی باز هستند اینجا نمایش داده می‌شوند.</string>
-    <string name="task_blind_title">برنامه‌های باز دیده نمی‌شوند</string>
-    <string name="task_blind_message">این نصب نمی‌تواند برنامه‌های باز را بخواند: این دستگاه نه فهرست کارها را در اختیار می‌گذارد و نه جدول پردازش‌ها را. دسترسی استفاده نشان می‌دهد اخیراً چه چیزی استفاده شده، و نصب سیستمی همهٔ برنامه‌های باز را نشان می‌دهد و می‌بندد.</string>
-    <string name="task_recent_banner_title">اخیراً استفاده‌شده، نه باز</string>
-    <string name="task_recent_banner_message">دسترسی استفاده نمی‌تواند برنامهٔ باز را از برنامه‌ای که مدتی پیش استفاده شده تشخیص دهد. نصب سیستمی همهٔ برنامه‌های باز را نشان می‌دهد و می‌بندد.</string>
     <string name="close_refused_toast">%1$s هنوز باز است</string>
 
     <string name="action_open">باز کردن</string>
@@ -137,9 +126,6 @@
     <string name="set_home_action">انتخاب</string>
     <string name="set_home_refused">اندروید این انتخاب را نشان نداد</string>
 
-    <string name="close_all">بستن همه</string>
-    <string name="close_all_done">%1$d برنامه بسته شد</string>
-    <string name="close_all_none">برنامه‌ای برای بستن باز نیست</string>
     <string name="closed_toast">%1$s بسته شد</string>
     <string name="closed_background_toast">%1$s در پس‌زمینه بسته شد</string>
     <string name="settings_unavailable">این صفحه تنظیمات روی این دستگاه موجود نیست</string>
@@ -149,13 +135,11 @@
     <string name="tools">ابزارها</string>
     <string name="find_app">جست‌وجوی برنامه</string>
     <string name="edit_page">ویرایش صفحه</string>
-    <string name="task_manager">مدیریت برنامه‌های باز</string>
     <string name="done">تمام</string>
     <string name="drag_hint">برای جابه‌جایی، کاشی را نگه دارید</string>
     <string name="order_reset">بازگرداندن ترتیب</string>
     <string name="undo">بازگرداندن</string>
     <string name="more_actions">کارهای بیشتر</string>
-    <string name="close_hub">بستن مرکز برنامه‌ها</string>
     <string name="hidden_undo">%1$s پنهان شد</string>
     <string name="closed_undo">%1$s بسته شد</string>
     <string name="pinned_undo">%1$s در بالا نشان شد</string>

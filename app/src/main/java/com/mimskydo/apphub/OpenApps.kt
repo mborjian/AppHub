@@ -8,7 +8,7 @@ import android.util.Log
 /**
  * How a package came to be in the list, best first.
  *
- * The distinction is not decoration: the task manager says which one answered,
+ * The distinction is not decoration: the board's dot says which one answered,
  * because "this app is open" and "this app was used twenty minutes ago" are
  * different claims and only one of them is a promise.
  */
@@ -67,7 +67,7 @@ data class OpenAccess(
  * being reported as an empty device.
  */
 data class OpenSnapshot(
-    /** the list the task manager draws: the strongest source that answered */
+    /** every open app: the strongest source that answered */
     val open: List<OpenApp>,
     /** packages with a process, for the board's dot */
     val running: Set<String>,
@@ -265,7 +265,7 @@ object OpenApps {
      * The tasks the system is still holding, as packages.
      *
      * `RECENT_IGNORE_UNAVAILABLE` is deprecated along with the method and is
-     * still what a task manager wants: a task whose components cannot be
+     * still the flag this list wants: a task whose components cannot be
      * resolved any more is not an app anybody can close.
      *
      * @param list the apps, ours left out

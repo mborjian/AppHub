@@ -33,7 +33,7 @@ import java.io.File
  *    which is exactly what a later Android's `hidepid` looks like from here;
  *  * a name that cannot be tied to a package this screen knows is dropped
  *    silently rather than drawn as a mystery row. Daemons, native services and
- *    kernel threads are not apps, and no task manager should pretend they are.
+ *    kernel threads are not apps, and a list of open apps must not pretend they are.
  *
  * Nothing here runs on the UI thread: it is one small read per process, but
  * there are a hundred of them.

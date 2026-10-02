@@ -1,8 +1,9 @@
 # App Hub
 
 A tiny Android app that lists the apps **you** installed on the head unit, with
-their real icons and names, so you can open them with one tap and close them
-again — without patching the factory launcher ever again.
+their real icons and names, so you can open them with one tap and — where the
+install holds the platform's close permission, or root — close them again,
+without patching the factory launcher ever again.
 
 This is the "plan B" companion to `../launcher_tool/`: instead of adding a
 shortcut per app into the launcher's icon array, you install this once and it
@@ -20,14 +21,13 @@ that document is what it *looks like* and why.
 |---|---|
 | **Grid** | every launcher-able app, icon on top and one line of text under it (long names ellipsize), re-read on every resume, sorted with a locale-aware collator (Persian names order correctly). Column count follows the screen, or is fixed in the settings |
 | **Tap** | launches that app (exact `package` + activity, with a `getLaunchIntentForPackage` fallback) |
-| **Long press** | the board **lifts**: every tile scales slightly and grows a badge in its icon's corner, and the page's tiles become draggable. The badge (or a tap through the tools sheet's *Edit the page*) opens one app's card: **Open**, **Window margins**, **Pin to top**, **App info** / **Close**, **Hide from the main page**, **Uninstall** - grouped, with a hairline between the three kinds of verb. *Uninstall* is only there for an app the user installed; see [Uninstalling an app](#uninstalling-an-app-three-layers) |
+| **Long press** | the board **lifts**: every tile scales slightly and grows a badge in its icon's corner, and the page's tiles become draggable. The badge (or a tap through the tools sheet's *Edit the page*) opens one app's card: **Open**, **Window margins**, **Pin to top**, **App info** / **Close**, **Hide from the main page**, **Uninstall** - grouped, with a hairline between the three kinds of verb. *Uninstall* is only there for an app the user installed, and *Close* only where this install can really close one (platform-signed or root); see [Uninstalling an app](#uninstalling-an-app-three-layers) and [Closing an app](#closing-an-app-four-layers) |
 | **Dot** | a small dot on the icon of an app that is open: filled for a process or a task the system still holds, hollow for one that was only used recently (see [What is open, and how App Hub knows](#what-is-open-and-how-app-hub-knows)) |
 | **Pin** | long press → *Pin to top*; pinned apps keep their place at the front, in the order you pinned them, and the choice survives restarts |
 | **Window margins** | long press → *Window margins*: give one app its own rectangle (**left / right / top / bottom**, in pixels) and it is moved inside it the moment it comes to the front - however it was started, from this grid or from the vehicle's own launcher. See [App window margins](#app-window-margins-one-rectangle-per-app) |
-| **Task manager** | the open apps, one row each with its own **Close**, and each row saying how it got on the list: *Running* (a process), *Open* (a task the system still holds) or *Recently open* (the usage view). Where the install cannot read the task list the screen says so, and where a close did not work it says that too, because in both cases the list is the news (see [What is open, and how App Hub knows](#what-is-open-and-how-app-hub-knows)) |
 | **Files** | this app's own file manager, standing on the board as a tile while the switch in the settings is on: the unit's storage and any attached card or stick, folders first, each row carrying its size and date. A tap enters a folder or hands a file to another app to open, and the row's own menu **opens**, **copies**, **moves**, **deletes** and - for a package - **installs** it. Its own card is a screen's card: *Open*, *Pin*, *Hide*. See [A file manager over the unit's storage](#a-file-manager-over-the-units-storage) |
 | **Web** | this app's own browser, standing on the board as a second tile while the switch in the settings is on: the unit's own `WebView` under this app's chrome - a header, a toolbar drawn out of the same row settings are drawn in, and one address field that takes either an address or a search. *History* and *bookmarks* are the same sheets every other list here opens in, and a link that is a download goes to the platform's downloader and lands in *Downloads*, the folder the file manager draws. Every link that is not a web page is handed to the platform instead. See [A web browser over the unit's own WebView](#a-web-browser-over-the-units-own-webview) |
-| **Tools pill** | a floating button in the bottom corner, always one tap away whatever the grid is scrolled to: **Find an app**, **Settings**, **Edit the page**, **Task manager**, **Close all**, **Close App Hub** - the last two behind a confirmation, the last one being the only thing the close layers cannot do for the app you are looking at |
+| **Tools pill** | a floating button in the bottom corner, always one tap away whatever the grid is scrolled to: **Find an app**, **Settings**, **Edit the page** |
 
 There is no header, no search row and no hint strip: the board is only the grid,
 and the two things that are *not* apps - the tools and the search - float over it
@@ -60,8 +60,7 @@ to it; every choice is stored in `SharedPreferences` (`Prefs`).
 | Layout direction | System / Right-to-left / Left-to-right |
 | Screen margins | **left / right / top / bottom**, each dialled on a wheel from 0 to half that side of the screen (512 dp across on this unit's 1024dp width, 284 dp down in its 568dp-tall window) — any whole value, not a list of steps — or **typed on the number keyboard** from the sheet's *Type the value* row. Moves this app's content away from the screen edges so a launcher overlay (shortcut rail, clock, climate strip) cannot cover it. Applied to the grid **and** to this settings screen itself, so the screen follows the value while it is still being chosen |
 | App window margins | a **screen of its own** (the grid's own app list, one row per app): a switch on each row turns that app's profile on or off, and the row opens its four numbers — left / right / top / bottom, in **pixels**, dialled on the same wheel as the screen margins or typed on the same keyboard. An app with a profile is moved into its rectangle whenever it comes to the front, from anywhere. The row's value reads `200 / 20 / 0 / 0 px`, or `Off` |
-| Usage access | shown **only while it is missing**; tapping it walks a ladder - the platform's usage-access screen, then this app's own details page, then the top of Settings - because a car ROM may not carry the first one, and a toast is what the driver used to get instead. It is not what makes the task manager work on the unit any more: `ProcTable` reads `/proc` there. Where the process table *is* hidden it still shows what was used recently, and `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` does the same from a PC |
-| Close all apps | closes the apps that are open where an exact view knows them, and every app in the list where none does - because on the unit this is a real force stop now, not a call the platform ignored |
+| Usage access | shown **only while it is missing**; tapping it walks a ladder - the platform's usage-access screen, then this app's own details page, then the top of Settings - because a car ROM may not carry the first one, and a toast is what the driver used to get instead. It is not what makes the running marks work on the unit any more: `ProcTable` reads `/proc` there. Where the process table *is* hidden it still shows what was used recently, and `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` does the same from a PC |
 | Reset settings | back to the defaults; pinned apps are kept |
 | Back | the last row of the list; leaves the settings screen (same as the arrow in the header) |
 
@@ -221,9 +220,9 @@ Two implementation notes worth keeping:
 * **What is hidden is stored, not what is shown.** `Prefs` keeps the *hidden*
   package names, so a later install is on the main page without anyone ticking it
   and an uninstall leaves no stale entry. It is part of *Reset settings*, and it is
-  applied in `MainActivity.render()` rather than in the repository - so the pinned
-  order and *Close all apps* still know the app exists, and the latter still only
-  closes what the screen is showing.
+  applied in `MainActivity.render()` rather than in the repository - so the hidden
+  app is still installed and still ranked by the pinned order; only the page
+  leaves it out.
 * **A switch is a view of what is stored, not a second copy of it.** All rows
   share one `settingSwitch` id, so Android saves a single position for the
   screen and restores it into *every* switch on a recreation — and the theme,
@@ -239,6 +238,12 @@ Two implementation notes worth keeping:
 `ForceStop.close()` tries the strongest mechanism available and always falls
 back, so the feature degrades instead of breaking — and it now reports what it
 *got*, not what it tried, because three of the four layers can be refused:
+
+The card itself draws `Close` only where a real close exists: `FORCE_STOP_PACKAGES`
+(the platform-signed install) or a usable root — the first two layers below. An
+install whose reach stops at the two weak layers gets no `Close` row at all,
+because its honest answer would be *still open*; those layers still run as
+fallbacks behind a real one that is refused at the moment of the tap.
 
 1. **root** — `su -c am force-stop <pkg>`. Works where `su` lets the app's uid
    in (Magisk-style su does; AOSP's `su` only allows root and shell, so a plain
@@ -268,15 +273,10 @@ back, so the feature degrades instead of breaking — and it now reports what it
 A foreground process can never be killed by itself in *any* layer — that is a
 platform guarantee, not a gap in this app.
 
-The report follows the same rule. The layer that answered is returned, and
-where the source that listed the app is exact (a task, a process) the list is
-read back afterwards and the toast is the *verified* one: `closed`, or **still
-open** when the layers did not reach it. One line goes to logcat either way,
-because a car is a place where the answer has to be readable after the fact:
-
-```bash
-adb logcat -s AppHub        # close <pkg> task=<id> layer=<method> stillOpen=<bool> source=<source>
-```
+The report follows the same rule. The layer that answered is returned, and the
+toast says what it was: `closed`, **closed in background** where only the
+background processes were reached, and **still open** where no layer could
+touch the app - a report is never allowed to claim a close no layer made.
 
 ## Uninstalling an app: three layers
 
@@ -600,9 +600,9 @@ ssl refused: <url>
 ## What is open, and how App Hub knows
 
 Knowing what is "open" is one question with four answers, best first, and the
-screen always says which one it is showing. The reader is `OpenApps`, and the
-board's dots and the task manager share it — they cannot disagree about which
-apps exist.
+board draws which one it got. The reader is `OpenApps`, and every mark on the
+board comes from its one read — the marks cannot disagree about which apps are
+open.
 
 | | Source | Says what | Needs |
 |---|---|---|---|
@@ -627,7 +627,8 @@ least its own task; both would otherwise read as "nothing is open on this
 device". So each cheap source has to prove itself — a foreign package for the
 process table, a task at all (its own included) for the recents list — and a
 source that cannot prove anything is skipped rather than reported as an empty
-device. Where no source can answer at all, the board simply shows no dotsand the task manager says *cannot see open apps* and names the two ways out.
+device. Where no source can answer at all, the board simply shows no dots, and
+the log line below names the doors that were shut.
 
 **The process table is the door nobody closed.** Every framework door to "what
 is running" is shut to a plain install: the task list needs a signature
@@ -635,8 +636,9 @@ permission, `getRunningAppProcesses()` has answered with one app's own processes
 since API 22, and the usage view is a different question. `/proc` is still
 readable on the releases that mount it plainly, so `ProcTable` walks it: the
 process name names the app, the `Uid` line says which packages share it,
-`VmRSS` adds up to the row's memory, and `oom_score_adj` decides the word -
-0-200 is the app in front (*Running*), anything else with a process is *Open*.
+`VmRSS` adds up to the app's resident memory, and `oom_score_adj` decides the
+word - 0-200 is the app in front (*Running*), anything else with a process is
+*Open*.
 It has to find a process that is not this app's own before it claims anything,
 so a unit that hides the table is answered with silence rather than with
 "nothing is running", and a name that is not an installed app is dropped
@@ -654,8 +656,8 @@ hub in front the answer was always empty, and a phone with usage access was told
 nothing was open while six apps had a task each. `PAUSED` and `STOPPED` arrive
 both when an app is left and when its task is taken away, so neither can decide
 that it is gone; only "was resumed recently" is left. Those rows are drawn as
-*Recently open* (a hollow dot on the board), and the task manager puts a banner
-over them saying what they are.
+*Recently open* - a hollow dot on the board, the one place the app still draws
+the distinction.
 
 The window is 30 minutes (`OpenApps.RECENT_WINDOW_MILLIS`) rather than the 15
 this started with: it is a filter against ancient history, not a stopwatch.
@@ -670,9 +672,9 @@ per device:
 
 **The unit, on a plain install first.** Nothing to install and nothing to
 grant: on the releases where `/proc` is world-readable - Android 9, the unit's
-class - the list is real processes with their memory, which is the change that
-made this screen work at all on a car whose Settings app has no usage-access
-screen to open and whose install could not be given a permission.
+class - the list is real processes, which is what made the board's marks real at
+all on a car whose Settings app has no usage-access screen to open and whose
+install could not be given a permission.
 
 **The unit (platform key in hand).** Install the platform-signed
 build. It costs no root at runtime and writes nothing to `/system`:
@@ -692,7 +694,7 @@ adb shell dumpsys package com.mimskydo.apphub | grep -E "REAL_GET_TASKS|FORCE_ST
 ```
 
 Both lines must read `granted=true`. With them the list is exact and *Close* is
-a real force stop.
+a real force stop — without them (and without root), no *Close* row is drawn.
 
 **Before any of that: try the grant.** The unit is `userdebug`
 (`ro.debuggable=1`), and a build that is willing to hand a signature permission
@@ -715,18 +717,20 @@ it).** One adb command opens the fallback view without any Settings screen:
 adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow
 ```
 
-That lists *recently open* apps, and on Android 10 `killBackgroundProcesses()`
-still closes their background processes — so the close button does something
-there even unsigned. It cannot force-stop and it cannot see a task that was
-never brought to the front in the window.
+That lists *recently open* apps — and with no root and no signature the card
+draws no *Close* row beside them: `killBackgroundProcesses()` is a fallback
+inside a close, not a close on its own (layer 4), and a row the install cannot
+make good on is not offered. It cannot force-stop, and it cannot see a task that
+was never brought to the front in the window.
 
 **A phone.** Android leaves two options and no third: root (Magisk-style `su`,
 which the app uses when it finds one), or an install the platform is willing to
 trust. Since Android 14, `killBackgroundProcesses()` reaches only the caller's
 own processes, so on a modern unrooted phone **nothing** can close another app —
 not this app, not `adb grant`, not a task-killer. Usage access still gives the
-list of what was used recently, and the phone's own recents screen is the tool
-that closes. The app says so rather than pretending, which is the point.
+list of what was used recently, the phone's own recents screen is the tool that
+closes, and the card draws no *Close* row at all: where nothing can close,
+nothing is offered. The app says so rather than pretending, which is the point.
 
 **A privileged install.** `/system/priv-app` is the other way to hold the same
 permissions: `python tools/release.py --system`. `--system` refuses on a unit
@@ -1154,11 +1158,10 @@ The open-apps work was driven the same way, on an **Android 15 emulator**
 | Check | Result |
 |---|---|
 | which permissions `adb` can hand over | `pm grant` accepts `PACKAGE_USAGE_STATS`, `DUMP` and `WRITE_SECURE_SETTINGS` (the `development` flag), and refuses the three this feature needs: `REAL_GET_TASKS` and `FORCE_STOP_PACKAGES` with *"is not a changeable permission type"*, `REMOVE_TASKS` with *"is managed by role"* (`dumpsys package permissions`: `REAL_GET_TASKS` = `signature\|privileged`, `REMOVE_TASKS` = `signature\|recents\|role`) |
-| the list, before | with usage access granted and three apps just opened and backgrounded, the screen said **"No open apps"** - the bug being fixed: `ACTIVITY_PAUSED` removed a package the moment it was covered, and the hub is always the app doing the covering |
-| the list, after | `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` → Chrome, Photos, Settings and the hub's own neighbour app listed as *Recently open*, count `4 apps`, and the board's tile for the last one carried a hollow dot |
-| the banner says what it is | the task manager shows *Recently used, not open* with *"Usage access cannot tell an app that is open from one used a while ago…"*, and it is absent when an exact source answers |
-| the dots and the list agree | the board and the task manager are drawn from one read (`OpenApps`), so no tile can be marked while its row is missing |
-| a close that cannot work, reported honestly | on Android 15 (no root, no platform signature) tapping *Close* logs `layer=NONE` and toasts *"…is still open"*, instead of the old `killBackgroundProcesses()` call reported as a close |
+| the list, before | with usage access granted and three apps just opened and backgrounded, the board marked **nothing** - the bug being fixed: `ACTIVITY_PAUSED` dropped a package the moment it was covered, and the hub is always the app doing the covering |
+| the list, after | `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` → Chrome, Photos, Settings and the hub's own neighbour app each carried a hollow dot |
+| one read, one answer | the board's marks are drawn from one read (`OpenApps`), so a tile cannot be marked by one source and unmarked by another |
+| a close that cannot work is not offered | the card's *Close* row is gated on `OpenAccess.forceStop` — root or `FORCE_STOP_PACKAGES` — so an install with neither (the Android 15 emulator here) is one row shorter, and the honest *"…is still open"* report can no longer be reached by a tap that was never going to work |
 | the platform is the reason | controlled pair on one cached app: `adb shell am kill com.android.settings` killed pid 8349; App Hub's own `killBackgroundProcesses("com.android.settings")` returned normally and **pid 8349 was still there** a moment later. App Hub's own call is a no-op from Android 14 on, exactly as the release notes say |
 | one real bug found this way | the first version of the new fallback asked `checkPermission(KILL_BACKGROUND_PROCESSES, <the app being closed>)` - the *target's* permission, which no normal app holds - so every close reported `layer=NONE` while looking like a close that had run, and nothing was ever called |
 
@@ -1184,7 +1187,7 @@ to touch it):
 | the badge is on the icon's corner, not over it | at Medium the badge's 28dp circle is centred on the icon's top-right corner - it covers the art's corner quarter and hangs into the tile's whitespace - and it is placed against a box the adapter sizes, so the same is true at Small and at Extra large. Before the fix a 40dp circle sat across 60% of a 64dp icon, and at 72dp rows the card's six verbs ran off the bottom of the panel |
 | a clipped badge is a quarter of a circle | the badge deliberately paints outside its own view, so the tile, its inner column and the icon's box all had to stop clipping (`clipChildren` and `clipToPadding`): a screenshot of the lifted board is what showed the quarter |
 | the running ring no longer moves the badge | the ring paints outside the icon's box by a negative inset instead of making its own view bigger, so an app that is running no longer shifts the geometry its tile's badge is placed against |
-| the action card fits the panel | six 64dp rows (`row_sheet_height`) plus two hairlines and the header come to 528px of the 576px window, with the dividers after the second row (do / arrange) and before *Close* (remove). At 72dp the same card ran past the bottom edge |
+| the action card fits the panel | six 64dp rows (`row_sheet_height`) plus two hairlines and the header come to 528px of the 576px window, with the dividers after the second row (do / arrange) and before the *remove* group. Where the install cannot close, the card is one row shorter and the hairline opens on *Hide*. At 72dp the same card ran past the bottom edge |
 | a count is a quantity | the empty board, the settings row and the window screen's header read `1 app` for one app via `<plurals>`; they used to read `1 apps` |
 | one app, one drawing | the board, both lists and the app card now share one icon cache keyed by package, size and shape. The masker draws *copies* of an adaptive icon's layers: re-binding the app's own instance to a raster size had left the shortcuts list drawing a stretched icon on a black square while the same icon was fine on the board |
 | dark mode | the night palette measures exactly as specified on the settings screen: **62.8%** `#171A21` (surfaces), **31.9%** `#0F1115` (page), **1.8%** `#242833` (hairlines) - 95.6% of the screen in three tones |
@@ -1331,10 +1334,10 @@ a real copy, a real delete, and Android's own installer doing the work.
   task and process view.
 * **A modern phone cannot close other apps at all.** Android 14 restricts
   `killBackgroundProcesses()` to the caller's own processes, so on an unrooted
-  phone the app shows the *Recently open* list and its Close says *still open*
+  phone the app shows the *Recently open* list and draws no *Close* row at all,
   instead of pretending. The platform-signed install, a priv-app install, or
-  root is what changes that — not an `adb grant`, which the platform refuses for
-  these three permissions.
+  root is what brings the row back — not an `adb grant`, which the platform
+  refuses for these three permissions.
 * **The dot is the only status shown** — the grid deliberately carries no
   package names, badges or pin markers.
 * **Adapting to the screen is one fixed rule, not a knob.** The factor is the

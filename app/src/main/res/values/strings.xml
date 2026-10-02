@@ -3,17 +3,6 @@
     <string name="app_name">App Hub</string>
     <string name="empty">No apps to show yet</string>
     <string name="cannot_open">Cannot open %1$s</string>
-    <string name="running_marker">Running</string>
-    <string name="task_state_open">Open</string>
-    <string name="task_state_recent">Recently open</string>
-    <string name="task_row_meta">%1$s · %2$s</string>
-    <string name="task_row_meta_size">%1$s · %2$s · %3$s</string>
-    <string name="task_empty_title">No open apps</string>
-    <string name="task_empty_message">Apps appear here while they are open.</string>
-    <string name="task_blind_title">Cannot see open apps</string>
-    <string name="task_blind_message">This install cannot read the open apps: this unit hands out neither its task list nor its process table. Usage access shows what was used recently, and a system install shows - and closes - every open app.</string>
-    <string name="task_recent_banner_title">Recently used, not open</string>
-    <string name="task_recent_banner_message">Usage access cannot tell an app that is open from one used a while ago. A system install shows, and closes, every open app.</string>
     <string name="close_refused_toast">%1$s is still open</string>
 
     <string name="action_open">Open</string>
@@ -171,9 +160,6 @@
     <string name="set_home_action">Choose</string>
     <string name="set_home_refused">Android did not offer the choice</string>
 
-    <string name="close_all">Close all</string>
-    <string name="close_all_done">Closed %1$d apps</string>
-    <string name="close_all_none">Nothing is open to close</string>
     <string name="closed_toast">%1$s closed</string>
     <string name="closed_background_toast">%1$s closed in background</string>
     <string name="settings_unavailable">That settings screen is not available on this device</string>
@@ -186,13 +172,11 @@
     <string name="tools">Tools</string>
     <string name="find_app">Find an app</string>
     <string name="edit_page">Edit the page</string>
-    <string name="task_manager">Task manager</string>
     <string name="done">Done</string>
     <string name="drag_hint">Hold a tile to move it</string>
     <string name="order_reset">Reset order</string>
     <string name="undo">Undo</string>
     <string name="more_actions">More actions</string>
-    <string name="close_hub">Close App Hub</string>
     <string name="hidden_undo">%1$s hidden</string>
     <string name="closed_undo">%1$s closed</string>
     <string name="pinned_undo">%1$s pinned to top</string>

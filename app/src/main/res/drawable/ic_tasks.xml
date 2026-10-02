@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A list of tasks: three bullets and three lines. The task manager's own
-     row in the tools menu wears it. -->
+<!-- A list of tasks: three bullets and three lines. The browser's History
+     row wears it. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

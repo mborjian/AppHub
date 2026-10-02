@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import java.util.concurrent.Executors
 import kotlin.math.roundToInt
-import kotlin.system.exitProcess
 
 /**
  * The board: a tile per app, and nothing that is not an app.
@@ -28,8 +27,7 @@ import kotlin.system.exitProcess
  *   tap            -> launch that app
  *   hold           -> the board lifts; every tile grows a "..." and the page
  *                     can be rearranged
- *   the pill       -> tools: search, settings, edit, task manager, close all,
- *                     close the hub
+ *   the pill       -> tools: search, settings, edit the page
  *
  * Two things left this screen. The gear and Close cells that used to end the
  * grid put a red "quit the app you are looking at" one mis-tap away from an
@@ -57,11 +55,11 @@ class MainActivity : BaseActivity() {
     /** every app, already decorated with pin + running state */
     private var loaded: List<AppEntry> = emptyList()
 
-    /** what the last read could see, kept for the task ids a Close can use */
+    /**
+     * What the last read could see: the task ids a Close can use, and whether
+     * this install may close anything at all (see [showActions]).
+     */
     private var openSnapshot: OpenSnapshot? = null
-
-    /** the tiles the board is actually drawing, i.e. [loaded] minus hidden, minus filtered */
-    private var shown: List<AppEntry> = emptyList()
 
     private var appliedColumns = 0
 
@@ -210,8 +208,8 @@ class MainActivity : BaseActivity() {
                 render()
             }
 
-            // the same reader the task manager uses, so the dots and that
-            // screen can never disagree about which apps are open
+            // one read decides the dots and the task ids a Close can use, so
+            // the two can never disagree about which apps are open
             val open = OpenApps.read(context, packages)
 
             val decorated = apps.map { entry ->
@@ -232,9 +230,9 @@ class MainActivity : BaseActivity() {
     /**
      * The cells for the current state of the board, in the order it draws them.
      *
-     * Hidden apps are dropped here rather than in the repository: the rest of
-     * this screen (pinned order, "close all") still knows about them, and the
-     * latter still only closes what the screen is showing.
+     * Hidden apps are dropped here rather than in the repository: they are
+     * installed like the rest, and the pinned order still ranks them - they are
+     * only off this page.
      */
     private fun cells(): List<GridItem> {
         if (failed) return listOf(GridItem.Panel(PanelKind.ERROR))
@@ -254,7 +252,7 @@ class MainActivity : BaseActivity() {
             return List(maxOf(columns, 2) * SKELETON_ROWS) { GridItem.Skeleton }
         }
 
-        shown = if (needle.isEmpty()) all
+        val shown = if (needle.isEmpty()) all
         else all.filter { Filter.matches(Filter.key(it.label, it.key), needle) }
 
         return when {
@@ -325,29 +323,6 @@ class MainActivity : BaseActivity() {
                         label = getString(R.string.edit_page),
                         icon = ContextCompat.getDrawable(this, R.drawable.ic_edit),
                         onClick = { lift() },
-                    ),
-                    SheetRow(
-                        label = getString(R.string.task_manager),
-                        icon = ContextCompat.getDrawable(this, R.drawable.ic_tasks),
-                        onClick = { startActivity(Intent(this, TaskManagerActivity::class.java)) },
-                    ),
-                    SheetRow(
-                        label = getString(R.string.close_all),
-                        icon = ContextCompat.getDrawable(this, R.drawable.ic_close),
-                        danger = true,
-                        groupStart = true,
-                        onClick = { closeAll() },
-                    ),
-                    SheetRow(
-                        label = getString(R.string.close_hub),
-                        icon = ContextCompat.getDrawable(this, R.drawable.ic_power),
-                        danger = true,
-                        // App Hub itself is the one thing the close layers
-                        // cannot do for us, so it ends its own process.
-                        onClick = {
-                            finishAffinity()
-                            exitProcess(0)
-                        },
                     ),
                     SheetRow(
                         label = getString(android.R.string.cancel),
@@ -630,6 +605,9 @@ class MainActivity : BaseActivity() {
     }
 
     /**
+     * Only the card for an install that can really close reaches this (see
+     * [showActions]).
+     *
      * Closing is not reversible, so it reports instead of offering: an "Undo"
      * beside a force-stopped app would be an invitation to re-launch it, which
      * is not the same thing as un-closing it.
@@ -640,7 +618,7 @@ class MainActivity : BaseActivity() {
         val taskId = openSnapshot?.taskId(entry.packageName)
         background {
             val method = ForceStop.close(applicationContext, entry.packageName, taskId)
-            post { toast(CloseReport.text(this, method, entry.label, false)) }
+            post { toast(CloseReport.text(this, method, entry.label)) }
             pauseThenReload()
         }
     }
@@ -676,43 +654,6 @@ class MainActivity : BaseActivity() {
         background {
             val method = Uninstall.uninstall(applicationContext, entry)
             post { toast(UninstallReport.text(this, method, entry.label)) }
-            pauseThenReload()
-        }
-    }
-
-    /**
-     * The tools asked for it, so it happens - there is no second question.
-     * The menu row is already one deliberate tap among five, and everything
-     * closed here is one tile away on the board afterwards.
-     *
-     * What "all" means depends on what can be seen. With an exact view of what
-     * is open it is those apps, which is what the row says - and that matters
-     * since the platform-signed install turned this from a request the platform
-     * ignored into a real force stop: force-stopping every installed app, alarms
-     * and services included, because one row was tapped is not a thing to leave
-     * lying around. With no view at all, every app in the list is all there is,
-     * which is what this always did.
-     */
-    private fun closeAll() {
-        val targets = shown.filter { it.packageName != packageName }
-        val open = openSnapshot
-        val chosen =
-            if (open?.exact == true) targets.filter { open.state(it.packageName) != AppState.IDLE }
-            else targets
-        if (chosen.isEmpty()) {
-            toast(getString(R.string.close_all_none))
-            return
-        }
-        closeAll(chosen)
-    }
-
-    private fun closeAll(targets: List<AppEntry>) {
-        if (targets.isEmpty()) return
-        val ids = targets.associate { it.packageName to openSnapshot?.taskId(it.packageName) }
-        background {
-            val context = applicationContext
-            targets.forEach { ForceStop.close(context, it.packageName, ids[it.packageName]) }
-            post { toast(getString(R.string.close_all_done, targets.size)) }
             pauseThenReload()
         }
     }
@@ -769,17 +710,28 @@ class MainActivity : BaseActivity() {
             onClick = { openAppInfo(entry.packageName) },
         )
 
-        rows += SheetRow(
-            label = getString(R.string.action_close),
-            icon = ContextCompat.getDrawable(this, R.drawable.ic_close),
-            danger = true,
-            groupStart = true,
-            onClick = { closeApp(entry) },
-        )
+        // Close is offered only where closing can really happen. A real force
+        // stop is the first two layers of [ForceStop] - `FORCE_STOP_PACKAGES`
+        // (the platform-signed install) or a `su` this app may use - and
+        // [OpenAccess] answered exactly that question off the UI thread, in the
+        // same read that drew the dots. An install holding neither is shown no
+        // Close row rather than one whose every tap would end in "still open".
+        val canClose = openSnapshot?.access?.forceStop == true
+        if (canClose) {
+            rows += SheetRow(
+                label = getString(R.string.action_close),
+                icon = ContextCompat.getDrawable(this, R.drawable.ic_close),
+                danger = true,
+                groupStart = true,
+                onClick = { closeApp(entry) },
+            )
+        }
         rows += SheetRow(
             label = getString(R.string.action_hide),
             icon = ContextCompat.getDrawable(this, R.drawable.ic_hide),
             danger = true,
+            // with no Close above it, Hide is the row the hairline opens on
+            groupStart = !canClose,
             onClick = { hideFromMainPage(entry) },
         )
         // Only an app the user put on the unit gets this row: a factory app is

@@ -58,6 +58,13 @@ enum class CloseMethod {
  * The layer that answered is returned rather than a bare true, because "closed"
  * and "closed in background" are different news and the driver can act on the
  * difference.
+ *
+ * The app card is gated on the same question this object answers first: `Close`
+ * is drawn only where [OpenAccess.forceStop] is true - root, or
+ * `FORCE_STOP_PACKAGES` - so an install whose reach stops at the two weak layers
+ * is never shown a close that could only answer *still open*. Those layers
+ * still run as fallbacks behind a real one that is refused at the moment of the
+ * tap, and the report keeps naming what actually happened.
  */
 object ForceStop {
 
@@ -185,19 +192,16 @@ object ForceStop {
  * What to tell the driver, from what actually happened.
  *
  * The check beats the mechanism: a layer that ran is not the same as an app
- * that closed. [stillOpen] is read back from the same source the list came
- * from, so "closed" is a fact the screen verified rather than a claim a layer
- * made - and an app the layers could not reach says *still open* instead of
- * being reported as closed because something was tried.
+ * that closed, so [CloseMethod.NONE] says *still open* rather than being
+ * reported as closed because something was tried.
  */
 object CloseReport {
 
-    fun text(context: Context, method: CloseMethod, label: String, stillOpen: Boolean): String =
-        when {
-            stillOpen -> context.getString(R.string.close_refused_toast, label)
-            method == CloseMethod.BACKGROUND ->
+    fun text(context: Context, method: CloseMethod, label: String): String =
+        when (method) {
+            CloseMethod.BACKGROUND ->
                 context.getString(R.string.closed_background_toast, label)
-            method == CloseMethod.NONE -> context.getString(R.string.close_refused_toast, label)
+            CloseMethod.NONE -> context.getString(R.string.close_refused_toast, label)
             else -> context.getString(R.string.closed_toast, label)
         }
 }

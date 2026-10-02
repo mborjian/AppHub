@@ -222,18 +222,6 @@ class Prefs(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_DOTS_OFFER, value).apply()
 
     /**
-     * True once the task manager's "this is what was used recently, not what is
-     * open" banner has been waved away.
-     *
-     * Dismissible because it is a limitation of the phone it is running on and
-     * not a thing to do: on the unit, where the install reads the task list,
-     * the banner never appears at all.
-     */
-    var tasksOfferDismissed: Boolean
-        get() = prefs.getBoolean(KEY_TASKS_OFFER, false)
-        set(value) = prefs.edit().putBoolean(KEY_TASKS_OFFER, value).apply()
-
-    /**
      * The version an update was installing when this app's own process was
      * replaced, or null when none was.
      *
@@ -477,7 +465,6 @@ class Prefs(context: Context) {
         const val KEY_DIRECTION = "direction"
         const val KEY_ADAPT = "adapt_screen"
         const val KEY_DOTS_OFFER = "dots_offer_dismissed"
-        const val KEY_TASKS_OFFER = "tasks_offer_dismissed"
         const val KEY_PENDING_UPDATE = "pending_update"
 
         /** the width in dp a phone has, which is what the screen is measured against */
@@ -489,7 +476,7 @@ class Prefs(context: Context) {
         val SETTING_KEYS = listOf(
             KEY_NAMES, KEY_HIDDEN, KEY_ORDER, KEY_FILTER, KEY_ICON_SIZE,
             KEY_SHAPE, KEY_COLUMNS, KEY_SYSTEM, KEY_FILES, KEY_BROWSER, KEY_SORT,
-            KEY_THEME, KEY_DIRECTION, KEY_ADAPT, KEY_DOTS_OFFER, KEY_TASKS_OFFER,
+            KEY_THEME, KEY_DIRECTION, KEY_ADAPT, KEY_DOTS_OFFER,
         ) + Margin.values().map { it.id }
     }
 }

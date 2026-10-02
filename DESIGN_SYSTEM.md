@@ -39,8 +39,9 @@ pinned offline graph is the app's hardest architectural constraint.
 Not a launcher: a **companion board**. The factory launcher (`com.chery.launcher`,
 a platform-signed system app on a 1024×600 160dpi panel) is where the unit boots
 to. App Hub is a second surface the driver opens to see *their* apps, launch one
-with one tap, close what is still running, and — for the two features that need
-it — push an app's window into a rectangle using root.
+with one tap, close what is still running where the install can really close it
+(the platform-signed build, or root), and — for the two features that need it —
+push an app's window into a rectangle using root.
 
 So the category is **automotive utility / device command surface**, and its
 context of use is the whole design brief:
@@ -63,8 +64,8 @@ Four activities, all built row-by-row in code from shared XML rows:
 MainActivity ────────────────► SettingsActivity ──┬──► ShortcutsActivity
   (the grid)                      (21 rows)        ├──► WindowMarginsActivity ──► WindowMarginService
    │                              │                └──► system Usage-access screen
-   │ long-press an app            ├─ close all ──► back to the grid (EXTRA_CLOSE_ALL)
-   └─► Sheet (menu)               ├─ margins ────► Sheet → NumberPicker / input
+   │ long-press an app            ├─ margins ────► Sheet → NumberPicker / input
+   └─► Sheet (menu)               │
        ├─ Open / Close            └─ window ─────► WindowMarginsActivity[EXTRA_PACKAGE]
        ├─ Pin / App info
        ├─ Window margins ──► WindowMarginsActivity[EXTRA_PACKAGE]
@@ -119,7 +120,7 @@ the brand hue and changes only the ink, the secondary text and the semantics.**
 | 4 | **Page order can only be changed inside a sub-screen**, in a preview that is a simulation of the grid, not the grid | `ShortcutsActivity`, `Prefs.pageOrder` |
 | 5 | **No loading state.** The grid is empty until `AppRepository` answers, so a slow read shows the "no apps" cell first | `MainActivity.reload` → `render` |
 | 6 | **No error state.** A `PackageManager` failure becomes `emptyList()` and is rendered as "No apps to show yet" | `MainActivity.reload` (`catch (t: Throwable) { emptyList() }`) |
-| 7 | **The running dot is 12dp of colour only** — no shape reinforcement, and it is announced as a separate image node | `item_app.xml#appDot`, `@string/running_marker` |
+| 7 | **The running dot is 12dp of colour only** — no shape reinforcement, and it is announced as a separate image node | `item_app.xml#appDot`, `@string/tile_running` |
 | 8 | **Off-grid spacing**: 5 / 6 / 8 / 10 / 12 / 14 / 18 / 20 / 24 dp used for the same purpose across screens | all layouts |
 | 9 | **Blue as small text fails contrast.** `#2F6FED` on `bg` = **4.13:1** — the *All apps* / *None* buttons and every value row are 13–14sp in that colour | computed |
 | 10 | **Secondary text has zero headroom**: `#667085` on `bg` = **4.52:1** at 11–12sp | computed |
@@ -181,7 +182,7 @@ strongest one (a mode you can see).
 | Idea | What it is |
 |---|---|
 | **The ring** | Running state is a 3dp ring in the tile's own corner language plus a solid dot. Shape + position + colour, never colour alone. |
-| **The pill** | Settings, search and "close all" leave the grid. A single 56dp pill floats at the bottom-end and opens the tools sheet, so the grid holds *only* apps and tools are one tap away from anywhere in the scroll. |
+| **The pill** | Settings, search and editing the page leave the grid. A single 56dp pill floats at the bottom-end and opens the tools sheet, so the grid holds *only* apps and tools are one tap away from anywhere in the scroll. |
 | **One system, two scales** | The whole language is expressed in dp/sp tokens, so `Adapt to screen` (×1→×2) multiplies the design instead of breaking it. The car legibility floor is stated in millimetres, not dp. |
 | **Say what the vehicle did** | The app's honesty about refused window moves becomes a first-class **status banner** (icon + 13sp + tone), not a sentence in a card. |
 
@@ -224,7 +225,7 @@ Four ramps. Hue kept from the existing mark; ink and semantics fixed.
 |---|---|---|---|
 | `hub_running` | `#067647` | `#4ADE80` | running: ring + dot + label |
 | `hub_recent` | `#98A2B3` | `#A9B2C0` | recent: hollow dot only |
-| `hub_warn` | `#B54708` | `#F5B84A` | **the car's "attention, not fault"**: close all, close App Hub, refusal |
+| `hub_warn` | `#B54708` | `#F5B84A` | **the car's "attention, not fault"**: a close that did not happen, the running-dots offer, refusal |
 | `hub_danger` | `#B42318` | `#FF7A70` | only inside the confirm button of an irreversible action |
 | `hub_ok` | `#067647` | `#4ADE80` | "applied" status banner |
 | `hub_blocked` | `#475467` | `#A9B2C0` | "root is not available" — blocked, not broken |
@@ -453,10 +454,6 @@ the app its one piece of personality that a driver will remember.
  │                    │  ├────────────────────────┤  │        │
  │                    │  │ ⧉  Edit the page       │  │        │
  │                    │  ├────────────────────────┤  │        │
- │                    │  │ ⊘  Close all apps      │  │ amber  │
- │                    │  ├────────────────────────┤  │        │
- │                    │  │ ⏻  Close App Hub       │  │ amber  │
- │                    │  ├────────────────────────┤  │        │
  │                    │  │        Cancel          │  │        │
  │                    │  └────────────────────────┘  │        │
  │                    └──────────────────────────────┘        │
@@ -496,6 +493,14 @@ Grouping is the fix for friction #1: *do* the thing (Open), *arrange* it
 (Window margins / Pin / App info), *remove* it (Close / Hide / Uninstall —
 amber, last, with a hairline separator above). Today all five are one
 undifferentiated list.
+
+*Close* is drawn only where closing can really happen: `OpenAccess.forceStop`
+is true when the platform-signed build holds `FORCE_STOP_PACKAGES`, or a usable
+root is present. An install that can only reach the two weak layers
+(recents-role `REMOVE_TASKS`, `killBackgroundProcesses()`) is shown no *Close*
+row at all — a verb whose honest answer is *still open* does not belong on the
+card. Those layers still run as fallbacks behind a real one that is refused at
+the moment of the tap.
 
 *Uninstall* is drawn only for an app the user installed, which is also the only
 card that reaches seven rows: the sheet's cap scrolls its row area by the last
@@ -566,7 +571,6 @@ matcher the shortcuts screen already uses, so `apphub` finds *App Hub*.
  │                                                                              │
  │  MAINTENANCE                                                                 │
  │  ┌────────────────────────────────────────────────────────────────────────┐  │
- │  │ Close all apps                                            Run          │  │  amber
  │  │ Reset settings                                                        │  │  amber, confirm sheet
  │  └────────────────────────────────────────────────────────────────────────┘  │
  └──────────────────────────────────────────────────────────────────────────────┘
@@ -684,7 +688,7 @@ volumes first (each with its free space, the current one checked) and then every
 folder between here and that volume's root, so climbing is one tap per step.
 * **Four empty states, not one** (4.9's rule, applied to a folder): no storage at
 all, a folder that is gone, a folder the platform keeps shut, and a folder that
-is simply empty. All four use the task manager's `listEmpty` block.
+is simply empty. All four use the app's shared `listEmpty` block.
 * **The way up is a plain arrow**, and always the first row. It was drawn as a
 folder with an arrow inside it until the glyphs were drawn as a sheet and looked
 at: *Move* is a folder with an arrow inside it too, and two rows that mean
@@ -766,7 +770,7 @@ tile's own card writes the same setting.
   nothing else, over the page the driver is already looking at — a list that wants
   a screen of its own has stopped being about the page. Both cap at 40 rows
   (`SHEET_ROWS`) and both fall back to the `listEmpty` block when empty, the same
-  block the task manager and every folder in the file manager use.
+  block every folder in the file manager uses.
 * **The menu is one sheet with three kinds of row**: the page (*Keep this page* /
   *Drop it*, and *Copy address*), the two lists, *Show in Files* — the way back to
   the folder the platform's downloader writes into, which is the folder the file
@@ -814,7 +818,6 @@ needs to.
 | Tile drag | the dragged tile lifts to `elevation 8`, follows the finger 1:1, others reflow 180ms `standard`; on drop the order is written and a single `KEYBOARD_TAP` haptic fires |
 | Running detection | the ring and dot **fade in** 180ms `fast` when a process appears — never a pop, never a bounce (a car screen must not twitch) |
 | Close an app | row closes: the tile dims to 55% for 180ms, then fades out over 240ms; the toast is replaced by the undo pill (below) |
-| Close all | the confirm sheet, then tiles **cascade** out at 20ms each; a determinate count (`7 / 19`) is shown if the batch outlasts 400ms |
 | Number wheel | each turn updates the value text in 90ms with no layout shift (tabular figures); the value row behind is live |
 | Value change (switch, choice) | the value text cross-fades 180ms; the switch itself uses the platform animation, unmodified |
 | Error / refused | the banner slides down 240ms with a single `LONG_PRESS` haptic; it is **never** red |
@@ -838,8 +841,8 @@ have no vibrator at all: every haptic is a courtesy, never the only feedback.
 - **Skeleton** when the shape of the answer is known: the grid, the shortcuts
   list, the window-margins list. Slick animations on a car screen are called
   *skeletons* not *shimmers*, and they pulse opacity only.
-- **Spinner** when the duration is unknown and the shape is not: `Close all`
-  beyond 400ms, the root probes on the window screen.
+- **Spinner** when the duration is unknown and the shape is not: the root probes
+  on the window screen.
 - **Never a blocking spinner.** The board is always usable; a slow read shows
   skeletons the driver can ignore.
 
@@ -850,7 +853,7 @@ have no vibrator at all: every haptic is a courtesy, never the only feedback.
 | # | Before | After | Why |
 |---|---|---|---|
 | 1 | Close / Pin / App info / Window / Hide are behind an invisible long-press | **Edit mode (The Lift)** + a `⋯` button on every lifted tile; tap opens the app card sheet | A hidden verb in a moving vehicle is a safety problem. The mode is visible, named and escapable |
-| 2 | *Close App Hub* is a red tile in the icon grid | Moved to the hub sheet, amber, with a confirm sheet | Quitting the surface you are looking at is not a peer of "open Maps" |
+| 2 | *Close App Hub* is a red tile in the icon grid | Removed; leaving App Hub is the system's own thing | Quitting the surface you are looking at is not a peer of "open Maps" |
 | 3 | Settings is the last cell of the grid | The floating **pill** (bottom-end, always reachable) | Reaching the tools must not require scrolling past 40 apps |
 | 4 | The page order is editable only in Settings → Shortcuts, in a mock grid | The **real grid** is draggable in edit mode; the shortcuts preview stays as a second, larger place to do it | Editing a simulation of a thing is a design smell |
 | 5 | No loading state (a false empty, then 19 tiles popping in) | Skeleton tiles at the real tile metrics | A false empty state teaches the wrong lesson on first run |
@@ -1230,7 +1233,7 @@ visual difference between *App info* and *Hide from the main page*. After: a
 
 **Settings.** Before: 21 identical rows, seven different type sizes, and a
 `Close all apps` row as prominent as `Show app names`. After: four named groups,
-one type scale, values in tabular figures on `Text.Meta`, the destructive two at
+one type scale, values in tabular figures on `Text.Meta`, the destructive row at
 the bottom behind a section header, and a sticky group label while scrolling.
 
 **Shortcuts.** Before: two blue-text buttons at 4.13:1, a hint at 12sp, and a
@@ -1258,8 +1261,6 @@ Sentence case, second person, consequence named. New strings:
 | `drag_hint` | Hold a tile to move it | برای جابهجایی، کاشی را نگه دارید |
 | `reset_order` | Reset order | بازگرداندن ترتیب |
 | `more_actions` | %1$s, more actions | %1$s، کارهای بیشتر |
-| `close_hub_title` | Close App Hub? | مرکز برنامهها بسته شود؟ |
-| `close_hub_message` | The apps you have open keep running. | برنامههای باز همچنان اجرا میشوند. |
 | `undo` | Undo | بازگرداندن |
 | `hidden_undo` | %1$s hidden from the main page | %1$s از صفحه اصلی پنهان شد |
 | `loading_apps` | Reading your apps… | در حال خواندن برنامهها… |
@@ -1273,8 +1274,6 @@ Sentence case, second person, consequence named. New strings:
 | `dots_off_title` | Running apps aren’t marked | برنامههای باز نشانهگذاری نمیشوند |
 | `dots_off_message` | Usage access is off, so nothing can show as running. | دسترسی استفاده خاموش است، پس هیچ برنامهای بهعنوان باز نشان داده نمیشود. |
 | `enable` | Enable | فعالکردن |
-| `close_all_confirm` | Close all %1$d apps? | همه %1$d برنامه بسته شوند؟ |
-| `close_all_consequence` | Apps with unsaved work may lose it. | ممکن است کار ذخیرهنشده برنامهها از بین برود. |
 | `selected` | selected | انتخابشده |
 | `running_state` | running | در حال اجرا |
 | `status_applied` | %1$s is running inside its rectangle. | %1$s اکنون داخل مستطیل خود اجرا میشود. |
@@ -1285,7 +1284,6 @@ Reworded (the honest voice, tightened):
 
 | Key | Before | After (EN) |
 |---|---|---|
-| `close_all_message` | `Close %1$d apps?` | `Close all %1$d apps? Apps with unsaved work may lose it.` |
 | `empty` | `No apps to show yet` | `No apps yet` + `Apps you install on this unit appear here.` + `Open settings` |
 | `closed_toast` | `%1$s closed` (dead) | the undo pill, no toast |
 
