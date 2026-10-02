@@ -91,17 +91,6 @@
         android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
 
-    <!-- The window-margins watcher has to run while *other* apps are on screen,
-         which is exactly what a foreground service is for. The service only
-         exists while at least one profile is switched on. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-
-    <!-- ... and it is started again after a reboot: a profile applies to an app
-         started from the vehicle's own launcher too, and that launcher is the
-         first thing on screen after a boot. -->
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -169,11 +158,6 @@
             android:label="@string/set_shortcuts_title"
             android:windowSoftInputMode="adjustResize" />
 
-        <activity
-            android:name=".WindowMarginsActivity"
-            android:exported="false"
-            android:label="@string/window_title" />
-
         <!-- The web browser: this app's own screen over the WebView, opened from
              its tile on the board for the same reason the file manager is - it is
              not an app, so there is no launcher entry for the repository to find
@@ -195,27 +179,6 @@
             android:name=".FileManagerActivity"
             android:exported="false"
             android:label="@string/files_title" />
-
-        <!-- The watcher behind the app window margins: it applies a profile to
-             its app the moment that app comes to the front, however it was
-             started. Alive only while a profile is on - see
-             WindowMarginService. -->
-        <service
-            android:name=".WindowMarginService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Keeps per-app window bounds applied while another app is in front" />
-        </service>
-
-        <receiver
-            android:name=".WindowBootReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
 
         <!-- What the platform's downloader says when it is done with a browser
              download. This app enqueues the request, so this broadcast is

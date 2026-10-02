@@ -7,10 +7,10 @@ import android.util.LruCache
 /**
  * The drawn version of an app's icon, in one place.
  *
- * Masking costs a bitmap per icon, and three screens draw the same icons - the
- * board, the list of shortcuts, the list of app windows - and the app card does
- * too. One cache keyed by the package, the size and the shape means each bitmap
- * is made once, and it means the four of them cannot disagree about what an icon
+ * Masking costs a bitmap per icon, and two screens draw the same icons - the
+ * board and the list of shortcuts - and the app card does too. One cache keyed
+ * by the package, the size and the shape means each bitmap
+ * is made once, and it means the three of them cannot disagree about what an icon
  * looks like: change the icon shape in the settings and every icon in the app
  * changes with it, which is what a shape setting is promising.
  */

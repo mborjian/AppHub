@@ -50,7 +50,6 @@ class MainActivity : BaseActivity() {
 
     private val prefs by lazy { Prefs(this) }
     private val pins by lazy { PinnedApps(this) }
-    private val windowProfiles by lazy { WindowProfiles(this) }
 
     /** every app, already decorated with pin + running state */
     private var loaded: List<AppEntry> = emptyList()
@@ -135,9 +134,6 @@ class MainActivity : BaseActivity() {
         // (including the screen margins) is picked up on the way back
         applyMargins()
         reload()
-        // opening the hub is also what re-arms the window-margins watcher: a
-        // unit that refused the start after a reboot gets another offer here
-        WindowMarginService.ensure(this)
     }
 
     override fun onPause() {
@@ -671,8 +667,8 @@ class MainActivity : BaseActivity() {
     private fun showActions(entry: AppEntry) {
         // One of App Hub's own screens is not an app, and the card does not
         // pretend it is: there is nothing to close (it is this app), nothing to
-        // uninstall (that is this install), and no window of another app to move.
-        // What is left is what is true of a screen.
+        // uninstall (that is this install). What is left is what is true of a
+        // screen.
         if (entry.tool != null) {
             showToolActions(entry)
             return
@@ -685,16 +681,6 @@ class MainActivity : BaseActivity() {
             icon = ContextCompat.getDrawable(this, R.drawable.ic_open),
             onClick = { openApp(entry) },
         )
-        // An app whose window must not be touched - the unit's own launcher,
-        // SystemUI - offers no window margins: the switch behind this row would
-        // do nothing, and offering it would promise otherwise.
-        if (!windowProfiles.isProtected(entry.packageName)) {
-            rows += SheetRow(
-                label = getString(R.string.action_window),
-                icon = ContextCompat.getDrawable(this, R.drawable.ic_frame),
-                onClick = { openWindowMargins(entry) },
-            )
-        }
         // The hairline above the two rows that take the app away is the whole
         // grouping: do it, arrange it, remove it - read as three things rather
         // than as six verbs in a column.
@@ -885,14 +871,6 @@ class MainActivity : BaseActivity() {
             if (wasPinned) pins.pin(entry.key) else pins.unpin(entry.key)
             render()
         }
-    }
-
-    /** Straight into that app's own rectangle, on the screen that keeps them. */
-    private fun openWindowMargins(entry: AppEntry) {
-        startActivity(
-            Intent(this, WindowMarginsActivity::class.java)
-                .putExtra(WindowMarginsActivity.EXTRA_PACKAGE, entry.packageName)
-        )
     }
 
     private fun openAppInfo(pkg: String) {

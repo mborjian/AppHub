@@ -305,37 +305,4 @@
     <string name="grid_auto">خودکار (%1$d ستون)</string>
     <string name="grid_fixed">%1$d ستون</string>
 
-    <string name="set_window_title">حاشیه پنجره برنامه</string>
-    <string name="set_window_subtitle">پنجره خودِ برنامه را — هر طور که باز شده باشد — داخل یک مستطیل قرار می‌دهد</string>
-    <string name="window_title">حاشیه پنجره برنامه</string>
-    <string name="action_window">حاشیه پنجره</string>
-    <string name="window_master_title">اعمال حاشیه پنجره‌ها</string>
-    <string name="window_master_subtitle">این برنامه‌ها را زیر نظر می‌گیرد و هر کدام جلو بیاید جابه‌جا می‌کند</string>
-    <string name="window_profile_message">یک لبه را انتخاب کنید، یا این برنامه را خاموش کنید.</string>
-    <string name="window_edge_title">%1$s — %2$s</string>
-    <string name="window_value">%1$d / %2$d / %3$d / %4$d پیکسل</string>
-    <string name="window_margin_value">%1$d پیکسل</string>
-    <string name="window_range">هر مقدار از ۰ تا %1$d پیکسل</string>
-    <string name="window_unit">پیکسل</string>
-    <string name="window_off">خاموش</string>
-    <string name="window_turn_on">روشن‌کردن این برنامه</string>
-    <string name="window_turn_off">خاموش‌کردن این برنامه</string>
-    <string name="window_protected">لانچر خودِ دستگاه — دست‌نخورده</string>
-    <string name="window_empty">هنوز برنامه‌ای نیست</string>
-    <string name="window_empty_hint">برنامه‌هایی که روی این دستگاه نصب می‌کنید اینجا نمایش داده می‌شوند.</string>
-    <plurals name="window_count">
-        <item quantity="other">%1$d برنامه</item>
-    </plurals>
-    <string name="window_status_off">خاموش: هیچ پنجره‌ای جابه‌جا نمی‌شود.</string>
-    <string name="window_status_none">هنوز برای هیچ برنامه‌ای حاشیه پنجره روشن نشده است.</string>
-    <string name="window_status_no_root">دسترسی روت در دسترس نیست، بنابراین هیچ پنجره‌ای جابه‌جا نمی‌شود.</string>
-    <string name="window_status_waiting">مراقب %1$d برنامه؛ هر کدام جلو بیاید داخل مستطیل خود منتقل می‌شود.</string>
-    <string name="window_status_no_multi_window">این دستگاه می‌گوید چندپنجره‌ای ندارد، پس شاید فقط پنجره‌هایی را بتواند جابه‌جا کند که از قبل قابل تغییر اندازه باشند.</string>
-    <string name="window_status_applied">%1$s اکنون داخل مستطیل خود اجرا می‌شود.</string>
-    <string name="window_status_fullscreen">%1$s تمام‌صفحه باز می‌شود و این دستگاه فقط کارهای Freeform یا چندپنجره‌ای را تغییر اندازه می‌دهد — چیزی جابه‌جا نشد.</string>
-    <string name="window_status_refused">دستگاه از جابه‌جایی %1$s خودداری کرد، بنابراین چیزی تغییر نکرد.</string>
-    <string name="window_channel">حاشیه پنجره برنامه</string>
-    <string name="window_channel_description">تا زمانی که حاشیه پنجره‌ای روشن است نمایش داده می‌شود.</string>
-    <string name="window_notification_title">حاشیه پنجره</string>
-    <string name="window_notification_text">%1$d برنامه زیر نظر</string>
 </resources>

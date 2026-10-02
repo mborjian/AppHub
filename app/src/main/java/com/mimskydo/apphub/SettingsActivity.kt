@@ -25,7 +25,6 @@ import java.util.concurrent.Executors
 class SettingsActivity : BaseActivity() {
 
     private val prefs by lazy { Prefs(this) }
-    private val windowProfiles by lazy { WindowProfiles(this) }
 
     /** reads the app list off the main thread, like the grid does */
     private val worker = Executors.newSingleThreadExecutor()
@@ -285,11 +284,6 @@ class SettingsActivity : BaseActivity() {
             R.string.set_home_title, R.string.set_home_subtitle,
             action = getString(R.string.set_home_action),
         ) { requestHomeRole() }
-
-        addValueRow(
-            R.string.set_window_title, R.string.set_window_subtitle,
-            value = { windowMarginsValue() },
-        ) { openWindowMargins() }
 
         // This row disappears once the access is granted - it is an offer, not
         // a status line.
@@ -597,25 +591,6 @@ class SettingsActivity : BaseActivity() {
         prefs.setMargin(edge, dp)
         applyMargins()
         refresh()
-    }
-
-    // ------------------------------------------------------- window margins
-
-    /** "2 apps", or the switch's own state while the feature is off. */
-    private fun windowMarginsValue(): CharSequence {
-        if (!windowProfiles.enabled) return getString(R.string.window_off)
-        val watched = windowProfiles.watched().size
-        return if (watched == 0) getString(R.string.none)
-        else resources.getQuantityString(R.plurals.window_count, watched, watched)
-    }
-
-    /**
-     * The apps are picked and their four numbers set on a screen of their own,
-     * the way the shortcuts are: this row carries the result, and it is re-read
-     * on the way back ([onResume] -> [refresh]) like every other value here.
-     */
-    private fun openWindowMargins() {
-        startActivity(Intent(this, WindowMarginsActivity::class.java))
     }
 
     // -------------------------------------------------------------- updates

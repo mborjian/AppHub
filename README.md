@@ -21,10 +21,9 @@ that document is what it *looks like* and why.
 |---|---|
 | **Grid** | every launcher-able app, icon on top and one line of text under it (long names ellipsize), re-read on every resume, sorted with a locale-aware collator (Persian names order correctly). Column count follows the screen, or is fixed in the settings |
 | **Tap** | launches that app (exact `package` + activity, with a `getLaunchIntentForPackage` fallback) |
-| **Long press** | the board **lifts**: every tile scales slightly and grows a badge in its icon's corner, and the page's tiles become draggable. The badge (or a tap through the tools sheet's *Edit the page*) opens one app's card: **Open**, **Window margins**, **Pin to top**, **App info** / **Close**, **Hide from the main page**, **Uninstall** - grouped, with a hairline between the three kinds of verb. *Uninstall* is only there for an app the user installed, and *Close* only where this install can really close one (platform-signed or root); see [Uninstalling an app](#uninstalling-an-app-three-layers) and [Closing an app](#closing-an-app-four-layers) |
+| **Long press** | the board **lifts**: every tile scales slightly and grows a badge in its icon's corner, and the page's tiles become draggable. The badge (or a tap through the tools sheet's *Edit the page*) opens one app's card: **Open**, **Pin to top**, **App info** / **Close**, **Hide from the main page**, **Uninstall** - grouped, with a hairline between the three kinds of verb. *Uninstall* is only there for an app the user installed, and *Close* only where this install can really close one (platform-signed or root); see [Uninstalling an app](#uninstalling-an-app-three-layers) and [Closing an app](#closing-an-app-four-layers) |
 | **Dot** | a small dot on the icon of an app that is open: filled for a process or a task the system still holds, hollow for one that was only used recently (see [What is open, and how App Hub knows](#what-is-open-and-how-app-hub-knows)) |
 | **Pin** | long press → *Pin to top*; pinned apps keep their place at the front, in the order you pinned them, and the choice survives restarts |
-| **Window margins** | long press → *Window margins*: give one app its own rectangle (**left / right / top / bottom**, in pixels) and it is moved inside it the moment it comes to the front - however it was started, from this grid or from the vehicle's own launcher. See [App window margins](#app-window-margins-one-rectangle-per-app) |
 | **Files** | this app's own file manager, standing on the board as a tile while the switch in the settings is on: the unit's storage and any attached card or stick, folders first, each row carrying its size and date. A tap enters a folder or hands a file to another app to open, and the row's own menu **opens**, **copies**, **moves**, **deletes** and - for a package - **installs** it. Its own card is a screen's card: *Open*, *Pin*, *Hide*. See [A file manager over the unit's storage](#a-file-manager-over-the-units-storage) |
 | **Web** | this app's own browser, standing on the board as a second tile while the switch in the settings is on: the unit's own `WebView` under this app's chrome - a header, a toolbar drawn out of the same row settings are drawn in, and one address field that takes either an address or a search. *History* and *bookmarks* are the same sheets every other list here opens in, and a link that is a download goes to the platform's downloader and lands in *Downloads*, the folder the file manager draws. Every link that is not a web page is handed to the platform instead. See [A web browser over the unit's own WebView](#a-web-browser-over-the-units-own-webview) |
 | **Tools pill** | a floating button in the bottom corner, always one tap away whatever the grid is scrolled to: **Find an app**, **Settings**, **Edit the page** |
@@ -59,7 +58,6 @@ to it; every choice is stored in `SharedPreferences` (`Prefs`).
 | Theme | System / Light / Dark |
 | Layout direction | System / Right-to-left / Left-to-right |
 | Screen margins | **left / right / top / bottom**, each dialled on a wheel from 0 to half that side of the screen (512 dp across on this unit's 1024dp width, 284 dp down in its 568dp-tall window) — any whole value, not a list of steps — or **typed on the number keyboard** from the sheet's *Type the value* row. Moves this app's content away from the screen edges so a launcher overlay (shortcut rail, clock, climate strip) cannot cover it. Applied to the grid **and** to this settings screen itself, so the screen follows the value while it is still being chosen |
-| App window margins | a **screen of its own** (the grid's own app list, one row per app): a switch on each row turns that app's profile on or off, and the row opens its four numbers — left / right / top / bottom, in **pixels**, dialled on the same wheel as the screen margins or typed on the same keyboard. An app with a profile is moved into its rectangle whenever it comes to the front, from anywhere. The row's value reads `200 / 20 / 0 / 0 px`, or `Off` |
 | Usage access | shown **only while it is missing**; tapping it walks a ladder - the platform's usage-access screen, then this app's own details page, then the top of Settings - because a car ROM may not carry the first one, and a toast is what the driver used to get instead. It is not what makes the running marks work on the unit any more: `ProcTable` reads `/proc` there. Where the process table *is* hidden it still shows what was used recently, and `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` does the same from a PC |
 | Reset settings | back to the defaults; pinned apps are kept |
 | Back | the last row of the list; leaves the settings screen (same as the arrow in the header) |
@@ -137,8 +135,7 @@ Two implementation notes worth keeping:
   this app's content, and that overlay does not grow when the icons do. So
   `BaseActivity.applyMargins` converts the stored dp with the unit's own density
   (`Prefs.deviceDensity`) rather than the adapted one, and a value keeps meaning
-  the same pixels whichever way the switch is set. The app window margins are
-  already in pixels and are untouched by all of this.
+  the same pixels whichever way the switch is set.
 * **Shortcuts is a screen, not a sheet** (`ShortcutsActivity`). A sheet answers a
   question and closes; this one is a place where two things are watched at once -
   tick an app, watch it arrive on the page - so the two halves sit side by side.
@@ -328,9 +325,8 @@ three: **uninstalled**, *finish the removal in the screen that opened*, or
 launcher activities, so this app's own screens have no launcher entry to be
 found. That is also why the entry carries `AppEntry.tool` and not `system` - a
 tile and not an app - and why its card offers what is true of a screen (*Open*,
-*Pin*, *Hide*) and never *Close* (it is this app), *Uninstall* (that is this
-install) or a window rectangle (`WindowProfiles` protects App Hub's own
-package). Hiding it writes the setting the settings row writes, so the two cannot
+*Pin*, *Hide*) and never *Close* (it is this app) or *Uninstall* (that is this
+install). Hiding it writes the setting the settings row writes, so the two cannot
 disagree about whether the tile is there.
 
 ### What it can see, and how it is allowed to
@@ -739,68 +735,6 @@ allow-listed (`/system/etc/permissions/privapp-permissions-*.xml`), because an
 unlisted privileged permission can stop the unit from booting. The normal
 platform-signed install avoids that path entirely and is the recommended one.
 
-## App window margins: one rectangle per app
-
-Some apps do not fit the unit's screen: a phone-shaped app on a 1024×600 landscape display, a
-screen whose controls end up under the factory launcher's own overlay. This feature gives one
-app its own rectangle, and the app runs **inside** it:
-
-```text
-Left: 200 px   ┌──────────────────────────────┐   Right: 20 px
-Top: 0 px      │       the app's window       │   Bottom: 0 px
-               └──────────────────────────────┘
-```
-
-The four numbers are **pixels**, not dp, unlike the screen margins: what is being set is not
-padding but the bounds of a window, and the window manager measures those in pixels - which is
-also how the example that started this feature is written.
-
-**Where it lives.** The apps are the ones the grid shows: the same `AppRepository` query, the
-same *Include system apps* switch, the same sort, the same names and icons. There is one idea of
-"the installed apps" in this app, not two. A profile is one line in `SharedPreferences`
-(`window_profiles`, keyed by package) holding the switch and the four numbers; *Reset settings*
-does not touch it, exactly like the pins.
-
-**What applies it.** A profile is deliberately *not* attached to a launch: this app never sees
-the intent the vehicle's launcher sends, and an app started from it has to be moved as well. So
-`WindowMarginService` keeps an eye on which app is **in front** and, the moment a configured one
-appears, moves that app's task once:
-
-```text
-su -c "dumpsys activity activities | grep …"    which app is in front, and its task id
-su -c "am stack list"                          that task's current bounds, to compare against
-su -c "am task resize <id> <l> <t> <r> <b>"    the one task - and nothing else
-su -c "am stack list"                          read it back: did the window actually move?
-```
-
-The last step is what makes the feature honest. `am task resize` is **the narrowest mechanism
-Android has** for this - one task's bounds, no global state - but the window manager only honours
-it for a task in a resizing-capable windowing mode (freeform, or multi-window). A fullscreen task
-is pinned to the display: the command returns without complaint and the window does not move. So
-the service reads the task back and compares - bounds that match (or at least changed) are
-*Applied*, bounds that did not move are *Refused* - and the screen says so rather than pretending:
-*"…opens fullscreen, and this unit only resizes freeform or multi-window tasks - nothing was
-moved."* The same read-back is the periodic drift check: the app in front has its rectangle
-re-read every few seconds and put back if something moved it.
-
-**What it deliberately never does.** No `wm size`, no `wm density`, no `wm overscan`, no
-`settings put`, no `am stack move-task`, no file on the system partition, nothing that changes the
-unit for everybody else: when the window cannot be controlled, the app says so and stops. It also
-refuses to touch three packages whatever the list offers - App Hub itself, the launcher the unit
-is actually running (resolved at runtime, because the factory app is not the only one a unit may
-be running instead), and SystemUI - and those rows are inert and say so.
-
-**Why a foreground service, and why it costs nothing when unused.** "This app came to the front"
-has to be noticed while *other* apps are on screen, which is what a foreground service is for. It
-is started when the first profile is switched on, stops itself the moment the last one is
-switched off (or the master switch is), and is started again after a reboot (`BOOT_COMPLETED`),
-because the launcher - not App Hub - is the first thing on screen after a boot. With no profile
-enabled there is no service, no poll and no notification at all.
-
-The poll is paced rather than tight, because each look at the system is a root command: the app
-in front is read about once a second, a change of app is followed up quickly, and the bounds of
-the task that is already in front are read back only now and then.
-
 ## Build
 
 Requirements: JDK 21 — the tracked `gradle/gradle-daemon-jvm.properties` asks the
@@ -1077,10 +1011,6 @@ app_hub/
 │   │   ├── FileManagerActivity.kt   the file manager screen: rows, verbs, the carry bar
 │   │   ├── Web.kt                   the browser's rules: address-or-search, memory, downloads
 │   │   ├── BrowserActivity.kt       the browser screen: toolbar, WebView, history + bookmarks
-│   │   ├── WindowProfiles.kt        per-app window rectangles (one per package)
-│   │   ├── WindowControl.kt         the root side: foreground, tasks, `am task resize`
-│   │   ├── WindowMarginService.kt   the watcher that applies them, + boot receiver
-│   │   ├── WindowMarginsActivity.kt the screen that configures them
 │   │   └── RootShell.kt             optional su, probes `-c` and `<uid>` forms
 │   └── res/                         layouts, drawables, theme, EN + FA strings
 ├── tools/release.py                 platform-signed release + optional install
@@ -1138,18 +1068,12 @@ dumps for the geometry and `screencap` for the pixels. This machine has no
 | it reaches the screen behind it | the switch was flipped on the settings screen; pressing Back put the **already-running grid** back at ×2 (the density is fixed when a screen is created, so it is built again when it no longer matches) |
 | the icons stay crisp | the drawn art fills both boxes identically - 89% of the tile in the icon's own green, art bounding box the full 64x64 and the full 128x128 - and the 3px of antialiased edge at 64px became 4px at 128px rather than the 8px a 2x upscale of the small bitmap would have left |
 | margins are not scaled with it | `margin_left` = 50dp put the content box at x 63 with the switch off **and at x 76 with it on**: the 13px of cell margin doubled with the density, the 50px of screen margin did not. The wheel's range is the unit's too: *Any value from 0 to 512 dp* with the switch on |
-| the other screens | at ×2 the sheets, the shortcuts screen (list, filter, page preview) and the app window margins screen all lay out inside 1024x600; a long-press sheet is taller than the screen and **scrolls**, so *Window margins* and *Hide from the main page* are still reachable, and the pixel values there read the same as before (`200 / 0 / 0 / 0 px`) |
+| the other screens | at ×2 the sheets and the shortcuts screen (list, filter, page preview) all lay out inside 1024x600; a long-press sheet is taller than the screen and **scrolls**, so *Hide from the main page* is still reachable |
 | reset clears it | *Reset settings* → *Reset* left `shared_prefs/apphub.xml` empty, the row reading **×1** and the grid back to `Auto (8 columns)`, i.e. back to the size the unit's own density gives |
 | icon shape | Circular vs Samsung style are visibly different silhouettes; before the fix all five shapes were **pixel-identical** |
 | theme | Dark flips the whole screen; the pref round-trips through `SharedPreferences` |
 | direction | RTL mirrors the grid (first app moves to the right edge) while strings stay in the device language |
 | usage access | row is present, and **gone** after `appops set … GET_USAGE_STATS allow` |
-| window margins screen | reached from the settings row (*Screen margins* → *App window margins*, value `None`), then from an app's long-press menu; the header, the master switch, the status sentence and the app rows all lay out at 1024×600, the app row showing `Off` with its switch off |
-| window margin profile | long-pressing the row opens the four edges (`Left 0 px` … `Bottom 0 px`) plus *Turn the profile on*; *Left* → *Type the value* → `200` → **Enter** stored `com.mengbo.electronicmanual=1\|200\|0\|0\|0` in `shared_prefs/window_profiles.xml` and the row redrew as `200 / 0 / 0 / 0 px` with its switch on |
-| the watcher starts, and stops when unused | with one profile on, `dumpsys activity services` showed `WindowMarginService isForeground=true … types=0x40000000` and its `window_margins` notification; with the master switch off it simply is not there |
-| no root, no changes | on an emulator without `su` the screen reads *"Root access is not available, so no window can be moved"* and the app does nothing else - no crash, no config touched |
-| the patterns on the device's own engine | `../work/WindowRegexTest.java` compiles `WindowControl`'s five patterns with Android's ICU regex (a bare `}` is a syntax error there, which is how the one real bug of this feature was found) and runs them over real `dumpsys`/`am stack list` output: `topResumedActivity`, the older `mResumedActivity` wording, `mFocusedApp`, both `Stack id=` and `RootTask id=` task blocks, `mWindowingMode`, and the `taskId=…: unknown bounds=…` line that must not match |
-| the apply/verify flow on a real window manager | `../work/WindowFlowTest.java` replays the service's flow on the emulator: a **fullscreen** app came back `Refused (nothing changed)` - `before=[0,0][1024,600] mode=fullscreen`, `after=[0,0][1024,600]` - while a **freeform** one (`am start --windowingMode 5`, with freeform enabled on the emulator only, never on the unit) went `before=[382,51][642,541] mode=freeform` → `after=[200,100][824,500] mode=freeform`, i.e. the app really did end up inside exactly the rectangle |
 
 The open-apps work was driven the same way, on an **Android 15 emulator**
 (Pixel-class system image, 1024×600 at density 160, `ro.build.type=user`, so
@@ -1182,13 +1106,13 @@ to touch it):
 
 | Check | Result |
 |---|---|
-| every screen still opens | the board, the tools sheet, the settings screen, the shortcuts screen, the window margins screen, one app's edges sheet and the way back were all reached through the real UI: **7 of 7, 0 crashes** from `com.mimskydo.apphub` |
+| every screen still opens | the board, the tools sheet, the settings screen, the shortcuts screen and the way back were all reached through the real UI: **5 of 5, 0 crashes** from `com.mimskydo.apphub` |
 | the shortcut screen used to throw | its empty-state panel had become a two-line `LinearLayout` in the layouts while the screen still held it as a `TextView`, so `onCreate` threw a `ClassCastException` and the screen never opened at all (`ShortcutsActivity.kt:73`). Fixed, and it opens |
 | the badge is on the icon's corner, not over it | at Medium the badge's 28dp circle is centred on the icon's top-right corner - it covers the art's corner quarter and hangs into the tile's whitespace - and it is placed against a box the adapter sizes, so the same is true at Small and at Extra large. Before the fix a 40dp circle sat across 60% of a 64dp icon, and at 72dp rows the card's six verbs ran off the bottom of the panel |
 | a clipped badge is a quarter of a circle | the badge deliberately paints outside its own view, so the tile, its inner column and the icon's box all had to stop clipping (`clipChildren` and `clipToPadding`): a screenshot of the lifted board is what showed the quarter |
 | the running ring no longer moves the badge | the ring paints outside the icon's box by a negative inset instead of making its own view bigger, so an app that is running no longer shifts the geometry its tile's badge is placed against |
 | the action card fits the panel | six 64dp rows (`row_sheet_height`) plus two hairlines and the header come to 528px of the 576px window, with the dividers after the second row (do / arrange) and before the *remove* group. Where the install cannot close, the card is one row shorter and the hairline opens on *Hide*. At 72dp the same card ran past the bottom edge |
-| a count is a quantity | the empty board, the settings row and the window screen's header read `1 app` for one app via `<plurals>`; they used to read `1 apps` |
+| a count is a quantity | the empty board and the settings row read `1 app` for one app via `<plurals>`; they used to read `1 apps` |
 | one app, one drawing | the board, both lists and the app card now share one icon cache keyed by package, size and shape. The masker draws *copies* of an adaptive icon's layers: re-binding the app's own instance to a raster size had left the shortcuts list drawing a stretched icon on a black square while the same icon was fine on the board |
 | dark mode | the night palette measures exactly as specified on the settings screen: **62.8%** `#171A21` (surfaces), **31.9%** `#0F1115` (page), **1.8%** `#242833` (hairlines) - 95.6% of the screen in three tones |
 | a setting shows its own result | choosing *Circular* writes the row's value and re-reads it in place; the number of pickers that only read on `onResume` is now zero. *Icon size* → *Extra large* turns the Grid row from `Auto (8 columns)` into `Auto (7 columns)` on the same screen, because that value is derived from it |
@@ -1240,15 +1164,6 @@ a real copy, a real delete, and Android's own installer doing the work.
   installs only an APK signed with the release certificate it pins, so a unit running the
   platform-signed build (any unit, after `tools/release.py`) cannot be updated from the
   screen until the release APK is installed over it once, by hand.
-* **Window margins need root.** Without a usable `su` every call answers null, the screen says
-  *"Root access is not available, so no window can be moved"* and nothing else happens - the
-  rest of the hub works exactly as before.
-* **The unit decides whether a task may be moved.** On Android 10 the window manager only
-  resizes a task that is in freeform or multi-window mode; one started fullscreen stays
-  fullscreen, and the screen says which app and which mode instead of quietly doing half the
-  job. Nothing global is changed to work around it.
-* **Three packages can never be given a rectangle**: App Hub itself, the launcher the unit is
-  actually running, and SystemUI. Their rows say so.
 * **System apps are excluded by default** (`FLAG_SYSTEM` /
   `FLAG_UPDATED_SYSTEM_APP` are filtered out) — this hub is for what the user
   installed. *Include system apps* in the settings lists them too.

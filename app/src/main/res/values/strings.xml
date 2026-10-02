@@ -188,7 +188,7 @@
     <string name="section_behaviour">Behaviour</string>
     <string name="section_maintenance">Maintenance</string>
 
-    <!-- One count, used by the empty board, the window list and its status line.
+    <!-- One count, used by the empty board and the rows that carry a count.
          A quantity, not a template: "1 apps" was the app telling the driver it
          had not been written for the number one. -->
     <plurals name="apps_count">
@@ -351,40 +351,4 @@
     <string name="grid_auto">Auto (%1$d columns)</string>
     <string name="grid_fixed">%1$d columns</string>
 
-    <!-- app window margins: one rectangle per app, applied when that app comes
-         to the front, however it was started -->
-    <string name="set_window_title">App window margins</string>
-    <string name="set_window_subtitle">Move an app\'s own window inside a rectangle, however it was started</string>
-    <string name="window_title">App window margins</string>
-    <string name="action_window">Window margins</string>
-    <string name="window_master_title">Apply window margins</string>
-    <string name="window_master_subtitle">Watch these apps and move the one that comes to the front</string>
-    <string name="window_profile_message">Pick an edge to set, or turn the profile off.</string>
-    <string name="window_edge_title">%1$s — %2$s</string>
-    <string name="window_value">%1$d / %2$d / %3$d / %4$d px</string>
-    <string name="window_margin_value">%1$d px</string>
-    <string name="window_range">Any value from 0 to %1$d px</string>
-    <string name="window_unit">px</string>
-    <string name="window_off">Off</string>
-    <string name="window_turn_on">Turn the profile on</string>
-    <string name="window_turn_off">Turn the profile off</string>
-    <string name="window_protected">the unit\'s own launcher — left alone</string>
-    <string name="window_empty">No apps yet</string>
-    <string name="window_empty_hint">Apps you install on this unit appear here.</string>
-    <plurals name="window_count">
-        <item quantity="one">%1$d app</item>
-        <item quantity="other">%1$d apps</item>
-    </plurals>
-    <string name="window_status_off">Off: no window is being moved.</string>
-    <string name="window_status_none">No app has a window profile turned on yet.</string>
-    <string name="window_status_no_root">Root access is not available, so no window can be moved.</string>
-    <string name="window_status_waiting">Watching %1$d apps; the one that comes to the front is moved into its rectangle.</string>
-    <string name="window_status_no_multi_window">This unit says it does not do multi-window, so it may only be able to move a window that is already resizable.</string>
-    <string name="window_status_applied">%1$s is running inside its rectangle.</string>
-    <string name="window_status_fullscreen">%1$s opens fullscreen, and this unit only resizes freeform or multi-window tasks - nothing was moved.</string>
-    <string name="window_status_refused">The unit refused to move %1$s, so nothing was changed.</string>
-    <string name="window_channel">App window margins</string>
-    <string name="window_channel_description">Shown while an app window margin profile is on.</string>
-    <string name="window_notification_title">Window margins</string>
-    <string name="window_notification_text">%1$d app(s) watched</string>
 </resources>

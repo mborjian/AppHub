@@ -39,9 +39,8 @@ pinned offline graph is the app's hardest architectural constraint.
 Not a launcher: a **companion board**. The factory launcher (`com.chery.launcher`,
 a platform-signed system app on a 1024×600 160dpi panel) is where the unit boots
 to. App Hub is a second surface the driver opens to see *their* apps, launch one
-with one tap, close what is still running where the install can really close it
-(the platform-signed build, or root), and — for the two features that need it —
-push an app's window into a rectangle using root.
+with one tap, and close what is still running where the install can really close
+it (the platform-signed build, or root).
 
 So the category is **automotive utility / device command surface**, and its
 context of use is the whole design brief:
@@ -58,17 +57,16 @@ context of use is the whole design brief:
 
 ### 1.3 The screens and the flow
 
-Four activities, all built row-by-row in code from shared XML rows:
+The screens, all built row-by-row in code from shared XML rows:
 
 ```
 MainActivity ────────────────► SettingsActivity ──┬──► ShortcutsActivity
-  (the grid)                      (21 rows)        ├──► WindowMarginsActivity ──► WindowMarginService
-   │                              │                └──► system Usage-access screen
-   │ long-press an app            ├─ margins ────► Sheet → NumberPicker / input
-   └─► Sheet (menu)               │
-       ├─ Open / Close            └─ window ─────► WindowMarginsActivity[EXTRA_PACKAGE]
+  (the grid)                      (20 rows)        └──► system Usage-access screen
+   │                              │
+   │ long-press an app            └─ margins ────► Sheet → NumberPicker / input
+   └─► Sheet (menu)
+       ├─ Open / Close
        ├─ Pin / App info
-       ├─ Window margins ──► WindowMarginsActivity[EXTRA_PACKAGE]
        └─ Hide from the main page
 ```
 
@@ -114,7 +112,7 @@ the brand hue and changes only the ink, the secondary text and the semantics.**
 
 | # | Friction | Evidence |
 |---|---|---|
-| 1 | **Every real app action is a long-press secret.** Close, Pin, App info, Window margins, Hide are only in a menu opened by a ~900ms hold. No affordance marks it; nothing on the tile says a hold does anything | `MainActivity.showActions`, `item_app.xml` (no affordance) |
+| 1 | **Every real app action is a long-press secret.** Close, Pin, App info, Hide are only in a menu opened by a ~900ms hold. No affordance marks it; nothing on the tile says a hold does anything | `MainActivity.showActions`, `item_app.xml` (no affordance) |
 | 2 | **Destructive tiles sit in the icon grid.** *Close* is a red peer of the app icons and quits App Hub with no confirmation; *Settings* is a blue peer | `AppAdapter.StaticCell`, `MainActivity.closeSelf` |
 | 3 | **Settings is only reachable at the end of the scroll.** It is the last cell of a grid that holds every installed app | `MainPage.cells` |
 | 4 | **Page order can only be changed inside a sub-screen**, in a preview that is a simulation of the grid, not the grid | `ShortcutsActivity`, `Prefs.pageOrder` |
@@ -129,9 +127,8 @@ the brand hue and changes only the ink, the secondary text and the semantics.**
 | 13 | **No way to know why there are no dots.** Usage access lives in Settings; the grid never says the dots need an opt-in | `SettingsActivity.usageRow` |
 | 14 | **Empty grid has no action** — a sentence, no way into Settings except the tile below it | `item_empty.xml` |
 | 15 | **Selection is invisible to a screen reader**: the sheet's check mark is an `ImageView` with `@null` description, and `selected` is never exposed | `Sheet.rowView`, `dialog_sheet_row.xml` |
-| 16 | **Screen status sentences are the weakest type on screen** (12sp inside a card) although they carry the app's best idea: telling the truth when the OS refuses | `activity_window_margins.xml#windowStatus` |
-| 17 | Three headers are copy-paste (`8dp/10dp/20dp` + 44dp icon + 21sp bold) with no shared layout | `activity_settings`, `activity_shortcuts`, `activity_window_margins` |
-| 18 | Docs drift: `minSdk`, version, "API 29" | `build.gradle.kts` vs `README.md` |
+| 16 | Two headers are copy-paste (`8dp/10dp/20dp` + 44dp icon + 21sp bold) with no shared layout | `activity_settings`, `activity_shortcuts` |
+| 17 | Docs drift: `minSdk`, version, "API 29" | `build.gradle.kts` vs `README.md` |
 
 **Strengths to protect:** one sheet component for everything; one app list
 (`AppRepository`) behind every screen; honest copy ("closed in background",
@@ -184,7 +181,7 @@ strongest one (a mode you can see).
 | **The ring** | Running state is a 3dp ring in the tile's own corner language plus a solid dot. Shape + position + colour, never colour alone. |
 | **The pill** | Settings, search and editing the page leave the grid. A single 56dp pill floats at the bottom-end and opens the tools sheet, so the grid holds *only* apps and tools are one tap away from anywhere in the scroll. |
 | **One system, two scales** | The whole language is expressed in dp/sp tokens, so `Adapt to screen` (×1→×2) multiplies the design instead of breaking it. The car legibility floor is stated in millimetres, not dp. |
-| **Say what the vehicle did** | The app's honesty about refused window moves becomes a first-class **status banner** (icon + 13sp + tone), not a sentence in a card. |
+| **Say what the vehicle did** | What the app could not do becomes a first-class **status banner** (icon + tone), not a sentence buried in a card. |
 
 ---
 
@@ -349,7 +346,7 @@ on a car screen is the thing being touched.
 | Weight | **1.75dp stroke**, round cap, round join — outline, not Material-fill |
 | Sizes | 24 (rows, headers) · 20 (dense rows, chips) · 40 (status banners) · 48 (empty states) |
 | Colour | inherits tint: `ink_700`/`night_100` for structural, `blue_700`/`blue_300` for active, `warn`/`blocked` for status; never two colours in one glyph |
-| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `frame` (window), `eye-off` (hide), `trash` (uninstall), `grid`, `check-circle`, `warning`, `blocked`, `refresh`, `open` (a page with a way out of it: the app card's *Open*, and the file manager's *Open with*), and the file manager's `folder`, `folder-tile` (its own icon), `up`, `page` (a file), `package` (APK), `image`, `note` (music), `film` (video), `box` (archive), `sheets` (copy), `folder-in` (move), and the browser's `web`, `web-tile` (its own icon), `bookmark`, `reload` |
+| Set | `back`, `chevron`, `search`, `close`, `gear`, `pin`, `info`, `sliders`, `eye-off` (hide), `trash` (uninstall), `grid`, `check-circle`, `warning`, `blocked`, `refresh`, `open` (a page with a way out of it: the app card's *Open*, and the file manager's *Open with*), and the file manager's `folder`, `folder-tile` (its own icon), `up`, `page` (a file), `package` (APK), `image`, `note` (music), `film` (video), `box` (archive), `sheets` (copy), `folder-in` (move), and the browser's `web`, `web-tile` (its own icon), `bookmark`, `reload` |
 | Running ring | not an icon: a shape drawable (`stroke 3dp`, `radius_l`) drawn behind the tile |
 
 The existing `ic_tune` (filled rectangles) and `ic_back` (Material filled arrow)
@@ -406,7 +403,7 @@ the full 1024 is ours.
 - **Running** = ring (`hub_running`, 3dp) behind the tile + 8dp dot at the
   top-end. **Recent** = hollow dot only. Both are announced in the tile's
   `contentDescription`; the dot's own node stops announcing itself.
-- **Empty** (Part 4.9) is a real panel with a primary button, not a cell.
+- **Empty** (Part 4.8) is a real panel with a primary button, not a cell.
 - Label is `Text.Body` (15sp, up from 13sp) with `ellipsize=end`, one line.
   Names are secondary information; the icon is the primary target.
 - **Scroll**: vertical, with `clipToPadding=false`, `paddingBottom` =
@@ -476,7 +473,6 @@ Apple move: the sheet belongs to the board, it does not replace it.
  │  │   ╰────╯                                             │  │
  │  ├──────────────────────────────────────────────────────┤  │
  │  │ ↗ Open                       primary, blue_700 text  │  │
- │  │ ⧉ Window margins                                     │  │
  │  │ ⚲ Pin to top                                         │  │
  │  │ ⓘ App info                                           │  │
  │  ├──────────────────────────────────────────────────────┤  │
@@ -490,7 +486,7 @@ Apple move: the sheet belongs to the board, it does not replace it.
 ```
 
 Grouping is the fix for friction #1: *do* the thing (Open), *arrange* it
-(Window margins / Pin / App info), *remove* it (Close / Hide / Uninstall —
+(Pin / App info), *remove* it (Close / Hide / Uninstall —
 amber, last, with a hairline separator above). Today all five are one
 undifferentiated list.
 
@@ -566,7 +562,6 @@ matcher the shortcuts screen already uses, so `apphub` finds *App Hub*.
  │  │   Usage access is off, so nothing shows as running.                    │  │  only while missing
  │  ├────────────────────────────────────────────────────────────────────────┤  │
  │  │ Include system apps                                   [ ———●]          │  │
- │  │ App window margins                                       2 apps    ›    │  │
  │  └────────────────────────────────────────────────────────────────────────┘  │
  │                                                                              │
  │  MAINTENANCE                                                                 │
@@ -605,35 +600,7 @@ instead of two independent blue-text buttons that fail contrast; the count is a
 badge in the title bar; the preview pane gets `raised` treatment and the real
 grid's tile metrics so what you see is what the board will be.
 
-### 4.8 App window margins — the honest screen
-
-```
- ┌──────────────────────────────────────────────────────────────────────────────┐
- │  ‹   App window margins                                        2 apps        │
- ├──────────────────────────────────────────────────────────────────────────────┤
- │  ┌────────────────────────────────────────────────────────────────────────┐  │
- │  │ Apply window margins                                   [ ●———]         │  │
- │  │ Watch these apps and move the one that comes to the front              │  │
- │  └────────────────────────────────────────────────────────────────────────┘  │
- │  ┌────────────────────────────────────────────────────────────────────────┐  │
- │  │ ⚠ Charger opens fullscreen, and this unit only resizes freeform or     │  │  status banner:
- │  │   multi-window tasks — nothing was moved.                              │  │  icon + 13sp + tone
- │  └────────────────────────────────────────────────────────────────────────┘  │
- │  ┌────────────────────────────────────────────────────────────────────────┐  │
- │  │  ▢ Organic Maps                       200 / 20 / 0 / 0 px    [ ●———]   │  │
- │  │    app.organicmaps                                                     │  │
- │  ├────────────────────────────────────────────────────────────────────────┤  │
- │  │  ▢ Charger                                  Off              [ ———●]   │  │
- │  └────────────────────────────────────────────────────────────────────────┘  │
- └──────────────────────────────────────────────────────────────────────────────┘
-```
-
-The status sentence becomes a **banner** with a tone-matched icon
-(`hub_ok` / `hub_warn` / `hub_blocked`), the lead clause in `Text.BodyStrong`,
-the explanation in `Text.BodyS` — and the row values go tabular so
-`200 / 20 / 0 / 0 px` stops reflowing while a wheel is turned.
-
-### 4.9 States — the four the app is missing
+### 4.8 States — the four the app is missing
 
 | State | Today | Instrument |
 |---|---|---|
@@ -643,7 +610,7 @@ the explanation in `Text.BodyS` — and the row values go tabular so
 | **Filtered empty** | one line | query echoed back + a next step (`Try a shorter word.`) |
 | **Permission missing** | a row in Settings | the same offer as a dismissible **banner on the grid**, once, with `Enable` — the driver learns why there are no dots without hunting |
 
-### 4.10 Responsive behaviour
+### 4.9 Responsive behaviour
 
 | Width class | Layout |
 |---|---|
@@ -656,7 +623,7 @@ keeping 1024 physical px — which is exactly why the sheet widths, gutters and
 targets above are tokens: the same rule produces 4 columns of 2×-sized tiles
 instead of 8 cramped ones, and nothing needs a special case.
 
-### 4.11 The file manager — a folder browser, five verbs
+### 4.10 The file manager — a folder browser, five verbs
 
 The fourth surface, and the first one that is a tool rather than a list of apps.
 It stands on the board as a tile of its own: the app's own blue sheet with a
@@ -686,7 +653,7 @@ same chevron — because "where this is" and "which value this has" are the same
 kind of statement, and the sheet behind it is the same sheet. It holds the
 volumes first (each with its free space, the current one checked) and then every
 folder between here and that volume's root, so climbing is one tap per step.
-* **Four empty states, not one** (4.9's rule, applied to a folder): no storage at
+* **Four empty states, not one** (4.8's rule, applied to a folder): no storage at
 all, a folder that is gone, a folder the platform keeps shut, and a folder that
 is simply empty. All four use the app's shared `listEmpty` block.
 * **The way up is a plain arrow**, and always the first row. It was drawn as a
@@ -725,7 +692,7 @@ update provider's single path exists to keep shut.
 `paddingBottom` is `touch_car` so the bar can never cover the last row — the same
 rules as every other list in the app.
 
-### 4.12 The web browser — a toolbar, a page, and a start block
+### 4.11 The web browser — a toolbar, a page, and a start block
 
 The fifth surface, and the second tool standing on the board: the unit's own
 `WebView` under this app's chrome, drawn as the app's blue sheet with a globe on
@@ -838,11 +805,11 @@ have no vibrator at all: every haptic is a courtesy, never the only feedback.
 
 ### 5.4 Skeleton vs spinner
 
-- **Skeleton** when the shape of the answer is known: the grid, the shortcuts
-  list, the window-margins list. Slick animations on a car screen are called
-  *skeletons* not *shimmers*, and they pulse opacity only.
-- **Spinner** when the duration is unknown and the shape is not: the root probes
-  on the window screen.
+- **Skeleton** when the shape of the answer is known: the grid and the shortcuts
+  list. Slick animations on a car screen are called *skeletons* not *shimmers*,
+  and they pulse opacity only.
+- **Spinner** when the duration is unknown and the shape is not: a page still
+  loading in the browser.
 - **Never a blocking spinner.** The board is always usable; a slow read shows
   skeletons the driver can ignore.
 
@@ -852,7 +819,7 @@ have no vibrator at all: every haptic is a courtesy, never the only feedback.
 
 | # | Before | After | Why |
 |---|---|---|---|
-| 1 | Close / Pin / App info / Window / Hide are behind an invisible long-press | **Edit mode (The Lift)** + a `⋯` button on every lifted tile; tap opens the app card sheet | A hidden verb in a moving vehicle is a safety problem. The mode is visible, named and escapable |
+| 1 | Close / Pin / App info / Hide are behind an invisible long-press | **Edit mode (The Lift)** + a `⋯` button on every lifted tile; tap opens the app card sheet | A hidden verb in a moving vehicle is a safety problem. The mode is visible, named and escapable |
 | 2 | *Close App Hub* is a red tile in the icon grid | Removed; leaving App Hub is the system's own thing | Quitting the surface you are looking at is not a peer of "open Maps" |
 | 3 | Settings is the last cell of the grid | The floating **pill** (bottom-end, always reachable) | Reaching the tools must not require scrolling past 40 apps |
 | 4 | The page order is editable only in Settings → Shortcuts, in a mock grid | The **real grid** is draggable in edit mode; the shortcuts preview stays as a second, larger place to do it | Editing a simulation of a thing is a design smell |
@@ -868,7 +835,7 @@ have no vibrator at all: every haptic is a courtesy, never the only feedback.
 | 14 | Empty grid = a sentence, no action | Empty panel with a primary `Open settings` | An empty state must offer the next step |
 | 15 | Sheet selection invisible to TalkBack | `contentDescription` includes "selected"; the check node stays decorative; rows expose `isSelected` | Real screen-reader gap |
 | 16 | Status sentences are the weakest type on screen | Tone-matched banners with an icon, 2-line hierarchy | The app's best idea (telling the truth) deserves the second-strongest element on the screen |
-| 17 | Three copy-pasted headers | One `view_header.xml` + `Text.TitleL` | The screen chrome stops drifting per screen |
+| 17 | Two copy-pasted headers | One `view_header.xml` + `Text.TitleL` | The screen chrome stops drifting per screen |
 | 18 | `Back` duplicated as a settings row | Removed; 56dp arrow + system gesture | Redundant navigation costs a row and a scroll |
 | 19 | Docs drift (minSdk 28 vs 29, version) | Fix the README/build comment while implementing | The doc is the contract |
 
@@ -906,8 +873,8 @@ The turns of the screw that separate "clean" from "designed":
    the eye never has to count rows.
 9. **The undo pill.** The cheapest luxury in the app: it converts every
    destructive action into a reversible one and disappears.
-10. **Copy that tells the truth and stops.** `Charger opens fullscreen, and this
-    unit only resizes freeform or multi-window tasks — nothing was moved.`
+10. **Copy that tells the truth and stops.** `Maps is still open` — the one
+    sentence a failed close gets, from the one place that knows.
     Sentence case, consequence named, no blame, no exclamation mark.
 11. **The pill gets out of the way.** It fades to 40% while the board scrolls and
     returns in 240ms — present when needed, invisible when reading.
@@ -1176,7 +1143,7 @@ IconShape.ROUNDED -> {
 
 | Piece | File | Content |
 |---|---|---|
-| Header | **new** `view_header.xml` | 56dp back target, `Text.TitleL`, optional trailing count/action — included by all three inner screens (kills #17) |
+| Header | **new** `view_header.xml` | 56dp back target, `Text.TitleL`, optional trailing count/action — included by the inner screens (kills #17) |
 | Tile | `item_app.xml` | `radius_l` background, `cell_padding`, ring `View` behind the icon (`ring_width`, `radius_l`, `hub_running`), `⋯` button (`visibility=gone` outside edit mode), `Text.Body` label |
 | Ring | **new** `bg_tile_ring.xml` | `<shape>` rectangle, `radius_l`, `<stroke stroke_width="@dimen/ring_width" color="@color/hub_running"/>` — drawn behind the icon, sized `iconPx + 2*space_1` |
 | Pill | **new** `bg_pill.xml` + `view_hub_pill.xml` | `radius_full`, `hub_blue_600`, `elev_floating`, `touch_car` wide, opens `HubSheet` |
@@ -1186,7 +1153,6 @@ IconShape.ROUNDED -> {
 | Sheet | `dialog_sheet.xml`, `dialog_sheet_row.xml` | `radius_xl`, 56dp rows, `Text.Body`/`Text.BodyS`, `radius_s` ripples, check → `check-circle` 20dp `blue_700` |
 | Settings | `activity_settings.xml`, `row_setting.xml` | 72dp rows, groups with `Text.Section` headers, values as `Text.Meta` + `tnum`, 56dp switches, the back row removed |
 | Shortcuts | `activity_shortcuts.xml`, `row_filter.xml`, `row_shortcut.xml` | segmented All/None, badge count, `raised` preview pane at real tile metrics |
-| Window margins | `activity_window_margins.xml`, `row_window_app.xml` | master row, status **banner**, rows at 72dp with `Text.Meta` values |
 | Grid | `activity_main.xml` | `gutter_grid`, `paddingBottom = touch_car + space_4`, the pill as a sibling of the RecyclerView |
 | Skeletons | **new** `view_skeleton_tile.xml` | tile-shaped, `hub_surface` at 55%, 1000ms opacity pulse |
 
@@ -1240,9 +1206,6 @@ the bottom behind a section header, and a sticky group label while scrolling.
 preview that lays out differently from the grid. After: a segmented control, a
 count badge, `raised` preview panes built from the grid's own metrics.
 
-**Window margins.** Before: the app's best sentence at 12sp in a card. After: a
-tone-matched banner with an icon, and the same sentence in two type sizes.
-
 **Sheets.** Before: centred cards at `radius 24dp` with 13dp row padding and no
 grouping. After: bottom-anchored `radius_xl` cards, 56dp rows, grouping
 separators, `check-circle` selection that TalkBack can read, and the grid still
@@ -1276,9 +1239,6 @@ Sentence case, second person, consequence named. New strings:
 | `enable` | Enable | فعالکردن |
 | `selected` | selected | انتخابشده |
 | `running_state` | running | در حال اجرا |
-| `status_applied` | %1$s is running inside its rectangle. | %1$s اکنون داخل مستطیل خود اجرا میشود. |
-| `status_refused` | The unit refused to move %1$s, so nothing was changed. | دستگاه از جابهجایی %1$s خودداری کرد، بنابراین چیزی تغییر نکرد. |
-| `status_no_root` | Root access is not available, so no window can be moved. | دسترسی روت در دسترس نیست، بنابراین هیچ پنجرهای جابهجا نمیشود. |
 
 Reworded (the honest voice, tightened):
 
@@ -1364,19 +1324,18 @@ the unit's panel without scrolling.**
 `SheetRow.groupStart` and `dialog_sheet_divider.xml` were both in the code and
 neither was used, so the app card was a flat column of six equal verbs. Three
 groups are now visible — *do it* / *arrange it* / *remove it* — as is the pair in
-the tools sheet and the rectangle-versus-switch split in an app's edge sheet. A
-hairline is the cheapest hierarchy there is.
+the tools sheet. A hairline is the cheapest hierarchy there is.
 
 ### 9.5 A count is a quantity
 
-`%1$d apps` read **1 apps** on the window screen's header. `<plurals>` now, in
+`%1$d apps` read **1 apps** wherever the app counted a quantity. `<plurals>` now, in
 both languages, with the Persian form deliberately single-item: the language, not
 the app, decides what a quantity looks like.
 
 ### 9.6 One app, one icon
 
-Four screens draw the same icon — the board, the shortcuts list, the window list,
-the app card — at three different sizes, and only one of them was clipping it
+Three screens draw the same icon — the board, the shortcuts list, the app card —
+at three different sizes, and only one of them was clipping it
 into the chosen shape. They now share one `IconCache` keyed by package, size and
 shape, which is both cheaper and more correct: the *Icon shape* setting reaches
 every screen that shows an icon, and the app card's header icon is the tile's own
@@ -1418,8 +1377,8 @@ second half is what the report did not mention and the system depended on:
 through the UI: *Extra large* turns the Grid row into `Auto (7 columns)` in place.
 **A value that is derived from another setting is the same bug waiting for
 someone to notice it** — the audit after the report checked every row on every
-screen that shows stored state, and `WindowMarginsActivity` and
-`ShortcutsActivity` already did this correctly.
+screen that shows stored state, and `ShortcutsActivity` already did this
+correctly.
 
 **The badge was never the size the document drew it at.** 9.2 settled where the
 badge's centre goes and left its size to a literal; the literal drifted. The

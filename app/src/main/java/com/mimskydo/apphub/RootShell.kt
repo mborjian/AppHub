@@ -34,9 +34,9 @@ object RootShell {
     /**
      * Runs a whole shell command line as root and returns its output.
      *
-     * Pipes and redirection are the point: the window-margins watcher reads the
-     * resumed activity with a `dumpsys … | grep …` one-liner, and both `su`
-     * flavours are handed a shell rather than a pre-split argv. Null means "no
+     * The whole command line is the point: callers hand it their own quoting and
+     * chains (`&&`, `;`), and both `su` flavours are handed a shell rather than a
+     * pre-split argv. Null means "no
      * usable root, or the command failed", which is the only distinction the
      * callers need - every root path here either falls back or does nothing.
      */
