@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import android.util.Log
 import androidx.core.content.FileProvider
 import org.json.JSONObject
 import java.io.File
@@ -20,6 +21,8 @@ import javax.net.ssl.SSLSocketFactory
 data class Version(val name: String, val code: Long)
 
 object Updater {
+
+    private const val TAG = "AppHub"
 
     private const val LATEST_RELEASE =
         "https://api.github.com/repos/mborjian/AppHub/releases/latest"
@@ -88,6 +91,7 @@ object Updater {
 
     fun check(context: Context): Check {
         val installed = version(context)
+        Log.i(TAG, "update check: asking $LATEST_RELEASE from ${installed.name} (${installed.code})")
         val body = try {
             get(context, LATEST_RELEASE, "application/vnd.github+json") { connection ->
                 val code = connection.responseCode
@@ -99,6 +103,7 @@ object Updater {
                 }
             }
         } catch (e: IOException) {
+            Log.i(TAG, "update check failed: ${chain(e)}")
             return Check.Trouble(context.getString(R.string.update_offline, e.message.orEmpty()))
         }
 
@@ -191,6 +196,7 @@ object Updater {
             }
         } catch (e: IOException) {
             file.delete()
+            Log.i(TAG, "update download failed: ${chain(e)}")
             return Download.Failed(
                 context.getString(R.string.update_download_failed, e.message.orEmpty())
             )
@@ -370,6 +376,19 @@ object Updater {
     private const val MAX_HOPS = 5
 
     private val REDIRECTS = setOf(301, 302, 303, 307, 308)
+
+    private fun chain(t: Throwable): String {
+        val out = StringBuilder()
+        var node: Throwable? = t
+        while (node != null) {
+            if (out.isNotEmpty()) out.append(" <- ")
+            out.append(node.javaClass.simpleName)
+            node.message?.takeIf { it.isNotBlank() }?.let { out.append(": ").append(it) }
+            val next = node.cause
+            node = if (next === node) null else next
+        }
+        return out.toString()
+    }
 
     private fun publishedDigestOf(asset: String): String? =
         asset.trim().split(Regex("\\s+")).firstOrNull()

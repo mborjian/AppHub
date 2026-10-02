@@ -57,6 +57,8 @@ Stored in `SharedPreferences` (`Prefs`), reached through the tools pill.
 | Screen margins | left, right, top, bottom in dp from 0 to half the side — wheel or typed — so the unit's own overlay (rail, clock, climate strip) cannot cover this app's content |
 | Usage access | shown only while missing; tapping walks a ladder of real settings screens, because a car ROM may not carry the first one |
 | Reset settings | back to the defaults; pins are kept |
+| Version | the build this unit runs, name and version code; ten taps on the row opens developer mode |
+| Developer | hidden until those ten taps; its page reads this app's own logcat, tests the trust stores the update and web hosts answer on, compares the unit's clock with the network's and prints a device report — the page's own switch turns it off and takes the row away |
 
 ## Closing an app
 
@@ -284,11 +286,20 @@ Compose, no icon packs; the app icon itself is a vector.
   hands the file to another app by `content://` URI, so an app that only
   opens paths will not be in the list.
 - The browser has no tabs, no private mode, no password store and no upload;
-  an SSL error always stops the load (there is no *proceed anyway* anywhere
-  in this app), and plain `http` stays allowed because the unit's own router
-  and dashcam pages have no certificate.
+  an SSL error never proceeds (there is no *proceed anyway* anywhere in this
+  app). On the page itself it stops the load and says which certificate check
+  failed — the clock, an unknown authority, a name that does not match, an
+  expiry — while a failed element only goes to the log and the page loads on.
+  Plain `http` stays allowed because the unit's own router and dashcam pages
+  have no certificate.
 - History and bookmarks (200 visits kept) live on this install and go with
   it; clearing the history leaves the bookmarks alone.
+- The update path's TLS, the browser's certificate failures and the unit's
+  own clock can only be read on the unit: the Developer page's logcat, its
+  certificate probe (platform store against the bundled anchors, per host)
+  and its clock check (unit time against an HTTP `Date` header, with
+  automatic time a tap away) are what turn *that page did not load* into a
+  named cause.
 - A real close and a real task view need the platform-signed install, a
   priv-app install or root: Android 14+ restricts `killBackgroundProcesses()`
   to the caller's own processes, so an ordinary install shows *Recently open*

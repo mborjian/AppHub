@@ -37,6 +37,10 @@ class SettingsActivity : BaseActivity() {
 
     private lateinit var updateRow: View
 
+    private lateinit var developerRow: View
+
+    private var versionTaps = 0
+
     private var updateValue: CharSequence? = null
 
     private var updateRunning = false
@@ -225,7 +229,44 @@ class SettingsActivity : BaseActivity() {
 
         addActionRow(R.string.set_reset_title, R.string.set_reset_subtitle) { confirmReset() }
 
+        addVersionRow()
+
+        developerRow = addActionRow(
+            R.string.set_developer_title, R.string.set_developer_subtitle,
+        ) { openDeveloper() }
+
         addBackRow()
+    }
+
+    private fun addVersionRow() {
+        val row = inflateRow(R.string.set_version_title, R.string.set_version_subtitle)
+        val version = Updater.version(this)
+        row.findViewById<TextView>(R.id.settingValue).apply {
+            isVisible = true
+            text = getString(R.string.version_value, version.name, version.code)
+        }
+        row.setOnClickListener { tapVersion() }
+        rows.addView(row)
+    }
+
+    private fun tapVersion() {
+        if (prefs.developerMode) {
+            openDeveloper()
+            return
+        }
+        versionTaps++
+        if (versionTaps >= VERSION_TAPS) {
+            versionTaps = 0
+            prefs.developerMode = true
+            toast(getString(R.string.version_unlocked))
+            refresh()
+        } else {
+            toast(getString(R.string.version_taps_left, VERSION_TAPS - versionTaps))
+        }
+    }
+
+    private fun openDeveloper() {
+        startActivity(Intent(this, DeveloperActivity::class.java))
     }
 
     private fun addSection(titleRes: Int) {
@@ -356,6 +397,7 @@ class SettingsActivity : BaseActivity() {
 
         usageRow.isVisible = !ActivityStats.hasAccess(this)
         homeRow.isVisible = !isDefaultHome()
+        developerRow.isVisible = prefs.developerMode
     }
 
     private fun gridLabel(columns: Int): CharSequence = if (columns == 0) {
@@ -666,6 +708,8 @@ class SettingsActivity : BaseActivity() {
     }
 
     private companion object {
+        const val VERSION_TAPS = 10
+
         val COLUMN_OPTIONS = listOf(0, 2, 3, 4, 5, 6)
     }
 }

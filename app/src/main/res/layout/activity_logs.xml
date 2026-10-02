@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/hub_page"
+    android:orientation="vertical">
+
+    <include
+        layout="@layout/view_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/logLevelRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_4"
+        android:layout_marginEnd="@dimen/space_4"
+        android:layout_marginBottom="@dimen/space_1"
+        android:background="@drawable/bg_setting_row"
+        android:clickable="true"
+        android:elevation="@dimen/elev_raised"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/row_min_height"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_4"
+        android:paddingTop="@dimen/space_3"
+        android:paddingEnd="@dimen/space_3"
+        android:paddingBottom="@dimen/space_3">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/logLevelTitle"
+                style="@style/Text.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/logs_level_title" />
+
+            <TextView
+                android:id="@+id/logLevelSubtitle"
+                style="@style/Text.BodyS"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/logs_level_subtitle" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/logLevelValue"
+            style="@style/Text.Meta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_3"
+            android:gravity="end"
+            tools:text="Info" />
+
+        <ImageView
+            android:id="@+id/logLevelChevron"
+            android:layout_width="@dimen/icon_dense"
+            android:layout_height="@dimen/icon_dense"
+            android:layout_marginStart="@dimen/space_2"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_forward"
+            android:tint="@color/hub_ink_400" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/logsScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/space_4"
+        android:paddingTop="@dimen/space_3"
+        android:paddingEnd="@dimen/space_4"
+        android:scrollbarStyle="insideOverlay">
+
+        <TextView
+            android:id="@+id/logsText"
+            style="@style/Text.Log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/space_4" />
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical|end"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_4"
+        android:paddingTop="@dimen/space_2"
+        android:paddingEnd="@dimen/space_4"
+        android:paddingBottom="@dimen/space_4">
+
+        <TextView
+            android:id="@+id/logsRefresh"
+            style="@style/Text.BodyStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/touch_min"
+            android:background="@drawable/bg_pill_quiet"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="@dimen/space_5"
+            android:paddingEnd="@dimen/space_5"
+            android:text="@string/logs_refresh"
+            android:textColor="@color/primary_text" />
+
+        <TextView
+            android:id="@+id/logsCopy"
+            style="@style/Text.BodyStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/touch_min"
+            android:layout_marginStart="@dimen/space_3"
+            android:background="@drawable/bg_pill_quiet"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="@dimen/space_5"
+            android:paddingEnd="@dimen/space_5"
+            android:text="@string/logs_copy"
+            android:textColor="@color/primary_text" />
+
+        <TextView
+            android:id="@+id/logsSave"
+            style="@style/Text.BodyStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/touch_min"
+            android:layout_marginStart="@dimen/space_3"
+            android:background="@drawable/bg_pill_quiet"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="@dimen/space_5"
+            android:paddingEnd="@dimen/space_5"
+            android:text="@string/logs_save"
+            android:textColor="@color/primary_text" />
+    </LinearLayout>
+
+</LinearLayout>

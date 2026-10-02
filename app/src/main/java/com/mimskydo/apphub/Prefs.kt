@@ -150,6 +150,14 @@ class Prefs(context: Context) {
             editor.apply()
         }
 
+    var developerMode: Boolean
+        get() = prefs.getBoolean(KEY_DEVELOPER, false)
+        set(value) = prefs.edit().putBoolean(KEY_DEVELOPER, value).apply()
+
+    var logLevel: LogLevel
+        get() = LogLevel.of(prefs.getString(KEY_LOG_LEVEL, null))
+        set(value) = prefs.edit().putString(KEY_LOG_LEVEL, value.name).apply()
+
     var adaptToScreen: Boolean
         get() = prefs.getBoolean(KEY_ADAPT, false)
         set(value) = prefs.edit().putBoolean(KEY_ADAPT, value).apply()
@@ -288,6 +296,8 @@ class Prefs(context: Context) {
         const val KEY_ADAPT = "adapt_screen"
         const val KEY_DOTS_OFFER = "dots_offer_dismissed"
         const val KEY_PENDING_UPDATE = "pending_update"
+        const val KEY_DEVELOPER = "developer_mode"
+        const val KEY_LOG_LEVEL = "log_level"
 
         const val REFERENCE_WIDTH_DP = 400f
 

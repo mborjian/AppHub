@@ -277,7 +277,10 @@ reader's fallback, and needs no licence file. Apple-grade polish comes from
 
 Rules: never below 12sp; secondary copy is `Text.BodyS` or larger on a car
 screen; numbers are `Text.Meta` + `tnum`; a value that names a unit keeps the
-unit in the same style (no superscript, no mixed weight).
+unit in the same style (no superscript, no mixed weight). `Text.Log` is the
+one exception to Roboto: 12sp monospace, forced LTR, on the page surface, for
+the developer log viewer — a log is data, and a column of it is read by
+column.
 
 ### 3.3 Spacing
 
@@ -575,6 +578,13 @@ Section headers convert a 21-row list into four scannable groups; a sticky
 header keeps the current section named while scrolling; `Back` as a row is
 dropped (the 56dp arrow and the system gesture are enough, and it duplicated
 navigation).
+
+The last two rows are *Version* (name and version code in `Text.Meta`, no
+chevron — it is not a screen) and, only after ten taps on it, *Developer*.
+The developer screen keeps the same row, section and sheet vocabulary as
+Settings; its log viewer is the only screen that steps outside it, with the
+level row on top, a monospace page under it and *Refresh* / *Copy* / *Save*
+as quiet pills in the corner the app already uses for one-tap actions.
 
 ### 4.7 Shortcuts — keep the two panes, fix the hierarchy
 

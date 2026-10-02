@@ -97,6 +97,17 @@
             android:exported="false"
             android:label="@string/files_title" />
 
+        <activity
+            android:name=".DeveloperActivity"
+            android:exported="false"
+            android:label="@string/developer_title" />
+
+        <activity
+            android:name=".LogsActivity"
+            android:exported="false"
+            android:label="@string/logs_title"
+            android:windowSoftInputMode="adjustResize" />
+
         <receiver
             android:name=".DownloadReports"
             android:exported="false">

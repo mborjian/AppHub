@@ -109,6 +109,10 @@
     <string name="browser_error_title">That page did not load</string>
     <string name="browser_error_message">The unit could not reach it.</string>
     <string name="browser_error_secure">The certificate for that page is not one the unit will accept.</string>
+    <string name="browser_error_clock">The unit\'s clock is wrong, so this page\'s certificate does not fit it. Set the date and time and load the page again.</string>
+    <string name="browser_error_expired">This page\'s certificate has run out. If the unit\'s clock is right, the page\'s own certificate is out of date.</string>
+    <string name="browser_error_mismatch">The certificate was issued for a different address than the one in the bar.</string>
+    <string name="browser_error_untrusted">The unit does not know the authority that signed this page\'s certificate.</string>
     <string name="browser_link_handed">Link handed to another app</string>
     <string name="browser_link_refused">Nothing on the unit opens that link</string>
     <string name="browser_upload_refused">This page asks for a file, and this browser has no picker.</string>
@@ -243,6 +247,57 @@
     <string name="set_reset_subtitle">Back to the defaults; pinned apps are kept</string>
     <string name="set_reset_message">All settings go back to their defaults.</string>
     <string name="set_reset_confirm">Reset</string>
+
+    <string name="set_version_title">Version</string>
+    <string name="set_version_subtitle">The build this unit is running</string>
+    <string name="version_value">%1$s (%2$d)</string>
+    <string name="version_taps_left">%1$d taps to developer mode</string>
+    <string name="version_unlocked">Developer mode is on</string>
+
+    <string name="set_developer_title">Developer</string>
+    <string name="set_developer_subtitle">Logs and the checks that read this unit</string>
+
+    <string name="developer_title">Developer</string>
+    <string name="section_developer">Developer</string>
+    <string name="dev_mode_title">Developer mode</string>
+    <string name="dev_mode_subtitle">Turning this off takes the Developer row out of the settings</string>
+    <string name="dev_mode_off">Developer mode is off</string>
+    <string name="dev_logs_title">Logs</string>
+    <string name="dev_logs_subtitle">What this app and the unit wrote to the log buffer</string>
+    <string name="dev_tls_title">Certificates</string>
+    <string name="dev_tls_subtitle">Which trust store answers for the update and web hosts</string>
+    <string name="dev_clock_title">Clock</string>
+    <string name="dev_clock_subtitle">Unit time against the network\'s own time</string>
+    <string name="dev_device_title">Device</string>
+    <string name="dev_device_subtitle">Android, build, signature and storage</string>
+    <string name="dev_checking">Checking…</string>
+    <string name="dev_run_again">Run again</string>
+    <string name="dev_copy">Copy the details</string>
+    <string name="dev_copied">Copied</string>
+    <string name="dev_auto_time_enable">Turn automatic time on</string>
+    <string name="dev_auto_time_done">Automatic time is on; the unit takes the network\'s time</string>
+    <string name="dev_auto_time_refused">The unit did not let this app change the clock</string>
+    <string name="dev_date_settings">Open the date and time settings</string>
+    <string name="dev_clock_advice">A clock this far from the network\'s is what makes every certificate look broken.</string>
+
+    <string name="logs_title">Logs</string>
+    <string name="logs_level_title">Level</string>
+    <string name="logs_level_subtitle">How much of the buffer is read</string>
+    <string name="log_level_verbose">Verbose</string>
+    <string name="log_level_debug">Debug</string>
+    <string name="log_level_info">Info</string>
+    <string name="log_level_warn">Warnings</string>
+    <string name="log_level_error">Errors</string>
+    <string name="logs_refresh">Refresh</string>
+    <string name="logs_copy">Copy</string>
+    <string name="logs_save">Save</string>
+    <string name="logs_loading">Reading the buffer…</string>
+    <string name="logs_empty">Nothing in the buffer at this level.</string>
+    <string name="logs_root">Root · whole buffer</string>
+    <string name="logs_app_only">No root · this app only</string>
+    <string name="logs_copied">Logs copied</string>
+    <string name="logs_saved">Logs saved to %1$s</string>
+    <string name="logs_save_refused">The logs could not be saved</string>
 
     <string name="set_update_title">Updates</string>
     <string name="set_update_subtitle">This app\'s releases on GitHub, checked and installed here</string>

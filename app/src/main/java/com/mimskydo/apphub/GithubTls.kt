@@ -100,7 +100,13 @@ object GithubTls {
                 first.checkServerTrusted(chain, authType)
             } catch (e: Exception) {
                 Log.i(TAG, "the platform refused the update host's chain, trying the bundled anchors: $e")
-                bundled.checkServerTrusted(chain, authType)
+                try {
+                    bundled.checkServerTrusted(chain, authType)
+                    Log.i(TAG, "the bundled anchors answered for the update host's chain")
+                } catch (refused: Exception) {
+                    Log.i(TAG, "the bundled anchors refused too: $refused")
+                    throw refused
+                }
             }
         }
 

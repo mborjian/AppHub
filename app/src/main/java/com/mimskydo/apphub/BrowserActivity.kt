@@ -182,12 +182,42 @@ class BrowserActivity : BaseActivity() {
 
         override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
             handler.cancel()
+            val failed = error.url
+            val main = current
+            val mainFrame = failed.isNullOrEmpty() || main == null || failed == main || failed == view.url
+            Log.i(
+                TAG,
+                "ssl refused: $failed main=$mainFrame reason=${error.primaryError} ${certificateOf(error)}",
+            )
+            if (!mainFrame) return
             loading = false
             progress.isVisible = false
-            Log.i(TAG, "ssl refused: ${error.url}")
             page.stopLoading()
             refresh(current)
-            showBanner(getString(R.string.browser_error_secure))
+            showBanner(sslReason(error))
+        }
+    }
+
+    private fun sslReason(error: SslError): String = when (error.primaryError) {
+        SslError.SSL_NOTYETVALID, SslError.SSL_DATE_INVALID -> getString(R.string.browser_error_clock)
+        SslError.SSL_EXPIRED -> getString(R.string.browser_error_expired)
+        SslError.SSL_IDMISMATCH -> getString(R.string.browser_error_mismatch)
+        SslError.SSL_UNTRUSTED -> getString(R.string.browser_error_untrusted)
+        else -> getString(R.string.browser_error_secure)
+    }
+
+    private fun certificateOf(error: SslError): String {
+        val certificate = try {
+            error.certificate
+        } catch (t: Throwable) {
+            null
+        }
+        if (certificate == null) return "no certificate"
+        return try {
+            "subject=${certificate.issuedTo.dName} issuer=${certificate.issuedBy.dName}" +
+                " valid ${certificate.validNotBefore} to ${certificate.validNotAfter}"
+        } catch (t: Throwable) {
+            "certificate unreadable"
         }
     }
 

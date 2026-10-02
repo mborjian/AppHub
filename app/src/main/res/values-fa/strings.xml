@@ -111,6 +111,10 @@
     <string name="browser_error_title">آن صفحه باز نشد</string>
     <string name="browser_error_message">دستگاه نتوانست به آن برسد.</string>
     <string name="browser_error_secure">گواهی آن صفحه چیزی نیست که دستگاه بپذیرد.</string>
+    <string name="browser_error_clock">ساعت دستگاه نادرست است و گواهی این صفحه با آن نمی‌خواند. تاریخ و ساعت را تنظیم کنید و صفحه را دوباره باز کنید.</string>
+    <string name="browser_error_expired">مهلت گواهی این صفحه تمام شده است. اگر ساعت دستگاه درست است، گواهی خودِ صفحه قدیمی است.</string>
+    <string name="browser_error_mismatch">گواهی برای نشانی دیگری صادر شده، نه نشانی نوار بالا.</string>
+    <string name="browser_error_untrusted">دستگاه مرجعی را که گواهی این صفحه را امضا کرده نمی‌شناسد.</string>
     <string name="browser_link_handed">پیوند به برنامهٔ دیگری سپرده شد</string>
     <string name="browser_link_refused">چیزی روی دستگاه آن پیوند را باز نمی‌کند</string>
     <string name="browser_upload_refused">این صفحه فایلی می‌خواهد و این مرورگر انتخابگر فایل ندارد.</string>
@@ -244,6 +248,57 @@
     <string name="set_reset_subtitle">بازگشت به حالت پیش‌فرض؛ نشان‌ها حفظ می‌شوند</string>
     <string name="set_reset_message">همه تنظیمات به حالت پیش‌فرض برمی‌گردند.</string>
     <string name="set_reset_confirm">بازگرداندن</string>
+
+    <string name="set_version_title">نسخه</string>
+    <string name="set_version_subtitle">نسخه‌ای که روی این دستگاه اجرا می‌شود</string>
+    <string name="version_value">%1$s (%2$d)</string>
+    <string name="version_taps_left">%1$d ضربه تا حالت توسعه‌دهنده</string>
+    <string name="version_unlocked">حالت توسعه‌دهنده روشن شد</string>
+
+    <string name="set_developer_title">توسعه‌دهنده</string>
+    <string name="set_developer_subtitle">گزارش‌ها و بررسی‌هایی که این دستگاه را می‌خوانند</string>
+
+    <string name="developer_title">توسعه‌دهنده</string>
+    <string name="section_developer">توسعه‌دهنده</string>
+    <string name="dev_mode_title">حالت توسعه‌دهنده</string>
+    <string name="dev_mode_subtitle">با خاموش شدنش ردیف توسعه‌دهنده از تنظیمات هم می‌رود</string>
+    <string name="dev_mode_off">حالت توسعه‌دهنده خاموش شد</string>
+    <string name="dev_logs_title">گزارش‌ها</string>
+    <string name="dev_logs_subtitle">آنچه این برنامه و دستگاه در حافظهٔ گزارش نوشته‌اند</string>
+    <string name="dev_tls_title">گواهی‌ها</string>
+    <string name="dev_tls_subtitle">کدام مخزن اعتماد برای میزبان‌های به‌روزرسانی و وب پاسخ می‌دهد</string>
+    <string name="dev_clock_title">ساعت</string>
+    <string name="dev_clock_subtitle">زمان دستگاه در برابر زمان شبکه</string>
+    <string name="dev_device_title">دستگاه</string>
+    <string name="dev_device_subtitle">اندروید، ساخت، امضا و حافظه</string>
+    <string name="dev_checking">در حال بررسی…</string>
+    <string name="dev_run_again">اجرای دوباره</string>
+    <string name="dev_copy">کپی جزئیات</string>
+    <string name="dev_copied">کپی شد</string>
+    <string name="dev_auto_time_enable">روشن‌کردن زمان خودکار</string>
+    <string name="dev_auto_time_done">زمان خودکار روشن شد؛ دستگاه زمان را از شبکه می‌گیرد</string>
+    <string name="dev_auto_time_refused">دستگاه اجازه نداد این برنامه ساعت را تغییر دهد</string>
+    <string name="dev_date_settings">باز کردن تنظیمات تاریخ و ساعت</string>
+    <string name="dev_clock_advice">اختلاف این‌قدر زیاد با زمان شبکه همان چیزی است که همهٔ گواهی‌ها را خراب نشان می‌دهد.</string>
+
+    <string name="logs_title">گزارش‌ها</string>
+    <string name="logs_level_title">سطح</string>
+    <string name="logs_level_subtitle">چه مقدار از حافظه خوانده شود</string>
+    <string name="log_level_verbose">کامل</string>
+    <string name="log_level_debug">اشکال‌زدایی</string>
+    <string name="log_level_info">اطلاعات</string>
+    <string name="log_level_warn">هشدارها</string>
+    <string name="log_level_error">خطاها</string>
+    <string name="logs_refresh">تازه‌سازی</string>
+    <string name="logs_copy">کپی</string>
+    <string name="logs_save">ذخیره</string>
+    <string name="logs_loading">در حال خواندن حافظه…</string>
+    <string name="logs_empty">چیزی در این سطح در حافظه نیست.</string>
+    <string name="logs_root">روت · همهٔ حافظه</string>
+    <string name="logs_app_only">بدون روت · فقط این برنامه</string>
+    <string name="logs_copied">گزارش‌ها کپی شد</string>
+    <string name="logs_saved">گزارش‌ها در %1$s ذخیره شد</string>
+    <string name="logs_save_refused">گزارش‌ها ذخیره نشد</string>
 
     <string name="set_update_title">به‌روزرسانی</string>
     <string name="set_update_subtitle">انتشارهای همین برنامه روی گیت‌هاب، بررسی و نصب از همین‌جا</string>
