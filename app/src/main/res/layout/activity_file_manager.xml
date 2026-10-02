@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The file manager: where the driver is, what is there, and the one thing
-     being carried from one folder to another.
-
-     Three pieces, in the order they are needed: a location row that says which
-     volume and which folder is open and changes it in one tap, the rows
-     themselves, and - only while a file has been picked up - the bar that says
-     so and offers to put it here. The bar floats over the list rather than
-     taking a line of it, which is what makes it a mode the driver cannot be in
-     without seeing. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -20,9 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <!-- Where this is: the volume, and the path under it. A settings row, because
-         that is what a row with a value and a chevron looks like here - and
-         because the sheet it opens is the same kind of sheet. -->
     <LinearLayout
         android:id="@+id/locationRow"
         android:layout_width="match_parent"
@@ -86,9 +74,6 @@
             android:tint="@color/hub_ink_400" />
     </LinearLayout>
 
-    <!-- The one thing this screen has to admit to: without the storage grant
-         there is nothing to browse, and a folder that looks empty is not the
-         same thing as a folder this app may not read. -->
     <include
         android:id="@+id/filesBanner"
         layout="@layout/row_banner"
@@ -114,8 +99,6 @@
             android:paddingBottom="@dimen/touch_car"
             android:scrollbars="vertical" />
 
-        <!-- two lines, because "the folder is empty" and "this app may not read
-             it" are different answers and only one of them is about the folder -->
         <LinearLayout
             android:id="@+id/listEmpty"
             android:layout_width="match_parent"
@@ -144,9 +127,6 @@
                 tools:text="Android keeps this one shut." />
         </LinearLayout>
 
-        <!-- The carry bar: the app's own inverted surface, so the mode it stands
-             for reads as a mode. It does not time out on its own the way the undo
-             bar does - there is a file in it, and a file does not expire. -->
         <LinearLayout
             android:id="@+id/carryBar"
             android:layout_width="wrap_content"

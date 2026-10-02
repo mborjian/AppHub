@@ -151,8 +151,6 @@
     <string name="section_behaviour">رفتار</string>
     <string name="section_maintenance">نگهداری</string>
 
-    <!-- Persian counts one form for every number, which is why this has a single
-         item: the language, not the app, decides what a quantity looks like. -->
     <plurals name="apps_count">
         <item quantity="other">%1$d برنامه</item>
     </plurals>

@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One app on the shortcuts screen: its own icon in its own colours, its name,
-     and the tick that decides whether the board draws it.
-
-     The whole row is the target, so ticking an app is one tap on a 72dp line
-     rather than a hit at a 24dp box. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"

@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One line of a sheet: icon, label, optional subtitle, optional check.
-
-     64dp tall - row_sheet_height. A sheet is a list of verbs a driver picks
-     from while the vehicle is moving, so it is a car target rather than a
-     hand-held one, but shorter than a settings row: six of these have to fit
-     the unit's panel at once, because a verb the driver cannot see is a verb
-     that is not there. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -60,8 +53,6 @@
             tools:visibility="visible" />
     </LinearLayout>
 
-    <!-- Selection is a shape, not a bare tick: it is announced to a screen
-         reader as well (see Sheet.rowView). -->
     <ImageView
         android:id="@+id/rowCheck"
         android:layout_width="@dimen/icon_dense"

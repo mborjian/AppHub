@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The affordance every lifted tile grows. Three dots in a 24dp box, drawn
-     inside a badge at the icon's own scale ([AppAdapter.badge]): the verbs that
-     used to be a hidden long-press are now a button you can see. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

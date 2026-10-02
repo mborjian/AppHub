@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One line of a settings screen: title, optional subtitle, and exactly one of
-     the three controls on the right (switch, value, chevron).
-
-     72dp tall, because a row a driver has to aim at should not be shorter than
-     the finger that finds it. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -54,8 +49,6 @@
         android:visibility="gone"
         tools:visibility="visible" />
 
-    <!-- values are tabular and LTR, so a number that changes under a finger
-         never moves the row around it -->
     <TextView
         android:id="@+id/settingValue"
         style="@style/Text.Meta"

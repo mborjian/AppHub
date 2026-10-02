@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Running: the solid dot. The 2dp ring in the surface colour is what keeps it
-     legible on top of an icon that is allowed to be any colour at all. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
     <solid android:color="@color/hub_running" />

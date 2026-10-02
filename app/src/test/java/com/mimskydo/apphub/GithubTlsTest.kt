@@ -7,27 +7,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 
-/**
- * The update path's trust, held to what it claims.
- *
- * `res/raw/github_roots.pem` is a trust decision shipped inside the app, so it
- * gets the treatment a trust decision deserves: the bundle is parsed from the
- * same file the build packages, every certificate in it has to be self-signed
- * (a trust store accepts nothing else as an anchor on every platform), it has to
- * still be valid, and it has to be the two authorities GitHub's chains actually
- * end at today.
- *
- * The second half is the other half of the same door: which addresses the update
- * path will talk to at all. The APK and its checksum come out of the release
- * API's JSON, so the hosts are pinned here rather than trusted from the answer,
- * and a redirect is only followed inside GitHub.
- */
 class GithubTlsTest {
 
-    /** the file the build packages, read from the module the tests run in */
     private val pem: String = File("src/main/res/raw/github_roots.pem").readText()
-
-    // ------------------------------------------------------------ the anchors
 
     @Test
     fun `the bundle carries three anchors`() {
@@ -72,8 +54,6 @@ class GithubTlsTest {
             names.any { it.contains("CN=ISRG Root X1") },
         )
     }
-
-    // --------------------------------------------------------------- the hosts
 
     @Test
     fun `the update hosts are the addresses GitHub serves releases from`() {

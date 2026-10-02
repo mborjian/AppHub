@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A bookmark: the ribbon every screen draws for one, as a 1.75dp outline.
-     Square shoulders and a plain notch, because at 24dp a curved-topped
-     bookmark reads as a shield. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

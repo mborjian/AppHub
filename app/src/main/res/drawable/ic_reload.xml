@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Reload: a circle with a gap at the top-right and an arrowhead arriving at
-     the top, pointing the way the page is about to be fetched again. Drawn as
-     an arc plus a two-segment head - the head is not a filled triangle,
-     because nothing in this set is filled. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

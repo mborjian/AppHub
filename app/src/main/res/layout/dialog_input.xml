@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The typed half of a number sheet: one numeric field with its unit.
-
-     Same rounded box as a row, so the field does not look like a foreign widget
-     inside the card. The keyboard opens on show and the field is selected, so a
-     known number can be replaced without clearing it by hand. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"

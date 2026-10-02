@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A picture: frame, sun, ridge. The two shapes inside the frame are what make
-     it a picture rather than an empty rectangle, and they are drawn to fit
-     inside it - clipped artwork would read as a mistake at 24dp. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

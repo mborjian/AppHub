@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The header of every inner screen, in one file.
-
-     It used to be copy-pasted into three layouts with the same 44dp icon, the
-     same 21sp bold title and three slightly different paddings - which is how
-     three screens that were meant to look identical stop looking identical.
-
-     The back target is 56dp, not 44dp: at 160dpi that is 8.9mm, and this is the
-     exit of every screen in an app used from a moving seat. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -42,7 +34,6 @@
         android:maxLines="1"
         tools:text="Settings" />
 
-    <!-- what the screen is a count of, or the one action it offers -->
     <TextView
         android:id="@+id/headerTrailing"
         style="@style/Text.Meta"

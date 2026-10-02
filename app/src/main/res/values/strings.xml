@@ -14,11 +14,6 @@
     <string name="action_uninstall">Uninstall</string>
     <string name="hidden_toast">%1$s hidden from the main page</string>
 
-    <!-- Taking an app off the unit. Offered only for one the user installed,
-         and the only removal that asks first, because re-opening cannot bring
-         it back. The toast is not one sentence: a removal the platform carried
-         out and one it has only been asked to show a screen for are different
-         news. -->
     <string name="uninstall_title">Uninstall %1$s?</string>
     <string name="uninstall_message">It comes off this unit with its data, and App Hub cannot put it back.</string>
     <string name="uninstall_confirm">Uninstall it</string>
@@ -26,10 +21,6 @@
     <string name="uninstall_asking_toast">Finish the removal in the screen that opened</string>
     <string name="uninstall_refused_toast">%1$s could not be removed</string>
 
-    <!-- The file manager: the unit's own storage, and whatever card or stick is
-         plugged into it. Its tile stands on the main page while the settings
-         switch below is on, and these are the words it has for the four things
-         it can do to a file. -->
     <string name="files_title">Files</string>
     <string name="files_card_subtitle">App Hub\'s own file manager</string>
     <string name="files_volume_internal">Internal storage</string>
@@ -48,10 +39,6 @@
     <string name="files_paste">Paste here</string>
     <string name="files_pick_copy">Holding “%1$s” to copy</string>
     <string name="files_pick_move">Holding “%1$s” to move</string>
-
-    <!-- Five endings per verb, because they are genuinely different news: a
-         move across volumes that copied but could not take the original away has
-         left two of the file behind, and "moved" there would be a lie. -->
     <string name="files_copied_toast">“%1$s” copied</string>
     <string name="files_copied_twice_toast">“%1$s” copied, and the original is still there</string>
     <string name="files_moved_toast">“%1$s” moved</string>
@@ -60,10 +47,6 @@
     <string name="files_copy_refused_toast">“%1$s” could not be copied</string>
     <string name="files_move_refused_toast">“%1$s” could not be moved</string>
     <string name="files_delete_refused_toast">“%1$s” could not be deleted</string>
-
-    <!-- The one question the file manager asks. A folder means everything inside
-         it: there is no recycle bin on Android, so the question says what goes,
-         and the yes-button is the app's only red. -->
     <string name="files_delete_title">Delete “%1$s”?</string>
     <string name="files_delete_file_message">It comes off this unit, and App Hub cannot put it back.</string>
     <string name="files_delete_folder_message">The folder and everything in it come off this unit, and App Hub cannot put them back.</string>
@@ -73,22 +56,13 @@
     <string name="files_install_asking_toast">Finish the install in the screen that opened</string>
     <string name="files_install_refused_toast">%1$s could not be installed</string>
 
-    <!-- The hand-off, and its four endings. "Handed" and not "opened" in the one
-         good case: another app is opening it now, and whether the file is on
-         screen yet is that app's news. The empty unit is in here as news of its
-         own, because "nothing here opens a .mkv" is not a failure. -->
     <string name="files_handed_toast">“%1$s” handed to another app</string>
     <string name="files_unclaimed_toast">No app on this unit can open “%1$s”</string>
     <string name="files_missing_toast">“%1$s” is not on the unit any more</string>
     <string name="files_open_refused_toast">“%1$s” could not be opened</string>
 
-    <!-- The same sentence as the toast above, without the name: it is the second
-         line of the verbs sheet when a tap on a file finds nothing to open it. -->
     <string name="files_unclaimed_message">No app on this unit opens this kind of file.</string>
 
-    <!-- The four ways a folder can have nothing to show. They are four different
-         answers - no storage, a folder that is gone, one the platform keeps shut,
-         and one that is simply empty - so they are four sets of words. -->
     <string name="files_access_title">Storage is closed to App Hub</string>
     <string name="files_access_message">Android keeps one permission in front of the whole of it, and this screen can show nothing until it is given.</string>
     <string name="files_none_title">No storage to show</string>
@@ -100,10 +74,6 @@
     <string name="files_empty_title">This folder is empty</string>
     <string name="files_empty_message">Nothing is stored in it.</string>
 
-    <!-- The web browser: the second screen of this app that stands on the board
-         as a tile, switched on and off from Settings - Behaviour. It is a real
-         browser over the platform's WebView, so what is stringed here is the
-         chrome around the page rather than the page. -->
     <string name="browser_title">Web</string>
     <string name="browser_card_subtitle">App Hub\'s own web browser</string>
     <string name="set_browser_title">Web browser</string>
@@ -136,10 +106,6 @@
     <string name="browser_history_clear_title">Clear the history?</string>
     <string name="browser_history_clear_message">Every visit in the list goes. The bookmarks stay.</string>
     <string name="browser_history_clear_confirm">Clear it</string>
-
-    <!-- What the page could not do. The platform's own words for the failure are
-         used where it gave any, so these two are the fallback and the one case
-         with no description of its own: a certificate. -->
     <string name="browser_error_title">That page did not load</string>
     <string name="browser_error_message">The unit could not reach it.</string>
     <string name="browser_error_secure">The certificate for that page is not one the unit will accept.</string>
@@ -153,8 +119,6 @@
     <string name="browser_show_downloads">Show in Files</string>
     <string name="browser_download_failed">The download did not finish</string>
 
-    <!-- The home role, offered once: the row disappears once the system agrees,
-         exactly like the usage-access row. -->
     <string name="set_home_title">Make App Hub the home screen</string>
     <string name="set_home_subtitle">The board comes up on its own after a boot, and the factory launcher stays installed</string>
     <string name="set_home_action">Choose</string>
@@ -166,9 +130,6 @@
 
     <string name="settings_title">Settings</string>
 
-    <!-- Instrument: the surface around the board. Sentence case, second person,
-         and the consequence named rather than implied - the same voice the
-         rest of the app already speaks in. -->
     <string name="tools">Tools</string>
     <string name="find_app">Find an app</string>
     <string name="edit_page">Edit the page</string>
@@ -188,9 +149,6 @@
     <string name="section_behaviour">Behaviour</string>
     <string name="section_maintenance">Maintenance</string>
 
-    <!-- One count, used by the empty board and the rows that carry a count.
-         A quantity, not a template: "1 apps" was the app telling the driver it
-         had not been written for the number one. -->
     <plurals name="apps_count">
         <item quantity="one">%1$d app</item>
         <item quantity="other">%1$d apps</item>
@@ -207,9 +165,6 @@
     <string name="dots_offer_title">Running apps aren’t marked</string>
     <string name="dots_offer_message">Usage access is off, so nothing can show as running.</string>
 
-    <!-- what a tile says about itself, out loud. The state is part of the
-         tile's own description, so a screen reader does not meet a 12dp dot
-         floating beside an app name with no idea what it means. -->
     <string name="tile_running">%1$s, running</string>
     <string name="tile_open">%1$s, open</string>
     <string name="tile_recent">%1$s, recently open</string>
@@ -289,9 +244,6 @@
     <string name="set_reset_message">All settings go back to their defaults.</string>
     <string name="set_reset_confirm">Reset</string>
 
-    <!-- The self-update: the releases this app publishes on its repository, the
-         APK of a newer one, and the four things that have to hold before that
-         file is allowed near the installer. -->
     <string name="set_update_title">Updates</string>
     <string name="set_update_subtitle">This app\'s releases on GitHub, checked and installed here</string>
     <string name="update_checking">Checking…</string>
@@ -325,7 +277,6 @@
     <string name="update_refused_version">That file is not newer than the build on this unit</string>
     <string name="update_refused_digest">The download does not match the checksum published with it</string>
 
-    <!-- option values -->
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>

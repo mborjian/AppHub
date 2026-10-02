@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Instrument glyphs: 24dp box, 1.75dp stroke, round caps and joins. Outline
-     rather than filled, because a 24dp filled blob beside 15sp text reads
-     heavier than the text it labels. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

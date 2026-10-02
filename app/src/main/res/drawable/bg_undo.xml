@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The undo bar: the one surface in the app that is inverted - dark on a light
-     page, a lifted grey on a dark one. It floats over the board and is the only
-     thing allowed to, so it says so. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@color/hub_inverse_surface" />

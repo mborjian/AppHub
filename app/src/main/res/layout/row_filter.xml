@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The filter of the shortcuts list: a plain field, so the apps below it can be
-     narrowed by typing. It stays above the list rather than scrolling with it,
-     since it is what makes the rest of the list reachable.
-
-     Styled like a row rather than like a text box, so it does not look like a
-     foreign widget on a screen built from rows. The field is not focused when
-     the screen opens: on a head unit the keyboard would cover the very list
-     being filtered, and the remembered filter is already applied by then. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -45,8 +37,6 @@
         android:textCursorDrawable="@null"
         tools:hint="Filter apps" />
 
-    <!-- Only there once something has been typed, and wide enough to hit with a
-         thumb: the glyph is 24dp but the target is 56dp. -->
     <ImageView
         android:id="@+id/filterClear"
         android:layout_width="@dimen/touch_min"

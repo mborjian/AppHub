@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The workhorse surface: a settings row, a list row, a field, the search cap.
-     Depth is tone + hairline; the shadow is 1dp and only exists so a row on a
-     slightly darker page separates at the corners too. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/ripple">
     <item>

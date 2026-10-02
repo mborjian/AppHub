@@ -17,34 +17,8 @@ import androidx.recyclerview.widget.RecyclerView
 import java.io.File
 import java.util.concurrent.Executors
 
-/**
- * The files on the unit, in the unit's own storage and on whatever card or stick
- * is plugged into it.
- *
- * A folder browser and not a picker: one row per folder or file, where a tap does
- * the one obvious thing - a folder goes in, a file is handed to whichever app on
- * the unit opens that kind of thing - and the "..." on the row holds everything
- * else: *Open with* again, copy, move, take it off the unit, and install, if it is
- * a package. A package is the one row whose tap opens that menu instead, because
- * the menu is where the only thing to do with a package is. What is being carried
- * from one folder to another rides in a bar at the bottom, because a copy is two
- * taps in two places and the driver has to be able to see that the first one
- * happened.
- *
- * Everything it reads is a real path (see [Files]) and every operation runs on
- * this screen's own worker: a folder of two thousand files, or a card that is
- * being pulled out, must not be able to freeze the UI thread a driver is
- * steering with.
- *
- * Nothing here shows a file. There is no viewer and no editor, because this hub
- * has no business being one: what a file can do instead is leave. [Handoff]
- * hands the one file the driver picked to whichever app on the unit opens that
- * kind of thing, through a URI carrying a token rather than a path - so what
- * leaves this app is one file, and never the tree it came out of.
- */
 class FileManagerActivity : BaseActivity() {
 
-    /** reads and writes files off the main thread, like every other screen here */
     private val worker = Executors.newSingleThreadExecutor()
 
     private lateinit var headerTitle: TextView
@@ -62,36 +36,26 @@ class FileManagerActivity : BaseActivity() {
 
     private val adapter = FileAdapter(::openRow, ::showActions)
 
-    /** what this install is allowed to do at all, re-read on every resume */
     private var access = Access.MISSING
 
-    /** the volumes as they were at the last read, kept for the places sheet */
     private var volumes: List<Volume> = emptyList()
 
-    /** the folder on screen, or null before the first read has chosen one */
     private var here: File? = null
 
-    /** the rows the list is drawing: the way up, then the folder's own entries */
     private var rows: List<FileItem> = emptyList()
 
-    /** whether [here] could be read - as opposed to being empty, which is different */
     private var readable = false
 
-    /** true once a read has answered, either way: before that there is nothing to say */
     private var loaded = false
 
-    /** true from a tap on a verb until the unit has been given its chance to finish */
     private var busy = false
 
-    /** the file on its way to a folder, and whether it is being taken or copied */
     private var carry: File? = null
     private var carryMove = false
 
     private val askStorage = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) {
-        // the grant is a state, not a result to act on: whatever the answer was,
-        // the screen reads it back and says the truth
         read()
     }
 
@@ -114,10 +78,6 @@ class FileManagerActivity : BaseActivity() {
         carryBar = findViewById(R.id.carryBar)
         carryText = findViewById(R.id.carryText)
 
-        // Where the screen opens: a bridge from the browser lands on the folder
-        // the download went into, and a screen that was put down in a folder
-        // comes back to that one - saved state wins over both the launch extra
-        // and the volume root.
         savedInstanceState?.getString(KEY_DIR)
             ?: intent.getStringExtra(EXTRA_START_DIR)
             ?.let { here = File(it) }
@@ -137,8 +97,6 @@ class FileManagerActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        // the grant is given on a screen of Android's own, so the state can only
-        // be read once this screen is back in front
         read()
     }
 
@@ -154,16 +112,6 @@ class FileManagerActivity : BaseActivity() {
         super.onDestroy()
     }
 
-    // ------------------------------------------------------------- the read
-
-    /**
-     * What this install may see, then what is in the folder on screen.
-     *
-     * Without the grant nothing is read at all. That is not laziness: from
-     * Android 11 on, a folder this app may not read lists as *empty* rather than
-     * as refused, and a file manager that says a full folder is empty is worse
-     * than one that says it has not been allowed in yet.
-     */
     private fun read() {
         access = Files.access(this)
         if (access == Access.MISSING) {
@@ -186,7 +134,6 @@ class FileManagerActivity : BaseActivity() {
                 post { draw(volumes, dir, items) }
             }
         } catch (t: Throwable) {
-            // the executor was already shut down while finishing
         }
     }
 
@@ -204,16 +151,11 @@ class FileManagerActivity : BaseActivity() {
         render()
     }
 
-    // ------------------------------------------------------------ the screen
-
     private fun render() {
         val dir = here
         val volume = dir?.let { Files.volumeOf(it, volumes) }
         val missing = access == Access.MISSING
 
-        // the header names the folder, the way a browser does, and the volume's
-        // own free space goes beside it - the number a driver checks before
-        // copying something onto a card
         headerTitle.text = when {
             dir == null -> getString(R.string.files_title)
             volume != null && dir.absolutePath == volume.root.absolutePath -> volume.name
@@ -234,14 +176,8 @@ class FileManagerActivity : BaseActivity() {
         banner.isVisible = missing
         adapter.submit(if (missing) emptyList() else rows)
 
-        // The one line the screen has to say when there is nothing to draw. Which
-        // line it is, is the whole point: a folder that refuses to be read, a
-        // folder that is empty, a folder that is gone and a unit with no storage
-        // at all are four different answers.
         val panel = when {
             missing -> null
-            // nothing has answered yet: a panel would be this screen telling the
-            // driver about a unit it has not looked at
             !loaded -> null
             dir == null || volumes.isEmpty() -> Panel.NONE
             !dir.exists() -> Panel.GONE
@@ -266,20 +202,15 @@ class FileManagerActivity : BaseActivity() {
     }
 
     private enum class Panel(val title: Int, val message: Int) {
-        /** no volume at all: a unit with no storage this app can see */
         NONE(R.string.files_none_title, R.string.files_none_message),
 
-        /** the folder the driver was in is not there any more - a card, pulled out */
         GONE(R.string.files_gone_title, R.string.files_gone_message),
 
-        /** the platform keeps this one shut, all files access or not */
         DENIED(R.string.files_denied_title, R.string.files_denied_message),
 
-        /** a folder with nothing in it */
         BLANK(R.string.files_empty_title, R.string.files_empty_message),
     }
 
-    /** the grant, in the same banner the board uses for the missing dots */
     private fun wireBanner() {
         banner.findViewById<TextView>(R.id.bannerTitle).setText(R.string.files_access_title)
         banner.findViewById<TextView>(R.id.bannerMessage).setText(R.string.files_access_message)
@@ -295,10 +226,6 @@ class FileManagerActivity : BaseActivity() {
         action.setOnClickListener { askForStorage() }
     }
 
-    /**
-     * Android 11 and up has one screen for it and it is a system setting; below
-     * that it is an ordinary runtime permission, asked for in place.
-     */
     private fun askForStorage() {
         if (Files.openAccessSettings(this)) return
         try {
@@ -316,17 +243,6 @@ class FileManagerActivity : BaseActivity() {
         }
     }
 
-    // ----------------------------------------------------------- the places
-
-    /**
-     * What a tap on a row does: the one obvious thing, and nothing else.
-     *
-     * A folder is entered, the way back up is followed, and a file is handed to
-     * another app to open. A package is the exception and falls through to the
-     * verbs, because installing is the only thing to do with one and it lives
-     * behind that sheet: putting an app on the unit is the one act on this screen
-     * a driver has to have gone looking for.
-     */
     private fun openRow(item: FileItem) {
         when {
             item.kind == FileKind.UP || item.folder -> goTo(item.file)
@@ -335,17 +251,6 @@ class FileManagerActivity : BaseActivity() {
         }
     }
 
-    /**
-     * A tap on a file: hand it over, and where the unit has nothing that opens it,
-     * put the verbs up instead of the toast.
-     *
-     * That is the one ending a tap cannot be left with. "Nothing here opens this"
-     * is news worth having, but a tap that ends on a toast and goes nowhere is a
-     * dead row - and the row has four other things it can do. So the same sentence
-     * becomes the sheet's subtitle, over those verbs. The other three endings - it
-     * is gone, it would not open, it was handed over - are about the file rather
-     * than about what to do next, and those stay toasts.
-     */
     private fun tapFile(item: FileItem) {
         val op = Handoff.open(this, item.file)
         if (op == HandoffOp.UNCLAIMED) {
@@ -361,14 +266,6 @@ class FileManagerActivity : BaseActivity() {
         read()
     }
 
-    /**
-     * Where this could be: every volume, and every folder between this one and
-     * the root of the volume it is on.
-     *
-     * One sheet rather than two, because the two questions are the same question
-     * - "somewhere else" - and a driver who has just plugged a card in is
-     * looking for the same row as one who wants to climb back up.
-     */
     private fun openPlaces() {
         val dir = here
         val volume = dir?.let { Files.volumeOf(it, volumes) }
@@ -406,20 +303,9 @@ class FileManagerActivity : BaseActivity() {
         )
     }
 
-    // ------------------------------------------------------------- the verbs
-
-    /**
-     * What can be done with one row, in the menu the board uses for an app.
-     *
-     * [subtitle] is there for the one caller that has something to say on the way
-     * in: a tap on a file nothing on the unit can open arrives here, and the
-     * sentence that would have been the toast is the sheet's second line instead.
-     */
     private fun showActions(item: FileItem, subtitle: String? = null) {
         val sheetRows = ArrayList<SheetRow>(6)
 
-        // only a package gets this row, because it is the only kind of file the
-        // platform will install by itself
         if (item.kind == FileKind.APK) {
             sheetRows += SheetRow(
                 label = getString(R.string.files_install),
@@ -434,11 +320,6 @@ class FileManagerActivity : BaseActivity() {
                 onClick = { goTo(item.file) },
             )
         }
-        // a file can leave: whichever app on the unit opens that kind of thing is
-        // handed it (see [Handoff]). Two rows do not get this one - a package,
-        // because its Install row is already the way in and two rows leading to
-        // one installer is one too many, and the way back up, which is a place
-        // and not a file.
         if (!item.folder && item.kind != FileKind.APK && item.kind != FileKind.UP) {
             sheetRows += SheetRow(
                 label = getString(R.string.files_open_with),
@@ -476,26 +357,18 @@ class FileManagerActivity : BaseActivity() {
         )
     }
 
-    /**
-     * Pick a file up and carry it. The second half of the copy is a tap in
-     * another folder, so what is in the driver's hands is drawn at the bottom of
-     * the screen until they put it down somewhere - or dismiss it.
-     */
     private fun pick(file: File, move: Boolean) {
         carry = file
         carryMove = move
         render()
     }
 
-    /** Put it down here. */
     private fun paste() {
         val source = carry ?: return
         val into = here ?: return
         if (busy) return
         val move = carryMove
         busy = true
-        // the bar goes while the unit works; whether it comes back is decided by
-        // what happened, below
         carry = null
         render()
 
@@ -506,8 +379,6 @@ class FileManagerActivity : BaseActivity() {
                 Log.i(TAG, "${if (move) "move" else "copy"} ${source.absolutePath} -> ${into.absolutePath} $op")
                 post {
                     busy = false
-                    // a copied file stays in hand: the same picture usually goes
-                    // to more than one folder, and picking it up again is four taps
                     if (move && op == FileOp.DONE) carry = null else carry = source
                     val verb = if (move) FileVerb.MOVE else FileVerb.COPY
                     toast(FileReport.text(this, verb, op, source.name ?: ""))
@@ -521,11 +392,6 @@ class FileManagerActivity : BaseActivity() {
         }
     }
 
-    /**
-     * The one removal that re-opening cannot bring back, so it is the one that
-     * asks first - and the question says what goes with it, because a folder on
-     * the unit means everything inside it too.
-     */
     private fun confirmDelete(item: FileItem) {
         val message = if (item.folder) {
             R.string.files_delete_folder_message
@@ -550,7 +416,6 @@ class FileManagerActivity : BaseActivity() {
     private fun delete(item: FileItem) {
         if (busy) return
         busy = true
-        // whatever was being carried may be the thing going away
         if (carry?.absolutePath == item.file.absolutePath) carry = null
         render()
 
@@ -571,26 +436,11 @@ class FileManagerActivity : BaseActivity() {
         }
     }
 
-    /**
-     * Hand the file to another app on the unit to open it - a player for a film, a
-     * reader for a page, a viewer for a picture.
-     *
-     * Nothing is copied and nothing is moved: what leaves this app is a URI for
-     * the one file the driver picked, behind a token minted for it (see [Handoff]),
-     * so a film on a card is opened from the card. No worker and no busy flag
-     * either, because there are no bytes to carry - the whole of this verb is a
-     * lookup and an intent.
-     */
     private fun handoff(file: File) {
         val label = file.name ?: ""
         toast(HandoffReport.text(this, Handoff.open(this, file), label))
     }
 
-    /**
-     * Install the package. What comes back is which layer ran: the platform
-     * installing it with no screen (the unit's own platform-signed build), or
-     * Android's installer screen asking the driver about it.
-     */
     private fun install(file: File) {
         if (busy) return
         busy = true
@@ -604,8 +454,6 @@ class FileManagerActivity : BaseActivity() {
                 post {
                     busy = false
                     toast(InstallReport.text(this, method, label))
-                    // no read: the install is the platform's and it is not in this
-                    // folder. The work is done here, so the header stops saying so
                     render()
                 }
             }
@@ -624,30 +472,18 @@ class FileManagerActivity : BaseActivity() {
     }
 
     companion object {
-        /** the tag `adb logcat -s AppHub` filters by */
         private const val TAG = "AppHub"
 
-        /** an optional folder to open instead of the volume root (from the browser) */
         const val EXTRA_START_DIR = "files_start_dir"
 
         private const val KEY_DIR = "files_dir"
         private const val KEY_CARRY = "files_carry"
         private const val KEY_MOVE = "files_carry_move"
 
-        /** what a row the driver may not use is drawn at */
         private const val DIMMED = 0.5f
     }
 }
 
-/**
- * One row of a folder: what it is, what it is called, and - for a file - its size
- * and the day it was last written.
- *
- * The state rides in the row rather than in a badge: there is nothing to mark
- * here, and the only row that is not a file is the way back up, which says so
- * with its own glyph and has no menu behind it - there is nothing to be done to
- * a place except go there.
- */
 private class FileAdapter(
     private val onOpen: (FileItem) -> Unit,
     private val onMore: (FileItem) -> Unit,
@@ -681,9 +517,6 @@ private class FileAdapter(
             val context = itemView.context
 
             icon.setImageResource(item.kind.glyph)
-            // Folders are the way around this screen, so they carry the accent;
-            // everything else is structural ink. One tone per row: two colours
-            // in one glyph is the drawing the design set out to avoid.
             icon.imageTintList = ColorStateList.valueOf(
                 ContextCompat.getColor(
                     context,
@@ -707,8 +540,6 @@ private class FileAdapter(
             more.isVisible = item.kind != FileKind.UP
             more.setOnClickListener { onMore(item) }
 
-            // one node, one sentence: a row is read as a file and its numbers,
-            // not as three texts in a column
             itemView.contentDescription = if (isFile) {
                 listOf(item.name, meta.text).joinToString(", ")
             } else {

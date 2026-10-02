@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copy: two sheets, the one behind showing only the corner it can be seen by.
-     Drawing the second sheet whole is how a copy icon starts looking like a
-     grid, and the missing quarter is what a driver's eye completes on its own. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

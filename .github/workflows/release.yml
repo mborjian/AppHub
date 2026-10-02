@@ -1,14 +1,3 @@
-# Publishes one signed, universal APK whenever a vX.Y.Z tag is pushed.
-#
-# The tag is the version: app/build.gradle.kts reads versionName and versionCode
-# back out of the checkout, so a release is the tag and nothing else. Before
-# anything is published the APK is installed on an emulator and its launcher
-# activity has to reach the front - the build proves the file, the emulator
-# proves the app.
-#
-# The app has no native libraries and no density-specific resources, so an ABI
-# or density split could not leave anything out - a single APK installs on every
-# arm and x86 device from Android 9 (minSdk 28) up.
 name: Release
 
 on:
@@ -21,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write # gh release create
+  contents: write
 
 jobs:
   release:
@@ -32,18 +21,12 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v7
         with:
-          # The version comes from the tags, and --generate-notes needs the
-          # history and the older ones.
           fetch-depth: 0
           fetch-tags: true
 
-      # The JDK and the SDK packages, pinned in one place for both workflows.
       - name: Set up the JDK and the Android SDK
         uses: ./.github/actions/android-setup
 
-      # The tag *is* the version, and Gradle reads it back out of this checkout.
-      # A tag that is not a plain vX.Y.Z would build an APK whose versionName is
-      # not the release name, so it is refused here, before the build.
       - name: Check the tag names a version
         run: |
           if ! printf '%s' "$GITHUB_REF_NAME" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -51,8 +34,6 @@ jobs:
             exit 1
           fi
 
-          # The same lookup the build makes, run here so a checkout that cannot
-          # see the tag says so now instead of after a build and an emulator boot.
           resolved=$(git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' || true)
           if [ "$resolved" != "$GITHUB_REF_NAME" ]; then
             echo "::error::git describe reads '${resolved:-nothing}' here, not $GITHUB_REF_NAME - the APK would not carry the tag's version."
@@ -60,8 +41,6 @@ jobs:
           fi
           echo "releasing ${GITHUB_REF_NAME#v}"
 
-      # Nothing signed ever lives in the repository: the keystore arrives as a
-      # secret and is written to the runner's temp directory for this job only.
       - name: Decode the release keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
@@ -71,10 +50,6 @@ jobs:
             exit 1
           fi
 
-          # A secret set from a file tends to carry more than the payload: a
-          # byte-order mark, NUL bytes from a UTF-16 redirect, or the
-          # `-----BEGIN ...-----` lines certutil wraps base64 in. Those are
-          # stripped off here; anything else is reported instead of guessed at.
           clean=$(printf '%s' "$KEYSTORE_BASE64" \
             | tr -d '\000' \
             | tr -d '\n\r \t' \
@@ -82,9 +57,6 @@ jobs:
             | sed 's/^.*-----BEGIN[^-]*-----//' \
             | sed 's/-----END.*$//')
 
-          # `base64 -d` wants the length to be a multiple of four; an unpadded
-          # encoding (PowerShell writes one without `=` only when it is exact, a
-          # few other tools always do) is padded here rather than refused.
           case $(( ${#clean} % 4 )) in
             2) clean="$clean==" ;;
             3) clean="$clean=" ;;
@@ -100,9 +72,6 @@ jobs:
           chmod 600 "$RUNNER_TEMP/release.jks"
           test -s "$RUNNER_TEMP/release.jks"
 
-      # A keystore, a password and an alias that do not match each other would
-      # otherwise be found out by a Gradle build - or by an emulator boot - a few
-      # minutes from now. keytool answers here instead, and prints nothing of it.
       - name: Check the keystore opens with those secrets
         env:
           STORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
@@ -131,10 +100,6 @@ jobs:
           test -f "$apk"
           "$apksigner" verify --verbose --print-certs "$apk"
 
-          # The app's own update screen trusts exactly one certificate digest,
-          # pinned in Updater.kt. A release that key did not sign would install
-          # nowhere, so the two are compared here - at the one moment a signing
-          # key can change.
           pinned=$(sed -n 's/.*"\([0-9a-f]\{64\}\)".*/\1/p' app/src/main/java/com/mimskydo/apphub/Updater.kt)
           signed=$("$apksigner" verify --print-certs "$apk" | sed -n 's/.*SHA-256 digest: *//p' | tail -1)
           if [ "$pinned" != "$signed" ]; then
@@ -146,28 +111,14 @@ jobs:
           badging=$("$aapt2" dump badging "$apk")
           echo "$badging" | sed -n '1,3p'
 
-          # The tag is the version, and this is the proof the build read it: an
-          # APK that disagrees with the tag is not the release being published.
           built=$(sed -n "s/^package: name='[^']*' versionCode='[0-9]*' versionName='\([^']*\)'.*/\1/p" <<< "$badging")
           if [ "$built" != "${GITHUB_REF_NAME#v}" ]; then
             echo "::error::the APK says versionName $built while the tag says ${GITHUB_REF_NAME#v} - the build did not see the tag (a shallow checkout?)."
             exit 1
           fi
 
-          # The file manager hands a file to another app, and the shape of that is
-          # the whole guarantee: one provider, serving one file per token this app
-          # minted for the row the driver picked, read-only, never exported, with
-          # no paths file behind it - a paths file is all of storage behind a
-          # provider, which is the door the update provider's single path exists to
-          # keep shut. The source says so; this reads the APK about to be published.
           manifest=$("$aapt2" dump xmltree --file AndroidManifest.xml "$apk")
           pkg=$(printf '%s\n' "$badging" | sed -n "s/^package: name='\([^']*\)'.*/\1/p")
-          # The provider's own element, children included, and nothing else. Two
-          # traps here, both found by running this check against a doctored dump:
-          # a window of neighbouring lines reaches the *next* provider, which is
-          # unexported too and would pass for this one, and a meta-data child is an
-          # element line of its own, so a capture that stopped at the next "E:"
-          # would never see a paths file sitting inside the provider.
           handoff=$(printf '%s\n' "$manifest" | awk -v want="$pkg.handoff" '
             function flush() {
                 if (pending != "" && index(pending, want) > 0) printf "%s", pending
@@ -209,11 +160,6 @@ jobs:
           (cd dist && sha256sum "$name" | tee "$name.sha256")
           echo "RELEASE_APK=dist/$name" >> "$GITHUB_ENV"
 
-      # The runner exposes /dev/kvm but not to the user the job runs as, and an
-      # emulator without it falls back to software emulation: it did boot that
-      # way, in six minutes, with its settings service never coming up - and the
-      # emulator's own setup then failed on the animation settings before the
-      # check below could run.
       - name: Give the emulator access to KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
@@ -221,15 +167,9 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # Everything above proves the file is a signed APK of the right version.
-      # This is what proves it is the app: it goes onto an emulator, and the
-      # launcher activity has to reach the front and stay there. Nothing is
-      # published until it does - an APK that cannot start is not a release.
       - name: Install the APK on an emulator and prove the launcher starts
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          # Android 11 with Google APIs: it boots headless on the runner's KVM and
-          # has no setup wizard to sit in front of the app.
           api-level: 30
           target: google_apis
           arch: x86_64
@@ -238,9 +178,6 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: sh tools/smoke-test-apk.sh "$RELEASE_APK"
 
-      # The screenshot and the activity dump that answer was read from, kept even
-      # when the check failed: that is the difference between "it did not start"
-      # and a guess about why.
       - name: Keep the emulator run as evidence
         if: always()
         uses: actions/upload-artifact@v7

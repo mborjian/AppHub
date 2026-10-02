@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The filled control: the tools pill at the bottom-end, and the primary button
-     inside an empty state or an error. White text on hub_blue_600 is 4.62:1 at
-     17sp bold, which is why the fill only ever carries `Text.OnFill`. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/hub_ripple_inverse">
     <item>

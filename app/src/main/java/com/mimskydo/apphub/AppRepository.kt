@@ -6,18 +6,8 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import java.text.Collator
 
-/**
- * Reads the apps to show in the grid.
- *
- * All PackageManager work happens on a background thread: querying the
- * activities plus loading ~n icons takes long enough to drop frames.
- */
 class AppRepository(private val context: Context) {
 
-    /**
-     * @param includeSystem also list factory/system apps, not just the ones
-     *   the user installed themselves.
-     */
     fun loadApps(
         includeSystem: Boolean = false,
         descending: Boolean = false,
@@ -34,12 +24,8 @@ class AppRepository(private val context: Context) {
             val activity = info.activityInfo ?: continue
             val pkg = activity.packageName ?: continue
 
-            // one cell per app, even when it exposes several launcher activities
             if (pkg == context.packageName || !seenPackages.add(pkg)) continue
 
-            // The same answer decides two things at once: whether a factory app
-            // is on the board at all, and whether the app card may offer to take
-            // this one off the unit - see [Uninstall].
             val system = !isUserInstalled(context, pkg)
             if (!includeSystem && system) continue
 
@@ -52,8 +38,6 @@ class AppRepository(private val context: Context) {
             )
         }
 
-        // Collator so Persian/Arabic names sort the way a reader expects,
-        // not by UTF-16 code point.
         val collator = Collator.getInstance()
         out.sortWith(Comparator { a, b -> collator.compare(a.label, b.label) })
         if (descending) out.reverse()
@@ -62,14 +46,6 @@ class AppRepository(private val context: Context) {
 
     companion object {
 
-        /**
-         * True for an app the user put on the unit: not one the unit came with,
-         * and not one of those that has since been updated in place.
-         *
-         * Read in exactly two places - the board deciding what to draw, and the
-         * card deciding whether to offer to uninstall - which is the point: a
-         * factory app is one thing, and both have to agree on what it is.
-         */
         fun isUserInstalled(context: Context, packageName: String): Boolean = try {
             val info = context.packageManager.getApplicationInfo(packageName, 0)
             (info.flags and (ApplicationInfo.FLAG_SYSTEM or

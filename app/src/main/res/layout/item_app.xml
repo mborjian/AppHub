@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One tile on the board: icon, a running mark, one line of name, and - while
-     the board is lifted - the affordance that opens this app's actions.
-
-     The gaps between tiles come from this view's own margins, so the grid needs
-     no span arithmetic in an item decoration and RTL stays correct for free. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -16,10 +11,6 @@
     android:focusable="true"
     android:padding="@dimen/cell_padding">
 
-    <!-- Every box between a tile and its badge has to let it out, padding
-         included: the badge is the one thing on this screen that deliberately
-         paints outside its own view, and a clipping ancestor would cut a circle
-         into a quarter. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -27,18 +18,12 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <!-- The icon's own box: exactly the icon, resized in code, so that both
-             the running ring and the lifted badge can be placed against it
-             without either of them moving it. The badge is drawn outside the
-             box, so the box must not clip what is drawn in it. -->
         <FrameLayout
             android:id="@+id/iconBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clipChildren="false">
 
-            <!-- Running: a ring outside the icon, in the tile's own corner
-                 language. It is not a glow - a glow spills light at night. -->
             <View
                 android:id="@+id/appRing"
                 android:layout_width="@dimen/touch_ring"
@@ -46,7 +31,6 @@
                 android:layout_gravity="center"
                 android:background="@drawable/bg_ring"
                 android:visibility="gone" />
-
 
             <ImageView
                 android:id="@+id/appIcon"
@@ -56,31 +40,13 @@
                 android:contentDescription="@null"
                 tools:src="@mipmap/ic_launcher" />
 
-            <!-- Running is a solid dot, recently open a hollow one: two states
-                 that differ by shape, not only by hue.
-
-                 Sized here at the reference icon and resized in code from the
-                 icon the setting asks for, because a mark that stays 12dp while
-                 the tile under it can double is not a mark on the artwork - it
-                 is one size of mark and three sizes of artwork. -->
             <View
                 android:id="@+id/appDot"
                 android:layout_width="@dimen/dot_state"
                 android:layout_height="@dimen/dot_state"
                 android:layout_gravity="top|end"
                 android:background="@drawable/bg_dot"
-                android:visibility="gone" />            <!-- The verbs that used to be behind an invisible hold.
-
-                 It is drawn inside the icon's own box and then carried out by
-                 half its own width, which puts the circle's centre on the
-                 artwork's corner at every icon size: half over the art, half in
-                 the tile's breathing room. What you aim at is the whole 56dp of
-                 it; what you see is a badge drawn at the icon's own scale (see
-                 [AppAdapter.badge]) - a badge is part of the artwork's corner,
-                 so it cannot be one size while the artwork is four. The glyph
-                 is inset twice over - once for the circle, once again for the
-                 dots - because three dots that fill their badge read as a
-                 button rather than as a mark. -->
+                android:visibility="gone" />
             <ImageView
                 android:id="@+id/moreButton"
                 android:layout_width="@dimen/touch_min"

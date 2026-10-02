@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A floating rounded card: the long-press menu, every settings picker, the
-     wheel and the typed entry all live in this one shape.
-
-     The widest radius in the system, because it is the only surface that floats
-     over everything, and there is still a dimmed board behind it rather than a
-     replaced screen. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -69,7 +63,6 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- the second sentence a question needs: what happens if you say yes -->
         <TextView
             android:id="@+id/sheetMessage"
             style="@style/Text.BodyS"
@@ -82,8 +75,6 @@
             tools:text="Apps with unsaved work may lose it."
             tools:visibility="visible" />
 
-        <!-- The rows scroll once they no longer fit the screen. A short sheet is
-             unaffected - wrap_content stays wrap_content. -->
         <ScrollView
             android:id="@+id/sheetScroll"
             android:layout_width="match_parent"
@@ -99,8 +90,6 @@
 
         </ScrollView>
 
-        <!-- rows that must stay reachable whatever the list above is doing:
-             the one that closes the sheet -->
         <LinearLayout
             android:id="@+id/sheetFooter"
             android:layout_width="match_parent"

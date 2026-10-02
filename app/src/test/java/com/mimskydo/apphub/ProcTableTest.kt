@@ -6,20 +6,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * The two rules [ProcTable] decides with, held apart from the file reads that
- * feed them.
- *
- * They are the whole reason a `/proc` listing becomes a list of apps rather than
- * a list of Linux processes, and both have a wrong answer that looks plausible:
- * a process name matched too loosely turns a daemon into somebody's app, and a
- * score band read too generously calls a cached process "open on screen". The
- * Google services are in here because they share a uid, which is exactly the
- * case a uid-only mapping gets wrong.
- */
 class ProcTableTest {
 
-    /** one uid, two packages - the classic pair */
     private val google = listOf("com.google.android.gsf", "com.google.android.gms")
 
     @Test
@@ -63,11 +51,9 @@ class ProcTableTest {
 
     @Test
     fun `the foreground band is the framework's own`() {
-        // FOREGROUND_APP_ADJ is 0, VISIBLE 100, PERCEPTIBLE 200
         assertTrue(ProcTable.isForeground(0))
         assertTrue(ProcTable.isForeground(100))
         assertTrue(ProcTable.isForeground(200))
-        // SERVICE_ADJ 500 and CACHED_APP_MIN_ADJ 900 are behind the glass
         assertFalse(ProcTable.isForeground(500))
         assertFalse(ProcTable.isForeground(900))
         assertFalse(ProcTable.isForeground(null))

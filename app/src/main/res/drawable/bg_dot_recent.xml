@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Recently open, not running now: the same mark, hollow. Two states that
-     differ by shape rather than by hue, so they survive a colour-blind glance
-     and a bright cabin. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
     <solid android:color="@color/hub_surface" />

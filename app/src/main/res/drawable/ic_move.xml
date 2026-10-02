@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Move: a folder, with the arrow going into it. Copy and Move are the two rows
-     that look alike in a menu, so they are drawn apart - two sheets in the same
-     place against one sheet on its way into a folder - and the arrow rides
-     *inside* the folder so this is not the way-up row either (see ic_up). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

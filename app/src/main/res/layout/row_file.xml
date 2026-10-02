@@ -1,15 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One row of the file manager: what it is, what it is called, and - for the
-     things that are not folders - its size and its date.
-
-     The glyph is drawn at 24dp inside a 40dp box, by padding: an outline at
-     1.75dp that has been stretched to a 40dp box would be a heavier mark than
-     the same glyph anywhere else in the app, and the file manager's rows are
-     the one place where five of them are read in a column.
-
-     The button on the right is a real 56dp target, and it is the way into a
-     row's verbs: a hold is not a thing to expect of a driver, and every row
-     here has something that can be done to it. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -49,8 +38,6 @@
             android:maxLines="1"
             tools:text="Dashcam" />
 
-        <!-- gone for a folder: what is inside it is not read until it is opened,
-             and a row that says "Folder" under a folder glyph says it twice -->
         <TextView
             android:id="@+id/rowMeta"
             style="@style/Text.Meta"

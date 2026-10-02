@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A banner: one sentence the app has to say, with a tone.
-
-     It exists because the app's best habit - saying what it actually did, or
-     was refused - was being told in 12sp at the bottom of a card. The fill is
-     washed and the glyph tinted from code, so one layout carries ok, attention,
-     blocked and information. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"

@@ -1,17 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The file manager as a tile.
-
-     Every other tile on the board is an app's own launcher icon, filled edge to
-     edge, which the icon-shape setting then clips. A bare 1.75dp outline would
-     be the one tile that is not that - a small grey line drawing among
-     pictures - so this one is drawn like the icons it sits between: a filled
-     sheet in the app's own blue, with the folder mark in the middle of it.
-
-     The sheet is the whole 24 units on purpose. Clipping happens outside this
-     file, so anything drawn short of the edges would show the board through a
-     rounded corner; the mark is the part that is inset, and by a fraction
-     rather than a fixed dp so it keeps its share of an icon that is a setting
-     (48dp or 96dp, see Prefs.iconSize). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

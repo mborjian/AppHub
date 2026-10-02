@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A tile that has been asked for but has not arrived: the real tile's shape,
-     so the board does not move when the icons land. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@color/hub_stroke" />

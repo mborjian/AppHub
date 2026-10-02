@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The wheel inside a sheet: one numeric value, no list of choices.
-
-     NumberPicker is the rotator itself - the column can be dragged, the two
-     buttons step it, and the whole range is reachable, so a value in dp does not
-     have to be rounded to a set of steps. The padding lives on this wrapper
-     rather than on the picker, so the wheel keeps its own width. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

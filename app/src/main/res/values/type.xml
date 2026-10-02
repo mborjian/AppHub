@@ -1,19 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Instrument: the type scale, as text styles.
-
-     The platform's own Roboto, deliberately. A downloadable font cannot resolve
-     here - dl.google.com is unreachable from this machine and the unit may have
-     no Play Services at all - and bundling four weights of Inter into an APK
-     that is also a candidate system app is the wrong trade. What makes the type
-     feel designed is metric, not a font file:
-
-       * nine steps and nothing outside them (the app used to ship seven sizes
-         chosen per layout, from 11sp to 21sp);
-       * a 12sp floor - at 160dpi and 60-90cm, 11sp is not text, it is texture;
-       * tabular figures on every number the app shows, so `200 / 20 / 0 / 0 px`
-         does not reflow while a wheel turns behind it;
-       * LTR direction on those numbers, so Persian digits never reorder them;
-       * tracking only at the two ends of the scale. -->
 <resources>
 
     <style name="Text" parent="android:Widget.TextView" />
@@ -83,7 +68,6 @@
         <item name="android:textColor">@color/text_secondary</item>
     </style>
 
-    <!-- a section header is a label, not a title: small, spaced, quiet -->
     <style name="Text.Section">
         <item name="android:textSize">13sp</item>
         <item name="android:textStyle">bold</item>
@@ -92,15 +76,6 @@
         <item name="android:textColor">@color/text_secondary</item>
     </style>
 
-    <!-- The two fields, which are the one place the scale is entered rather
-         than read: a field is 17sp of body text (the size at which a caret is
-         still easy to see) and the number being typed is the row's own value at
-         21sp, tabular and LTR so a Persian locale cannot reorder it.
-
-         These are styles rather than two literals in two layouts, which is what
-         they were: a 17sp and a 21sp that happened to match TitleM and TitleL
-         while being neither, and the document claims nine steps and nothing
-         outside them. -->
     <style name="Text.Field">
         <item name="android:textSize">17sp</item>
         <item name="android:textColor">@color/text_primary</item>
@@ -113,8 +88,6 @@
         <item name="android:textDirection">ltr</item>
     </style>
 
-    <!-- filled controls: white on blue, semibold, never below 17sp so the
-         4.62:1 of white on hub_blue_600 stays AA -->
     <style name="Text.OnFill">
         <item name="android:textSize">17sp</item>
         <item name="android:textStyle">bold</item>

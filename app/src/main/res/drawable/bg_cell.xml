@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- An app tile is NOT a card on purpose: most adaptive icons have a white
-     background layer, and white tiles on white cards are invisible - which in
-     turn made the icon-shape setting look like it did nothing. On the page
-     background the tiles read properly.
-
-     The corner is `radius_l`, which is the same number IconMasker uses for the
-     Rounded shape (0.24 x the tile). The tile's corner and the icon's mask are
-     therefore one curve rather than two similar ones. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/ripple">
     <item android:id="@android:id/mask">

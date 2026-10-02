@@ -15,35 +15,20 @@ import androidx.core.view.isVisible
 import java.util.Locale
 import java.util.concurrent.Executors
 
-/**
- * Every option the grid has, on one screen.
- *
- * Rows are built by the `add*Row` helpers rather than declared in XML: a
- * screenful of copies of the same twenty-line block is how these screens drift
- * apart.
- */
 class SettingsActivity : BaseActivity() {
 
     private val prefs by lazy { Prefs(this) }
 
-    /** reads the app list off the main thread, like the grid does */
     private val worker = Executors.newSingleThreadExecutor()
 
-    /**
-     * The apps the main page could show, or null while they are still being
-     * read - the shortcuts row's value is built from it.
-     */
     private var apps: List<AppEntry>? = null
 
-    /** true while [refresh] writes the stored values into the rows */
     private var refreshing = false
 
     private lateinit var rows: LinearLayout
 
-    /** rows whose right-hand text is recomputed from [Prefs] */
     private val valueRows = ArrayList<Pair<View, () -> CharSequence>>()
 
-    /** switches whose position is recomputed from [Prefs] as well */
     private val switchRows = ArrayList<Pair<View, () -> Boolean>>()
 
     private lateinit var usageRow: View
@@ -52,13 +37,8 @@ class SettingsActivity : BaseActivity() {
 
     private lateinit var updateRow: View
 
-    /**
-     * What the update row says while it is working, or null when it has nothing
-     * to add to the version it stands for.
-     */
     private var updateValue: CharSequence? = null
 
-    /** true while a check or a download is in flight, so a second tap is not a queue */
     private var updateRunning = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,17 +60,6 @@ class SettingsActivity : BaseActivity() {
         super.onDestroy()
     }
 
-    /**
-     * After a recreation (theme, direction and "reset" all recreate this screen)
-     * the framework puts the switches back where they were, and those are the
-     * *old* positions - after a reset, exactly the values that were just cleared.
-     * Restoring them would fire the listeners and undo the reset, so this window
-     * is treated like [refresh]: the change is seen and nothing is written. The
-     * rows also share one switch id, so a single saved position is restored into
-     * every one of them, which is a second reason not to trust it.
-     *
-     * The stored values win a moment later: [onResume] re-reads them.
-     */
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         refreshing = true
         super.onRestoreInstanceState(savedInstanceState)
@@ -99,17 +68,9 @@ class SettingsActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        // usage access is granted on a system screen, so the row can only be
-        // decided once we are back here
         refresh()
     }
 
-    /**
-     * Reads the installed apps, which is the list the grid draws from: the
-     * shortcuts screen has to offer exactly what the grid could show. Skipped
-     * once the list is in hand - the same read is what the grid does on every
-     * resume.
-     */
     private fun loadApps() {
         if (apps != null) return
         val context = applicationContext
@@ -128,20 +89,9 @@ class SettingsActivity : BaseActivity() {
                 }
             }
         } catch (t: Throwable) {
-            // the executor was already shut down while finishing
         }
     }
 
-    // ----------------------------------------------------------------- rows
-
-    /**
-     * The screen, in four groups: what the board looks like, where its things
-     * go, what this app is allowed to know about the unit, and the rows that
-     * change something rather than display something.
-     *
-     * Twenty-one identical rows in one column is a list to be read; four named
-     * groups is a screen to be scanned.
-     */
     private fun buildRows() {
         addSection(R.string.section_look)
 
@@ -159,19 +109,12 @@ class SettingsActivity : BaseActivity() {
             apply = { prefs.iconSize = it },
         )
 
-        // Right under the icon size, because it is the other half of the same
-        // question - but not one of its four values: this one is about the
-        // screen, and it moves the text and the spacing with the icons.
         addSwitchRow(
             R.string.set_adapt_title, R.string.set_adapt_subtitle,
             value = { prefs.adaptToScreen },
             note = { scaleValue() },
         ) {
             prefs.adaptToScreen = it
-            // A density is applied before the first view is inflated, so this
-            // screen has to be built again for its own result to show - which
-            // is also the point: the answer to the switch is the screen it is
-            // on, not a sentence about it.
             recreate()
         }
 
@@ -221,10 +164,6 @@ class SettingsActivity : BaseActivity() {
             selected = { prefs.sortOrder == it },
             apply = {
                 prefs.sortOrder = it
-                // A hand-arranged page and a sort cannot both decide where a
-                // tile goes, and asking for a sort is asking for the page to be
-                // sorted again: the arrangement is dropped rather than left to
-                // win silently, which would make this row look broken.
                 prefs.pageOrder = emptyList()
             },
         )
@@ -253,40 +192,25 @@ class SettingsActivity : BaseActivity() {
             value = { prefs.includeSystem },
         ) {
             prefs.includeSystem = it
-            // the factory apps join or leave the grid with this switch, so the
-            // shortcuts list has to be read again
             apps = null
             loadApps()
         }
 
-        // Right under the apps the board draws, because it is one more thing the
-        // board draws: the file manager is App Hub's own screen and has no
-        // launcher entry to be found, so this switch is what puts its tile there.
         addSwitchRow(
             R.string.set_files_title, R.string.set_files_subtitle,
             value = { prefs.showFileManager },
         ) { prefs.showFileManager = it }
 
-        // The second of this app's own screens: the same kind of row for the same
-        // kind of tile, one under the other, because they answer one question -
-        // which of this app's tools stand on the board.
         addSwitchRow(
             R.string.set_browser_title, R.string.set_browser_subtitle,
             value = { prefs.showBrowser },
         ) { prefs.showBrowser = it }
 
-        // The home role, offered once and gone once taken: the system decides
-        // this, not this app, and the row's job is only to open the chooser.
-        // Like the usage-access row it disappears when its work is done, so a
-        // unit already booting to the board carries no row offering to do what
-        // is already done.
         homeRow = addActionRow(
             R.string.set_home_title, R.string.set_home_subtitle,
             action = getString(R.string.set_home_action),
         ) { requestHomeRole() }
 
-        // This row disappears once the access is granted - it is an offer, not
-        // a status line.
         usageRow = addActionRow(
             R.string.set_usage_title, R.string.set_usage_subtitle,
             action = getString(R.string.enable),
@@ -294,8 +218,6 @@ class SettingsActivity : BaseActivity() {
 
         addSection(R.string.section_maintenance)
 
-        // First in the group, because it is the one row here that changes this
-        // app rather than the unit.
         updateRow = addValueRow(
             R.string.set_update_title, R.string.set_update_subtitle,
             value = { updateValue ?: Updater.version(this).name },
@@ -306,7 +228,6 @@ class SettingsActivity : BaseActivity() {
         addBackRow()
     }
 
-    /** the name of a group, above the rows it holds */
     private fun addSection(titleRes: Int) {
         val view = LayoutInflater.from(this).inflate(R.layout.row_section, rows, false)
         view.findViewById<TextView>(R.id.sectionTitle).setText(titleRes)
@@ -325,17 +246,11 @@ class SettingsActivity : BaseActivity() {
         switch.isVisible = true
         switch.isChecked = value()
         switch.setOnCheckedChangeListener { _, checked ->
-            // A change that matches what is already stored was not a decision:
-            // it came from restoring or re-reading the screen, so it is not
-            // written back.
             if (!refreshing && checked != value()) onChange(checked)
         }
         row.setOnClickListener { switch.toggle() }
         switchRows += row to value
 
-        // A switch that has something to say about what it did - the adaptation
-        // reports the factor it is drawing at - says it on the right, and is
-        // then re-read with every other value on the screen.
         if (note != null) {
             row.findViewById<TextView>(R.id.settingValue).isVisible = true
             valueRows += row to note
@@ -365,12 +280,6 @@ class SettingsActivity : BaseActivity() {
                     SheetRow(
                         label = label(option),
                         selected = selected(option),
-                        // The value is written to the prefs, and this row's
-                        // right-hand text is read *back* from them - so it has
-                        // to be read back now. Waiting for the next resume meant
-                        // a choice was only visible on the screen after leaving
-                        // it and coming back, which reads as a setting that did
-                        // not take.
                         onClick = {
                             apply(option)
                             refresh()
@@ -382,11 +291,6 @@ class SettingsActivity : BaseActivity() {
         rows.addView(row)
     }
 
-    /**
-     * A row whose right-hand value is recomputed from [Prefs] and that opens
-     * [onClick] instead of applying a choice itself - used by the margins row,
-     * which leads to another sheet rather than to a value.
-     */
     private fun addValueRow(
         titleRes: Int,
         subtitleRes: Int,
@@ -402,18 +306,11 @@ class SettingsActivity : BaseActivity() {
         return row
     }
 
-    /**
-     * The last row of the screen: the same thing the arrow in the header does.
-     *
-     * Reaching the end of a list on a head unit should not mean aiming at a
-     * small target in the corner, and the grid is where back is expected to
-     * lead anyway.
-     */
     private fun addBackRow() {
         val row = inflateRow(R.string.settings_back, R.string.set_back_subtitle)
         row.findViewById<ImageView>(R.id.settingChevron).apply {
             isVisible = true
-            rotation = 180f                  // points back, like the header arrow
+            rotation = 180f
         }
         row.setOnClickListener { finish() }
         rows.addView(row)
@@ -447,8 +344,6 @@ class SettingsActivity : BaseActivity() {
         return row
     }
 
-    // -------------------------------------------------------------- refresh
-
     private fun refresh() {
         refreshing = true
         valueRows.forEach { (row, value) ->
@@ -463,20 +358,12 @@ class SettingsActivity : BaseActivity() {
         homeRow.isVisible = !isDefaultHome()
     }
 
-    /** "Auto (4 columns)" or "4 columns", from the stored option */
     private fun gridLabel(columns: Int): CharSequence = if (columns == 0) {
         getString(R.string.grid_auto, prefs.columnCount(resources.configuration.screenWidthDp))
     } else {
         getString(R.string.grid_fixed, columns)
     }
 
-    /**
-     * "×2": what *Adapt to screen* is doing, in one number.
-     *
-     * The row can then be read without leaving the screen to see the result,
-     * and "×1" says what the switch being off means rather than leaving an
-     * empty cell beside it.
-     */
     private fun scaleValue(): CharSequence {
         val scale = prefs.screenScale
         val whole = scale.toInt().toFloat()
@@ -485,9 +372,6 @@ class SettingsActivity : BaseActivity() {
         return getString(R.string.adapt_value, number)
     }
 
-    // ------------------------------------------------------------ shortcuts
-
-    /** How many apps the main page shows out of how many there are */
     private fun shortcutsValue(): CharSequence {
         val list = apps ?: return getString(R.string.loading)
         if (list.isEmpty()) return getString(R.string.none)
@@ -499,29 +383,15 @@ class SettingsActivity : BaseActivity() {
         }
     }
 
-    /**
-     * Shortcuts are not a picker but a screen of their own: the apps are
-     * independent of each other, they are far too many for a menu, and the page
-     * they add up to has to be visible while they are chosen - see
-     * [ShortcutsActivity].
-     *
-     * This row only carries the result and stays a value row, so the count is
-     * re-read on the way back ([onResume] -> [refresh]) exactly like the value
-     * of any other setting.
-     */
     private fun openShortcuts() {
         startActivity(Intent(this, ShortcutsActivity::class.java))
     }
 
-    // -------------------------------------------------------------- margins
-
-    /** "0 / 0 / 0 / 0 dp" - left / right / top / bottom, the order of the rows */
     private fun marginsValue(): CharSequence {
         val m = prefs.margins
         return getString(R.string.margins_value, m.left, m.right, m.top, m.bottom)
     }
 
-    /** One row per edge, each showing the value it currently has. */
     private fun openMarginsSheet() {
         Sheet.show(
             this,
@@ -537,11 +407,6 @@ class SettingsActivity : BaseActivity() {
         )
     }
 
-    /**
-     * The wheel for one edge: every whole dp from 0 up to half of that side of
-     * the screen, so a value can be dialled in rather than picked off a list -
-     * or typed, which is the second row of this sheet.
-     */
     private fun openMarginWheel(edge: Margin) {
         val max = prefs.maxMargin(edge)
         Sheet.showNumber(
@@ -564,11 +429,6 @@ class SettingsActivity : BaseActivity() {
         )
     }
 
-    /**
-     * The same edge, typed: quicker than a wheel once the number is known. The
-     * value is clamped like any other, so an over-large entry lands on the
-     * limit instead of being refused.
-     */
     private fun openMarginInput(edge: Margin, max: Int) {
         Sheet.showInput(
             this,
@@ -582,27 +442,12 @@ class SettingsActivity : BaseActivity() {
         )
     }
 
-    /**
-     * Writes the value and shows the result at once: this screen is padded by
-     * the same margins as the grid, so turning the wheel moves it immediately.
-     * The sheet stays open while it does, which is what makes it a preview.
-     */
     private fun setMargin(edge: Margin, dp: Int) {
         prefs.setMargin(edge, dp)
         applyMargins()
         refresh()
     }
 
-    // -------------------------------------------------------------- updates
-
-    /**
-     * The update, in three steps, each of them on the worker so the screen never
-     * waits: ask GitHub what the newest release is, take its APK, install it.
-     *
-     * Every ending is said out loud - up to date, nothing published, no answer,
-     * refused, or the ways an install can go. A row that goes back to its old
-     * value in silence is indistinguishable from a tap that did nothing.
-     */
     private fun checkForUpdates() {
         if (updateRunning) return
         updateRunning = true
@@ -623,8 +468,6 @@ class SettingsActivity : BaseActivity() {
                     setUpdateValue(getString(R.string.update_ready_value, checked.release.version.name))
                     offerUpdate(checked.release)
                 } else {
-                    // A platform-signed build cannot be replaced by a release,
-                    // and the download is what would find that out the hard way.
                     setUpdateValue(null)
                     reportPlatformBuild(checked.release)
                 }
@@ -638,14 +481,12 @@ class SettingsActivity : BaseActivity() {
                 toast(getString(R.string.update_nothing))
             }
             is Updater.Check.Trouble -> {
-                // the detail is already a sentence: what went wrong is the answer
                 setUpdateValue(null)
                 toast(checked.detail)
             }
         }
     }
 
-    /** The offer: what the release is, and what can be done with it. */
     private fun offerUpdate(release: Updater.Release) {
         Sheet.show(
             this,
@@ -667,10 +508,6 @@ class SettingsActivity : BaseActivity() {
         )
     }
 
-    /**
-     * What a unit build can be told: the key is not this app's release key, so
-     * no release can take its place, and saying so is the whole answer.
-     */
     private fun reportPlatformBuild(release: Updater.Release) {
         Sheet.show(
             this,
@@ -717,8 +554,6 @@ class SettingsActivity : BaseActivity() {
     private fun onInstalled(install: Updater.Install, release: Updater.Release) {
         when (install) {
             Updater.Install.Silent -> {
-                // Root has already replaced the package: this process is on its
-                // way out, and the next board says whether the update took.
                 val installing = getString(R.string.update_installing, release.version.name)
                 setUpdateValue(installing)
                 toast(installing)
@@ -742,10 +577,6 @@ class SettingsActivity : BaseActivity() {
         }
     }
 
-    /**
-     * Android will not show its install dialog until this app has been allowed
-     * to install packages once, in a screen of the system's own.
-     */
     private fun askForInstallPermission() {
         Sheet.show(
             this,
@@ -773,37 +604,21 @@ class SettingsActivity : BaseActivity() {
         )
     }
 
-    /**
-     * The update row's right-hand text, for as long as the flow has something to
-     * say. The version is what it reads when nothing does, so a finished flow
-     * puts the row back by itself instead of leaving a stale word in it.
-     */
     private fun setUpdateValue(text: CharSequence?) {
         updateValue = text
         updateRow.findViewById<TextView>(R.id.settingValue).text =
             text ?: Updater.version(this).name
     }
 
-    /** the worker's way back to the screen, for a screen that is still there */
     private fun post(block: () -> Unit) = runOnUiThread {
         if (!isFinishing && !isDestroyed) block()
     }
-
-    // -------------------------------------------------------------- actions
 
     private fun openUsageAccess() {
         if (ActivityStats.openAccessSettings(this)) return
         toast(getString(R.string.settings_unavailable))
     }
 
-    // -------------------------------------------------------------- home role
-
-    /**
-     * Whether the platform already answers the home intent with this app - read
-     * rather than stored, because the default can be changed from outside this
-     * app entirely (the system settings, a factory reset), and a stored answer
-     * would go stale the moment it did.
-     */
     private fun isDefaultHome(): Boolean {
         val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
         return try {
@@ -814,15 +629,6 @@ class SettingsActivity : BaseActivity() {
         }
     }
 
-    /**
-     * Android's own chooser for the home role - the only screen that can decide
-     * this, and the one that offers the factory launcher beside this app.
-     *
-     * Refusing silently is the one answer this row cannot give: a row that does
-     * nothing when tapped reads as broken, so a platform with no chooser to
-     * offer (rare, but a locked-down unit is exactly where that could happen)
-     * gets told so.
-     */
     private fun requestHomeRole() {
         val chooser = Intent(Intent.ACTION_CHOOSER).apply {
             putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
@@ -860,7 +666,6 @@ class SettingsActivity : BaseActivity() {
     }
 
     private companion object {
-        /** 0 is "auto"; below 2 a grid is pointless */
         val COLUMN_OPTIONS = listOf(0, 2, 3, 4, 5, 6)
     }
 }

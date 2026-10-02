@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- An app package: the arrow going down into the tray is the same gesture as
-     installing one, which is the only verb this file manager has for a file
-     that is an APK. One stroke, no Android robot - the set has no filled
-     artwork anywhere and this is not the glyph to start. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

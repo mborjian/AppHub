@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Uninstall: a trash can, drawn as a 1.75dp outline like the rest of the set.
-     Lid, handle, body and two ribs - the shape a driver already knows from
-     every other screen, and the one verb on the app card that needs no
-     subtitle to be understood. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

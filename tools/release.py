@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Build App Hub as a *release* APK signed with the Android platform key.
 
 Why bother
@@ -25,15 +24,10 @@ Usage
 -----
     python tools/release.py                 # build + zipalign + sign + verify
     python tools/release.py --install       # ... then adb install -r
-    python tools/release.py --install --reinstall
-                                            # uninstall the existing copy first
-                                            # (needed when switching between the
-                                            # debug key and the platform key)
+    python tools/release.py --install --reinstall  # uninstall first (key switch)
     python tools/release.py --online        # let Gradle use the network
 
-    python tools/release.py --system        # install as a privileged system app
-                                            # in /system/priv-app (root + remount
-                                            # + reboot on the unit)
+    python tools/release.py --system        # privileged: /system/priv-app, remount + reboot
 
 Keys are taken from ``--pk8``/``--pem``, then ``PLATFORM_PK8``/``PLATFORM_PEM``
 environment variables, then ``tools/signing.properties`` (``pk8=`` / ``pem=``),
@@ -62,7 +56,6 @@ SYSTEM_DIR = "/system/priv-app/AppHub"
 SYSTEM_APK = f"{SYSTEM_DIR}/AppHub.apk"
 DEVICE_TMP = "/data/local/tmp/apphub.apk"
 
-# the AOSP platform certificate - the identity of every app on the head unit
 PLATFORM_CERT_SHA256 = "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
 
 DEFAULT_KEYS = [
@@ -77,17 +70,12 @@ JAVA_CANDIDATES = [
     Path("C:/Program Files/Java"),
 ]
 
-
 def log(message: str) -> None:
     print(message, flush=True)
-
 
 def die(message: str) -> None:
     log(f"\nERROR: {message}")
     sys.exit(1)
-
-
-# --------------------------------------------------------------------- tools
 
 def java_major(home: Path) -> int | None:
     """Major version of a JDK, or None when it cannot be executed."""
@@ -104,7 +92,6 @@ def java_major(home: Path) -> int | None:
         return None
     major = int(match.group(1))
     return major if major != 1 else int(match.group(2) or 0)
-
 
 def find_java_home() -> Path:
     """A JDK Gradle can actually run on (17-23; JDK 24/25 is too new)."""
@@ -123,7 +110,6 @@ def find_java_home() -> Path:
     die("no JDK 17-23 found. Set JAVA_HOME to one (Gradle 8.10 cannot run "
         "on JDK 24+). Android Studio's bundled jbr is a good choice.")
 
-
 def android_sdk(prop: Path) -> Path | None:
     value = os.environ.get("ANDROID_HOME") or os.environ.get("ANDROID_SDK_ROOT")
     if value:
@@ -134,24 +120,20 @@ def android_sdk(prop: Path) -> Path | None:
                 return Path(line.split("=", 1)[1].strip().replace("\\\\", "\\"))
     return None
 
-
 def newest_build_tool(sdk: Path, name: str) -> Path | None:
     tools = sdk / "build-tools"
     if not tools.is_dir():
         return None
     for version in sorted(tools.iterdir(), reverse=True):
-        # apksigner ships as a .bat wrapper on Windows, zipalign as an .exe
         for candidate in (version / name, version / f"{name}.exe",
                           version / f"{name}.bat"):
             if candidate.exists():
                 return candidate
     return None
 
-
 def run(argv, cwd=None, env=None, timeout=1800) -> subprocess.CompletedProcess:
     return subprocess.run([str(a) for a in argv], cwd=str(cwd) if cwd else None,
                           env=env, capture_output=True, text=True, timeout=timeout)
-
 
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -159,9 +141,6 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: handle.read(1 << 20), b""):
             digest.update(block)
     return digest.hexdigest()
-
-
-# ---------------------------------------------------------------------- keys
 
 def signing_keys(args) -> tuple[Path, Path]:
     pk8 = Path(args.pk8) if args.pk8 else None
@@ -193,9 +172,6 @@ def signing_keys(args) -> tuple[Path, Path]:
         die("platform.x509.pem not found (same options as --pk8).")
     return pk8, pem
 
-
-# --------------------------------------------------------------------- adb
-
 def adb_path(sdk: Path) -> Path | None:
     for candidate in (sdk / "platform-tools" / "adb.exe",
                       sdk / "platform-tools" / "adb"):
@@ -204,7 +180,6 @@ def adb_path(sdk: Path) -> Path | None:
     found = shutil.which("adb")
     return Path(found) if found else None
 
-
 def adb(adb_exe: Path, *args, check=True, timeout=300) -> str:
     result = run([adb_exe, *args], timeout=timeout)
     output = (result.stdout or "") + (result.stderr or "")
@@ -212,20 +187,15 @@ def adb(adb_exe: Path, *args, check=True, timeout=300) -> str:
         die(f"adb {' '.join(args)} failed:\n{output.strip()}")
     return output
 
-
 def device_sha256(adb_exe: Path, remote: str) -> str:
     out = adb(adb_exe, "shell", f"sha256sum {remote}", check=False)
     parts = out.split()
     return parts[0] if parts else ""
 
-
 def list_devices(adb_exe: Path) -> list[str]:
     out = adb(adb_exe, "devices", check=False)
     return [line.split("\t")[0] for line in out.splitlines()[1:]
             if "\tdevice" in line]
-
-
-# ------------------------------------------------------------------- steps
 
 def build(args, java_home: Path) -> None:
     wrapper = ROOT / ("gradlew.bat" if os.name == "nt" else "gradlew")
@@ -245,7 +215,6 @@ def build(args, java_home: Path) -> None:
     if not UNSIGNED.exists():
         die(f"expected {UNSIGNED} after the build")
     log(f"      built {UNSIGNED.name} ({UNSIGNED.stat().st_size:,} bytes)")
-
 
 def sign(args, sdk: Path, java_home: Path, pk8: Path, pem: Path) -> None:
     zipalign = newest_build_tool(sdk, "zipalign")
@@ -292,7 +261,6 @@ def sign(args, sdk: Path, java_home: Path, pk8: Path, pem: Path) -> None:
     else:
         log("      certificate is the AOSP platform key (matches the unit)")
 
-
 def need_device(adb_exe: Path | None) -> Path:
     if not adb_exe:
         die("adb not found (set ANDROID_HOME or put it on PATH)")
@@ -301,7 +269,6 @@ def need_device(adb_exe: Path | None) -> Path:
         die("no device attached (`adb devices` is empty). Connect the head "
             "unit over USB and enable USB debugging.")
     return adb_exe
-
 
 def install_normal(args, adb_exe: Path) -> None:
     if args.reinstall:
@@ -314,14 +281,9 @@ def install_normal(args, adb_exe: Path) -> None:
         die("install failed. If it mentions signatures, re-run with "
             "--reinstall (the debug build used a different key).")
 
-
 def install_system(args, adb_exe: Path) -> None:
     log("\n[system] installing as a privileged app in /system/priv-app")
 
-    # A privileged app that requests a privileged permission missing from the
-    # /system/etc/permissions allowlist is only *denied* it in "log" mode, but
-    # can stop the unit from booting in "enforce" mode. Worth knowing before
-    # writing anything to /system.
     control = adb(adb_exe, "shell", "getprop ro.control_privapp_permissions",
                   check=False).strip()
     log(f"      ro.control_privapp_permissions = {control or '(unset)'}")
@@ -349,7 +311,6 @@ def install_system(args, adb_exe: Path) -> None:
     if device_sha256(adb_exe, DEVICE_TMP) != sha256(SIGNED):
         die("the pushed file does not match the local APK; aborting.")
 
-    # a /data install signed with another key would block the system one
     log(f"      adb uninstall {PACKAGE} (clears any user-data install)")
     adb(adb_exe, "uninstall", PACKAGE, check=False)
 
@@ -373,7 +334,6 @@ def install_system(args, adb_exe: Path) -> None:
         adb(adb_exe, "reboot", check=False)
         log("      the app is installed as a system app; it will only be "
             "recognised after the unit boots")
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
@@ -417,7 +377,6 @@ def main() -> None:
     else:
         log("Nothing was installed. Add --install (normal app) or --system "
             "(privileged system app).")
-
 
 if __name__ == "__main__":
     main()

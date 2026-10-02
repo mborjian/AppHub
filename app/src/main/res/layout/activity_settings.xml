@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Every option the grid has, on one screen - in four named groups instead of
-     one column of twenty-one rows.
-
-     "Look" answers what the board looks like, "Layout" where things go,
-     "Behaviour" what the unit is allowed to tell App Hub, and "Maintenance" the
-     two rows that change something rather than display something. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"

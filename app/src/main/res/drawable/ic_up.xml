@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Up one level: an arrow, and nothing else.
-
-     It was drawn as a folder with an arrow inside it, which is legible alone and
-     a mistake in a column: the row that takes a file to another folder is a
-     folder with an arrow inside it too (see ic_move), and two rows that mean
-     different things must not be read twice. The arrow alone says the direction,
-     the row under it says the place - "Internal storage" - and the row is always
-     the first in the folder, which is where a driver looks for it. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

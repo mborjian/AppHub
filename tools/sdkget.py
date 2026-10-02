@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Install Android SDK packages from a reachable mirror of Google's SDK repo.
 
 Why
@@ -42,9 +41,6 @@ from xml.etree import ElementTree as ET
 
 MIRROR = "https://mirrors.cloud.tencent.com/AndroidSDK/"
 
-# Google's repository manifests are split across several files; the modern
-# packages (platforms, build-tools, NDK) live in -4, the tooling in -3/-2.
-# First hit wins, so -4 is consulted first.
 MANIFESTS = [
     "repository2-4.xml",
     "repository2-3.xml",
@@ -62,7 +58,6 @@ HOST = "windows" if sys.platform.startswith("win") else (
     "macosx" if sys.platform == "darwin" else "linux"
 )
 
-
 def fetch(url: str, attempts: int = 3) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": "sdkget"})
     last: Exception | None = None
@@ -70,15 +65,13 @@ def fetch(url: str, attempts: int = 3) -> bytes:
         try:
             with urllib.request.urlopen(req, timeout=60) as resp:
                 return resp.read()
-        except Exception as exc:  # mirrors occasionally cut transfers short
+        except Exception as exc:
             last = exc
     raise RuntimeError(f"fetch failed after {attempts} attempts: {url}: {last}")
-
 
 def local_tag(tag: str) -> str:
     """Strip an XML namespace: '{ns}remotePackage' -> 'remotePackage'."""
     return tag.rsplit("}", 1)[-1]
-
 
 def ser(el: ET.Element) -> str:
     """Serialize an element with namespaces stripped (package.xml uses
@@ -89,10 +82,6 @@ def ser(el: ET.Element) -> str:
     inner = text + "".join(ser(c) for c in el)
     return f"<{name}{attrs}>{inner}</{name}>" if inner else f"<{name}{attrs}/>"
 
-
-# Namespace header of a sdkmanager-generated package.xml (copied verbatim from
-# a real platform install; license-2802B623 is the standard android-sdk-license
-# hash, and platform packages always depend on 'tools' rev >= 22).
 PACKAGE_XML_HEADER = (
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     '<ns2:repository xmlns:ns2="http://schemas.android.com/repository/android/common/02" '
@@ -115,20 +104,17 @@ PACKAGE_XML_HEADER = (
     '<license id="license-2802B623" type="text"/>'
 )
 
-
 def mirror_url(url: str) -> str:
     """Rewrite a dl.google.com package URL onto the mirror."""
     for prefix in GOOGLE_URL_PREFIXES:
         if url.startswith(prefix):
             return MIRROR + url[len(prefix):]
     if url.startswith(("http://", "https://")):
-        # Unknown host - try the path after 'android/repository/' anyway.
         marker = "/android/repository/"
         idx = url.find(marker)
         if idx != -1:
             return MIRROR + url[idx + len(marker):]
-    return MIRROR + url  # already a relative path
-
+    return MIRROR + url
 
 class Package:
     def __init__(self, path: str, revision: str, display: str, archives: list,
@@ -136,9 +122,9 @@ class Package:
         self.path = path
         self.revision = revision
         self.display = display
-        self.archives = archives  # list of (host_os or None, url)
-        self.type_details = type_details  # inner XML of <type-details>
-        self.revision_xml = revision_xml  # XML of <revision>
+        self.archives = archives
+        self.type_details = type_details
+        self.revision_xml = revision_xml
 
     def archive_url(self) -> str | None:
         for osname, url in self.archives:
@@ -149,13 +135,12 @@ class Package:
                 return url
         return self.archives[0][1] if self.archives else None
 
-
 def load_packages() -> dict[str, Package]:
     packages: dict[str, Package] = {}
     for name in MANIFESTS:
         try:
             data = fetch(MIRROR + name)
-        except Exception as exc:  # manifest may not exist on the mirror
+        except Exception as exc:
             print(f"  (skipping {name}: {exc})", file=sys.stderr)
             continue
         try:
@@ -198,7 +183,6 @@ def load_packages() -> dict[str, Package]:
                                          type_details, revision_xml)
     return packages
 
-
 def installed_revision(dest: Path) -> str | None:
     props = dest / "source.properties"
     if not props.is_file():
@@ -207,7 +191,6 @@ def installed_revision(dest: Path) -> str | None:
         if line.startswith("Pkg.Revision="):
             return line.split("=", 1)[1].strip()
     return None
-
 
 def unwrap_root(tmp: Path) -> Path:
     """Package zips wrap their payload in a single folder (e.g. build-tools
@@ -222,7 +205,6 @@ def unwrap_root(tmp: Path) -> Path:
             continue
         break
     return tmp
-
 
 def write_package_xml(pkg: Package, dest: Path) -> bool:
     """Platform zips do not all ship a package.xml (platform-37.0 does not),
@@ -254,7 +236,6 @@ def write_package_xml(pkg: Package, dest: Path) -> bool:
     target.write_text(xml, encoding="utf-8")
     return True
 
-
 def install(pkg: Package, sdk: Path, force: bool) -> None:
     dest = sdk.joinpath(*pkg.path.split(";"))
     current = installed_revision(dest)
@@ -283,7 +264,6 @@ def install(pkg: Package, sdk: Path, force: bool) -> None:
         payload = unwrap_root(extract_to)
 
         if dest.exists():
-            # Refuse to wipe anything that does not look like an SDK package.
             if installed_revision(dest) is None:
                 raise SystemExit(
                     f"refusing to replace {dest}: not an SDK package"
@@ -296,7 +276,6 @@ def install(pkg: Package, sdk: Path, force: bool) -> None:
         print(f"  wrote {dest / 'package.xml'}")
     print(f"  -> {dest} ({installed_revision(dest) or 'no source.properties'})")
 
-
 def default_sdk() -> Path:
     props = Path(__file__).resolve().parent.parent / "local.properties"
     if props.is_file():
@@ -307,7 +286,6 @@ def default_sdk() -> Path:
         if os.environ.get(var):
             return Path(os.environ[var])
     raise SystemExit("no SDK location: pass --sdk or set ANDROID_HOME")
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -351,7 +329,6 @@ def main() -> None:
                 f"--list {spec.split(';')[0]}"
             )
         install(pkg, sdk, args.force)
-
 
 if __name__ == "__main__":
     main()

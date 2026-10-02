@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Instrument, night.
-
-     A night drive is the one place the app must be quiet: no pure white on near
-     black (halation at arm's length reads as blur), no bright ring around every
-     tile, and depth from tone rather than shadow - which a dark panel cannot
-     show anyway. The surfaces step in tone instead: #171A21 on #0F1115. -->
 <resources>
 
     <color name="hub_page">#0F1115</color>

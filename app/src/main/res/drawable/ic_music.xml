@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One note: a stem, the flag it hangs, and the head it stands on. A card full
-     of music is a thing drivers plug in on purpose, so it earns a glyph of its
-     own rather than the page every other file gets. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

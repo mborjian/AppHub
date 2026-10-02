@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A tile that has been asked for but has not arrived.
-
-     Before this existed the board was empty for the length of a PackageManager
-     query and then filled with 19 icons at once - which is a false empty state,
-     the one lie a launcher must never tell. The shape is the real tile's, so
-     nothing moves when the icons land, and it pulses opacity only: a shimmer
-     sweep is a bright moving streak on a windscreen. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The board, and nothing else.
-
-     It used to end with two cells that were not apps - a gear and a Close - and
-     that made the settings reachable only by scrolling past every installed app
-     and put a red "quit" one mis-tap away from an icon. Both left the board:
-     the tools live behind the pill at the bottom-end, which floats over the
-     scroll and is therefore always one tap away, wherever the board happens to
-     be. What is left is only what the driver came for. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -18,8 +10,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Search arrives in place when it is asked for, and takes itself away
-             again; it is not a permanent row over the board. -->
         <LinearLayout
             android:id="@+id/searchRow"
             android:layout_width="match_parent"
@@ -74,7 +64,6 @@
                 android:tint="@color/hub_ink_600" />
         </LinearLayout>
 
-        <!-- shown once, while the running marks have no permission to exist -->
         <include
             android:id="@+id/dotsBanner"
             layout="@layout/row_banner"
@@ -98,10 +87,6 @@
             tools:listitem="@layout/item_app" />
     </LinearLayout>
 
-    <!-- The lift, in one bar: what the hold means, how to get the old order
-         back, and the way out. It rises where the pill was, so the two are
-         never both on screen and the bottom edge always holds exactly one
-         thing to press. -->
     <LinearLayout
         android:id="@+id/editBar"
         android:layout_width="match_parent"
@@ -160,8 +145,6 @@
             android:text="@string/done" />
     </LinearLayout>
 
-    <!-- Tools. Floating, bottom-end, always reachable, and faded out of the way
-         while the board is being read. -->
     <LinearLayout
         android:id="@+id/hubPill"
         android:layout_width="wrap_content"
@@ -194,8 +177,6 @@
             android:text="@string/tools" />
     </LinearLayout>
 
-    <!-- The undo bar: every destructive tap in this app is reversible for five
-         seconds, which is the cheapest luxury it owns. -->
     <LinearLayout
         android:id="@+id/undoBar"
         android:layout_width="wrap_content"

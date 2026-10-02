@@ -5,13 +5,6 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- The hub: a page of app tiles. Three are plain, the fourth is drawn in
-         the same green the grid uses for a running app, so the icon says what
-         the app is (a grid of your apps) and what it is for (seeing which of
-         them is still open). Everything stays inside the 72dp adaptive-icon
-         safe zone, so no mask clips a tile. Corner radius 6.5 of 20 keeps the
-         tiles readable down to the 40dp the launcher draws them at. -->
-
     <path
         android:fillColor="#FFFFFF"
         android:pathData="M38.5,32h7a6.5,6.5 0 0 1 6.5,6.5v7a6.5,6.5 0 0 1 -6.5,6.5h-7a6.5,6.5 0 0 1 -6.5,-6.5v-7a6.5,6.5 0 0 1 6.5,-6.5z" />
@@ -22,7 +15,6 @@
         android:fillColor="#FFFFFF"
         android:pathData="M38.5,56h7a6.5,6.5 0 0 1 6.5,6.5v7a6.5,6.5 0 0 1 -6.5,6.5h-7a6.5,6.5 0 0 1 -6.5,-6.5v-7a6.5,6.5 0 0 1 6.5,-6.5z" />
 
-    <!-- the running one -->
     <path
         android:fillColor="#4ADE80"
         android:pathData="M62.5,56h7a6.5,6.5 0 0 1 6.5,6.5v7a6.5,6.5 0 0 1 -6.5,6.5h-7a6.5,6.5 0 0 1 -6.5,-6.5v-7a6.5,6.5 0 0 1 6.5,-6.5z" />

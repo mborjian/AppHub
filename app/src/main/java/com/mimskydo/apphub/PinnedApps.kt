@@ -2,11 +2,6 @@ package com.mimskydo.apphub
 
 import android.content.Context
 
-/**
- * The apps the user pinned, in the order they were pinned (newest first).
- * Stored as a newline-joined string because SharedPreferences has no ordered
- * set type.
- */
 class PinnedApps(context: Context) {
 
     private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

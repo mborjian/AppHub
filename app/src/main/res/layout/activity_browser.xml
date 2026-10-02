@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The web browser: the app's own header, one toolbar carrying the way back,
-     the way forward, the address and the menu, and the page under them.
-
-     The toolbar is the settings row the rest of the app is built from - same
-     fill, same radius, same height - because an address a driver has to aim at
-     is a row like any other, and a second kind of field would be a second kind of
-     finger. The buttons either side are 48dp targets with nothing drawn behind
-     them, the way the header's back is.
-
-     The start block is this screen's empty state, and it is the app's empty
-     state shape rather than a web page: a glyph, a sentence, and the two places a
-     driver who has not typed anything yet actually wants. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -23,8 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <!-- what the page could not do: one sentence, with the platform's own words
-         in it where it gave any -->
     <include
         android:id="@+id/webBanner"
         layout="@layout/row_banner"
@@ -105,7 +91,6 @@
                 tools:ignore="Autofill" />
         </LinearLayout>
 
-        <!-- reload, or stop while it is loading: one target, two readings -->
         <ImageView
             android:id="@+id/webAction"
             android:layout_width="@dimen/touch_ring"
@@ -131,8 +116,6 @@
             android:tint="@color/text_primary" />
     </LinearLayout>
 
-    <!-- the app's one visible stroke width, borrowed: a loading line has to be
-         readable from a moving seat, not tasteful -->
     <ProgressBar
         android:id="@+id/webProgress"
         style="?android:attr/progressBarStyleHorizontal"

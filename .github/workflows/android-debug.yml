@@ -1,5 +1,3 @@
-# Verifies on every push that the split-out repo still builds, so a dependency
-# that stops resolving fails here instead of on the unit.
 name: Build debug APK
 
 on:
@@ -23,22 +21,15 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v7
         with:
-          # The version comes from the git tags (see app/build.gradle.kts), so a
-          # build here reads them the way a release does instead of falling back
-          # to the stand-in number.
           fetch-depth: 0
           fetch-tags: true
 
-      # The JDK and the SDK packages, pinned in one place for both workflows.
       - name: Set up the JDK and the Android SDK
         uses: ./.github/actions/android-setup
 
       - name: Build the debug APK
         run: ./gradlew --no-daemon --stacktrace assembleDebug
 
-      # The JVM test source set: pure logic only (the address-or-search rule,
-      # the MIME table agreement), so it needs no emulator and runs on every
-      # push. A regression in either lands here instead of on a unit.
       - name: Run the unit tests
         run: ./gradlew --no-daemon --stacktrace testDebugUnitTest
 

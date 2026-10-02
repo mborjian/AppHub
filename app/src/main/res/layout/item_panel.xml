@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The one cell that spans the whole board: what to say when there is nothing
-     to show, and why.
-
-     Three states used to share a single sentence. They are not the same thing:
-     "you have not installed anything" is a welcome, "the unit did not answer" is
-     a failure, and "nothing matches what you typed" is an answer. The panel says
-     which one it is, and offers the one step that gets out of it. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -28,7 +21,6 @@
         tools:src="@drawable/ic_warning"
         tools:visibility="visible" />
 
-    <!-- the one number the empty state has to say -->
     <TextView
         android:id="@+id/panelNumeral"
         style="@style/Text.Display"

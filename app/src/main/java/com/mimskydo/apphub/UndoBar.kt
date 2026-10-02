@@ -4,18 +4,6 @@ import android.view.View
 import android.widget.TextView
 import androidx.core.view.isVisible
 
-/**
- * The undo bar: the app's answer to its own toasts.
- *
- * Hiding a tile, closing an app and pinning one are all reversible, and the app
- * used to say so with a toast that could not be acted on - which told the driver
- * what happened and then left them to find the way back themselves. This is the
- * same message with the way back attached, on the surface the action happened
- * to, holding for five seconds.
- *
- * It is the one inverted surface in the app (dark on a light board), because it
- * floats over the board and is the only thing allowed to.
- */
 class UndoBar(private val root: View, private val onUndo: () -> Unit) {
 
     private val text: TextView = root.findViewById(R.id.undoText)
@@ -33,8 +21,6 @@ class UndoBar(private val root: View, private val onUndo: () -> Unit) {
         text.text = message
         root.removeCallbacks(hide)
         if (root.isVisible) {
-            // already up: the message changes in place rather than the bar
-            // bouncing out and back in on a second tap
             return
         }
         root.isVisible = true
@@ -46,7 +32,6 @@ class UndoBar(private val root: View, private val onUndo: () -> Unit) {
             .setDuration(Motion.duration(root.context, R.integer.motion_deliberate))
             .setInterpolator(Motion.emphasized())
             .start()
-        // a bar that outlives its moment is a bar that has to be dismissed
         root.announceForAccessibility(message)
         root.postDelayed(hide, timeout)
     }
@@ -67,7 +52,6 @@ class UndoBar(private val root: View, private val onUndo: () -> Unit) {
             .start()
     }
 
-    /** true while the bar is up, so a caller can skip re-announcing itself */
     val isVisible: Boolean get() = root.isVisible
 
     fun runUndo() {

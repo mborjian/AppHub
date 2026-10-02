@@ -1,46 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Instrument, daylight.
-
-     Four ramps: ink, blue, semantics, washes. The brand hue is the mark's own
-     (#2F6FED, the mid-tone of the launcher gradient); what changed is the ink
-     and the semantics. The old secondary text sat at 4.52:1 and the old blue
-     *text* at 4.13:1 - both fail or scrape AA at the sizes a head unit needs.
-
-       secondary text   #667085 -> #475467   4.52:1 -> 6.84:1
-       blue as text     #2F6FED -> #1D4ED8   4.13:1 -> 6.07:1
-       running mark     #0B8A4B -> #067647   4.01:1 -> 5.10:1
-
-     The legacy names at the bottom are aliases, so nothing that still refers to
-     `@color/bg` or `@color/card` breaks while the screens are converted. -->
 <resources>
 
-    <!-- surfaces -->
     <color name="hub_page">#F2F4F7</color>
     <color name="hub_surface">#FFFFFF</color>
     <color name="hub_stroke">#E7EAF0</color>
     <color name="hub_scrim">#520B0F19</color>
 
-    <!-- ink -->
     <color name="hub_ink_900">#101828</color>
     <color name="hub_ink_700">#344054</color>
     <color name="hub_ink_600">#475467</color>
     <color name="hub_ink_400">#98A2B3</color>
 
-    <!-- blue: 600 fills, 700 text -->
     <color name="hub_blue_600">#2F6FED</color>
     <color name="hub_blue_700">#1D4ED8</color>
     <color name="hub_blue_100">#E8EFFE</color>
-    <!-- blue on a *dark* surface (the undo bar) - the same value at night, so
-         the role does not have to be re-learnt when the theme changes -->
     <color name="hub_blue_300">#7AA2FF</color>
 
-    <!-- the inverted surface: the undo bar and nothing else -->
     <color name="hub_inverse_surface">#101828</color>
     <color name="hub_inverse_text">#FFFFFF</color>
 
-    <!-- semantics. Red is a fault light in a car, so `danger` is reserved for
-         the confirm button of an action that has already been asked about;
-         everything destructive-but-reversible is `warn`. -->
     <color name="hub_running">#067647</color>
     <color name="hub_recent">#98A2B3</color>
     <color name="hub_warn">#B54708</color>
@@ -50,20 +28,13 @@
     <color name="hub_ripple">#1A2F6FED</color>
     <color name="hub_ripple_inverse">#33FFFFFF</color>
 
-    <!-- washes: the fill behind a banner or an icon button -->
     <color name="hub_wash_info">#E8EFFE</color>
     <color name="hub_wash_warn">#FDF0E3</color>
     <color name="hub_wash_ok">#E6F6EC</color>
     <color name="hub_wash_blocked">#EEF1F6</color>
 
-    <!-- The switch is the platform's own widget wearing the app's accent: it is
-         the one control whose shape a finger has already been taught, and it is
-         the one the app deliberately does not redraw. -->
-
-    <!-- values that must survive a tint -->
     <color name="hub_on_fill">#FFFFFF</color>
 
-    <!-- legacy aliases -->
     <color name="bg">@color/hub_page</color>
     <color name="card">@color/hub_surface</color>
     <color name="card_stroke">@color/hub_stroke</color>

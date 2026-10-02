@@ -3,13 +3,6 @@ package com.mimskydo.apphub
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/**
- * The address-or-search rule, as a table. This is the one piece of the browser
- * a driver meets on every single use, and its failures are quiet ones - a bare
- * word resolved as a host lands on a domain squat, a search with a dot in it
- * never finds anything. The rule lives in [Web.target] alone, so these pin the
- * rule and not a screen.
- */
 class WebTargetTest {
 
     private fun target(typed: String): String = Web.target(typed)

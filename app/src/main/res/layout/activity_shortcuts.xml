@@ -1,15 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The shortcuts screen: which apps the board shows on the left, and the board
-     itself on the right.
-
-     Two panes rather than a list with a preview above it, because the two halves
-     are used together - tick an app, watch it arrive; move a tile, watch the
-     order change - and a head unit screen is wide and short, which is the shape
-     a pair of panes wants.
-
-     All/None stay two buttons rather than becoming one segmented control: with
-     eighteen of nineteen apps ticked the page is neither "all" nor "none", and a
-     segmented control with nothing selected reads as broken. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -32,7 +21,6 @@
         android:paddingEnd="@dimen/space_4"
         android:paddingBottom="@dimen/space_4">
 
-        <!-- the list on the left -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -44,9 +32,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <!-- One tap for the whole page: fill it or clear it. Quiet pills on
-                 purpose - they are the pair of buttons a driver reaches for
-                 without looking, so they are wide, tall and calm. -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -96,8 +81,6 @@
                     android:paddingBottom="@dimen/space_3"
                     android:scrollbars="vertical" />
 
-                <!-- what a filtered list says when nothing matches: two lines,
-                     because an answer is not a failure -->
                 <LinearLayout
                     android:id="@+id/listEmpty"
                     android:layout_width="match_parent"
@@ -127,7 +110,6 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- the page on the right -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -161,7 +143,6 @@
                     android:text="@string/drag_hint" />
             </LinearLayout>
 
-            <!-- the page itself: its icons, its shape, its names, its order -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/previewGrid"
                 android:layout_width="match_parent"

@@ -1,857 +1,173 @@
 # App Hub
 
-A tiny Android app that lists the apps **you** installed on the head unit, with
-their real icons and names, so you can open them with one tap and — where the
-install holds the platform's close permission, or root — close them again,
-without patching the factory launcher ever again.
+A small Android app for the head unit: a grid of the apps **you** installed,
+with their real icons and names — one tap to open, and where the install holds
+the platform's close permission or root, one tap to close — without patching
+the factory launcher ever again. It is the "plan B" companion to
+`../launcher_tool/`: install it once and it always sees every app, including
+the ones you add later.
 
-This is the "plan B" companion to `../launcher_tool/`: instead of adding a
-shortcut per app into the launcher's icon array, you install this once and it
-always sees every app, including ones you install later.
-
-The surface itself is specified in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) - the
-token layer (spacing, type, colour, radii, motion) that this README's settings
-are drawn with, the reasoning behind it for a 10" panel in a moving vehicle, and
-the redesign it is the foundation for. Everything below is what the app *does*;
-that document is what it *looks like* and why.
+Two of its own screens stand on the board as tiles while their settings
+switches are on: a **file manager** over the unit's storage and a **web
+browser** built on the unit's own `WebView`. The visual layer — tokens, type,
+colour, motion, EN + FA strings — is specified in
+[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md); this file is what the app *does*.
 
 ## What it does
 
-| | |
-|---|---|
-| **Grid** | every launcher-able app, icon on top and one line of text under it (long names ellipsize), re-read on every resume, sorted with a locale-aware collator (Persian names order correctly). Column count follows the screen, or is fixed in the settings |
-| **Tap** | launches that app (exact `package` + activity, with a `getLaunchIntentForPackage` fallback) |
-| **Long press** | the board **lifts**: every tile scales slightly and grows a badge in its icon's corner, and the page's tiles become draggable. The badge (or a tap through the tools sheet's *Edit the page*) opens one app's card: **Open**, **Pin to top**, **App info** / **Close**, **Hide from the main page**, **Uninstall** - grouped, with a hairline between the three kinds of verb. *Uninstall* is only there for an app the user installed, and *Close* only where this install can really close one (platform-signed or root); see [Uninstalling an app](#uninstalling-an-app-three-layers) and [Closing an app](#closing-an-app-four-layers) |
-| **Dot** | a small dot on the icon of an app that is open: filled for a process or a task the system still holds, hollow for one that was only used recently (see [What is open, and how App Hub knows](#what-is-open-and-how-app-hub-knows)) |
-| **Pin** | long press → *Pin to top*; pinned apps keep their place at the front, in the order you pinned them, and the choice survives restarts |
-| **Files** | this app's own file manager, standing on the board as a tile while the switch in the settings is on: the unit's storage and any attached card or stick, folders first, each row carrying its size and date. A tap enters a folder or hands a file to another app to open, and the row's own menu **opens**, **copies**, **moves**, **deletes** and - for a package - **installs** it. Its own card is a screen's card: *Open*, *Pin*, *Hide*. See [A file manager over the unit's storage](#a-file-manager-over-the-units-storage) |
-| **Web** | this app's own browser, standing on the board as a second tile while the switch in the settings is on: the unit's own `WebView` under this app's chrome - a header, a toolbar drawn out of the same row settings are drawn in, and one address field that takes either an address or a search. *History* and *bookmarks* are the same sheets every other list here opens in, and a link that is a download goes to the platform's downloader and lands in *Downloads*, the folder the file manager draws. Every link that is not a web page is handed to the platform instead. See [A web browser over the unit's own WebView](#a-web-browser-over-the-units-own-webview) |
-| **Tools pill** | a floating button in the bottom corner, always one tap away whatever the grid is scrolled to: **Find an app**, **Settings**, **Edit the page** |
-
-There is no header, no search row and no hint strip: the board is only the grid,
-and the two things that are *not* apps - the tools and the search - float over it
-as a pill in the corner. What used to end the grid (a gear cell and a red *Close*
-cell) is inside that pill now, because a red "quit App Hub" sitting among the app
-icons is one mis-tap away from the wrong app, and reaching the settings by
-scrolling past every installed app is a long walk on a car screen. The settings
-screens themselves do have a header - a back target and a title - since there the
-title is what says which list you are looking at.
+- **Grid** — every launcher-able app, icon over one line of text (long names
+  ellipsize), re-read on every resume, locale-aware sorting (Persian orders
+  correctly); columns follow the screen or a fixed 2–6.
+- **Tap** launches the app. **Long press** lifts the board: tiles scale, grow
+  a badge and become draggable; the badge (or *Edit the page*) opens the app's
+  card — *Open*, *Pin to top*, *App info* / *Close*, *Hide from the main
+  page*, *Uninstall*, with *Uninstall* only for user-installed apps and
+  *Close* only where a real force stop exists.
+- **Dot** on an icon: filled for a live process or a task the system still
+  holds, hollow for one only used recently (see *What is open*).
+- **Pin** — pinned apps keep the front of the grid, in pin order, across
+  restarts.
+- **Tools pill** — a floating corner button that is always one tap away:
+  *Find an app*, *Settings*, *Edit the page*. The board itself carries no
+  header and no search row.
+- **Files** tile — unit storage plus attached cards, folders first, size and
+  date per row. A tap enters a folder or hands a file to another app; the
+  row's menu opens, copies, moves, deletes — and installs an APK.
+- **Web** tile — one field that takes an address or a search, history and
+  bookmarks as sheets, downloads through the platform's downloader into
+  *Downloads* (the folder the file manager draws).
 
 ## Settings
 
-A **Tools** pill floating over the board opens a sheet whose *Settings* row leads
-to it; every choice is stored in `SharedPreferences` (`Prefs`).
+Stored in `SharedPreferences` (`Prefs`), reached through the tools pill.
 
-| Setting | Options |
+| Setting | What it is |
 |---|---|
-| Show app names | on / off (off gives an icon-only grid) |
-| Shortcuts | a **screen of its own with two panes** (see below): the **list of every installed app** on the left, the **main page** it adds up to on the right. Ticked = that app has a cell, unticked = it does not; the sheet-free list stays put while you tick and the preview redraws as it changes. **All apps** / **None** do the whole page in one tap. A **filter field** narrows the list as you type (name or package, spaces and case ignored) and is **remembered**, so reopening lands where the last session left off; an ✕ clears it. Dragging a tile in the preview **rearranges the page for real**. Stored as the *hidden* ones, so an app installed later appears on its own and uninstalling one leaves nothing to clean up. Unticking is not uninstalling: the app is only left out of the grid, and the long-press menu's *Hide from the main page* is the same switch from the grid. The row's value counts what is left (`All 19 apps`, `18 of 19 apps`) |
-| Icon size | Small 48dp · Medium 64dp · Large 80dp · Extra large 96dp — the grid fits fewer columns as icons grow |
-| Adapt to screen | a switch, not a fifth icon size: everything this app draws — icons, text, spacing, the rows of every screen — is scaled by the screen's own width over a phone's (400dp), capped at **×2**. The row's right-hand value says the factor it is drawing at, `×1` to `×2` |
-| Icon shape | Original · Rounded · Circular · iPhone style · Samsung style |
-| Grid | Auto (computed from the screen) or a fixed 2–6 columns |
-| Sort | Name A–Z / Z–A; pinned apps always stay first. Choosing one re-sorts the page, so it drops a hand-arranged order (and says so in the README rather than in the UI) |
+| Show app names | on / off (icon-only grid) |
+| Shortcuts | a screen of its own: every installed app on the left, the main page it makes on the right — tick to show, drag the preview to rearrange, filter field remembered, *All* / *None* in one tap |
+| Icon size | 48 / 64 / 80 / 96 dp |
+| Adapt to screen | scales everything by the screen's width over a phone's 400dp, capped at ×2; the value shows the factor |
+| Icon shape | Original · Rounded · Circular · iPhone · Samsung |
+| Grid | auto (from the screen), or a fixed 2–6 columns |
+| Sort | A–Z / Z–A; pinned stay first, and choosing a sort drops a hand-made order |
 | Include system apps | off by default, so only your own apps are listed |
-| File manager | on by default: the **Files** tile on the main page. Off, the tile goes and nothing else changes - it is a screen of this app and not an installed package, so this switch hides a tile and not an app. The tile's own card writes the same setting |
-| Web browser | on by default: the **Web** tile on the main page. The same kind of switch as *File manager* - it hides a screen of this app and not an installed package, so off means the tile goes and nothing else changes. The tile's own card writes the same setting |
-| Home screen | offered, not taken: a row that opens Android's own chooser for the home role, and disappears once the system answers the home intent with this app - read back fresh on every resume rather than stored, because the default can be changed from outside this app entirely. See [The home screen, on offer](#the-home-screen-on-offer) |
-| Theme | System / Light / Dark |
-| Layout direction | System / Right-to-left / Left-to-right |
-| Screen margins | **left / right / top / bottom**, each dialled on a wheel from 0 to half that side of the screen (512 dp across on this unit's 1024dp width, 284 dp down in its 568dp-tall window) — any whole value, not a list of steps — or **typed on the number keyboard** from the sheet's *Type the value* row. Moves this app's content away from the screen edges so a launcher overlay (shortcut rail, clock, climate strip) cannot cover it. Applied to the grid **and** to this settings screen itself, so the screen follows the value while it is still being chosen |
-| Usage access | shown **only while it is missing**; tapping it walks a ladder - the platform's usage-access screen, then this app's own details page, then the top of Settings - because a car ROM may not carry the first one, and a toast is what the driver used to get instead. It is not what makes the running marks work on the unit any more: `ProcTable` reads `/proc` there. Where the process table *is* hidden it still shows what was used recently, and `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` does the same from a PC |
-| Reset settings | back to the defaults; pinned apps are kept |
-| Back | the last row of the list; leaves the settings screen (same as the arrow in the header) |
-
-Two implementation notes worth keeping:
-
-* **Shapes need the layers.** An `AdaptiveIconDrawable` masks itself and draws
-  its art inset to the middle two thirds of its bounds, so clipping *around* it
-  changes nothing — every shape came out pixel-identical. `IconMasker` draws the
-  background and foreground layers separately instead, so the tile really fills
-  the cell and the chosen shape is visible.
-* **Direction is not locale.** Forcing RTL sets the `screenLayout` direction
-  bits of the activity `Configuration` and leaves `locale` alone, so the grid
-  mirrors while the strings keep following the device language.
-* **Margins are physical, and there is one implementation.** `Left` / `Right`
-  are screen edges, not `start`/`end`: the thing hiding part of the screen is a
-  rail on one side of the display, and it does not swap sides when the layout
-  direction is flipped. `BaseActivity.applyMargins()` pads the activity's
-  content root, and both screens call it - the settings screen calls it again
-  on every change, which is what makes the preview live. The margin band shows
-  the window background, which is the same colour as the layouts, so no seam
-  appears as the values grow.
-* **The margins are a wheel, not a list** (`Sheet.showNumber`, a `NumberPicker`
-  inside the usual rounded card). A value in dp has no useful set of round steps
-  to offer, so every whole number in range is reachable — by dragging the
-  column, by the two buttons, or by typing it in. The range comes from the live
-  configuration rather than a constant (`Prefs.maxMargin` = half the width for
-  left/right, half the height for top/bottom), so the bound is the screen the app
-  is actually running on and it follows the unit's density. Descendant focus is
-  blocked so a stray tap cannot turn the wheel into a text field, and the value
-  is written on every turn — the sheet stays open, which is what makes it a
-  preview.
-* **The wheel has a keyboard beside it.** `Sheet.showNumber` draws the rotator;
-  `Sheet.showInput` is the same value typed, opened from the sheet's *Type the
-  value* row. The field is numeric, comes up focused with its content selected
-  and the keyboard raised, and Enter is accepted three ways because keyboards
-  differ — the IME's Done action, a bare Enter on a single-line field (which
-  arrives as `IME_NULL`), and a hardware `KEYCODE_ENTER` — and all of them close
-  the sheet. Junk is not a value: anything that does not parse leaves the stored
-  one alone. Values are clamped by `Prefs.setMargin`, so `9999` lands on the
-  limit rather than being refused.
-* **Auto columns follow the margins**, because the grid has less width to work
-  with once an edge is moved in (`Prefs.columnCount` subtracts left + right).
-  A fixed column count is never overridden.
-* **The adaptation is one lever, not one per dimension** (`Prefs.layoutContext`,
-  `Prefs.adaptDensity`). What it changes is the *dp space* the app is inflated
-  in: the configuration's density is multiplied, and because a dp, an sp (the
-  scaled density follows the density), a padding and a cell width are all
-  written in that same space, the icons, the text and the spacing grow together
-  and nothing can be left behind at the old size. Six hand-written multipliers
-  would have been six places to forget.
-* **The rule is the screen's width in dp over a phone's** (`screenScale`,
-  400dp, capped at ×2). The app is written in dp, and a dp is a fixed fraction
-  of nothing: on the unit's 1024dp-wide panel the 64dp icon that fills a third
-  of a phone covers a sixteenth of the screen, seen from further away than any
-  phone is. Normalising the canvas means an icon keeps the *share of the
-  display* it would have on a phone - and the cap is there because a 4K panel
-  should not be turned into a phone. The width is read from the application's
-  configuration, never from a screen's, or a second pass would compound the
-  first.
-* **The screen's own size in dp is recomputed with the density**
-  (`adaptDensity`). It is a function of the density and the framework does not
-  recompute it for a configuration an app overrides - the grid would still lay
-  its cells out for the old, much wider screen and draw eight columns into the
-  room of four. The small/normal/large/xlarge class is brought in line with it
-  for the same reason.
-* **A density cannot be changed on a screen that already exists**, so
-  `BaseActivity` remembers the scale it was built at and builds the screen again
-  if the setting no longer matches it (compare in `onResume`). That is the
-  ordinary case, not an edge one: the grid is sitting behind the settings screen
-  while the switch is turned on - and it is also what makes the switch's own
-  screen show its result, since it is recreated at the moment it is flipped.
-* **The margins stay physical, and that is deliberate.** A screen margin keeps
-  an overlay the *unit* draws - a shortcut rail, a clock, a climate strip - off
-  this app's content, and that overlay does not grow when the icons do. So
-  `BaseActivity.applyMargins` converts the stored dp with the unit's own density
-  (`Prefs.deviceDensity`) rather than the adapted one, and a value keeps meaning
-  the same pixels whichever way the switch is set.
-* **Shortcuts is a screen, not a sheet** (`ShortcutsActivity`). A sheet answers a
-  question and closes; this one is a place where two things are watched at once -
-  tick an app, watch it arrive on the page - so the two halves sit side by side.
-  The sheet machinery is for menus and one-value pickers again, and the rounded
-  card is untouched by this screen. `Sheet.show` still closes on a tap because its
-  rows are one choice among several.
-* **The app list is the grid's own list.** The list is read with `AppRepository`
-  on a background thread, exactly like the grid, so it offers what the grid could
-  show - including the factory apps once *Include system apps* is on, which is why
-  that switch drops the cached list and reads it again. Each row carries the app's
-  own icon in its own colours, where every row of a sheet is a monochrome glyph
-  drawn in the secondary text colour.
-* **The list is filtered, not rebuilt** (`ShortcutAdapter.filter`). A field above
-  the rows hides the rows that do not match instead of replacing them, so a tick
-  survives any amount of filtering (`squash()` compares letters and digits only,
-  lower-cased, so `apphub` finds *App Hub* and `organicmaps` finds
-  `app.organicmaps`; the empty list says *No app matches* rather than looking
-  broken). The field keeps what was typed, because working through the apps that
-  start with `ca` is a session, not a keystroke, and the ✕ is one tap away. The
-  count in the header counts the *page*, not the filter, so a narrowed list never
-  reads as a page that lost its apps.
-* **The filter is the only thing on that screen that is remembered.** It is a
-  stored value like a tick, so typing writes it through (`Prefs.shortcutsFilter`)
-  rather than saving it at some later moment. It is in *Reset settings* with the
-  rest.
-* **All / None apply to the whole list, not to what is showing.** Filtering hides
-  rows; it never decides what the page holds, so *None* with `cam` typed still
-  clears the page rather than clearing the two matches. `Prefs.setHiddenAll`
-  writes the set once.
-* **One implementation of the main page** (`MainPage.arrange`, `MainPage.cells`).
-  The grid and the preview beside it both have to agree about what the page is to
-  the pixel, so neither arranges it itself. `arrange` puts an explicit page order
-  first if there is one, and otherwise pins the pinned apps to the front exactly
-  as the grid always has; `cells` is the apps plus the gear and *Close*, with the
-  empty-state cell spanning the row when there is nothing to show.
-* **A drag writes the page's own order** (`Prefs.pageOrder`, package names in a
-  newline-joined string, the way `PinnedApps` stores its list). It is written when
-  the tile is let go, and from then on the page follows it instead of the name
-  sort. Anything with no place in it - an app installed later, or one ticked back
-  on - comes after the arranged tiles and can simply be dragged in. Package names
-  rather than positions mean an app that is uninstalled or hidden and comes back
-  lands where it was left.
-* **A sort and an arrangement cannot both decide**, so choosing a sort drops the
-  arrangement (`SettingsActivity`, the Sort row). The alternative - leaving the
-  arrangement to win silently - would make that row look broken, and the row's
-  stored value would then describe something the page does not do. *Pin to top*
-  has the same problem from the other side: with an arrangement in place the pin
-  ranking decides nothing, so pinning moves the app to the front of the
-  arrangement instead of quietly doing nothing.
-* **The preview measures its own pane.** It lays the page out with the same rule
-  the grid uses, at the width it has: `Prefs.columnCount(paneWidth)`, the user's
-  icon size - capped to what a column of that pane can hold, so a fixed 6 columns
-  at Extra large shrinks the tiles rather than overflowing - and the same icon
-  shape and *Show app names* as the grid. A pane half the width of the screen
-  therefore breaks the page into fewer columns than the page does; what is
-  identical is what the drag is about, which is the order and the cells.
-* **In the preview nothing is tappable.** No cell launches anything, the gear and
-  *Close* lead nowhere, and no cell ripples: the hold belongs to the drag, and a
-  ripple with nothing behind it promises an action the preview does not have
-  (`AppAdapter` takes every callback as optional for exactly this).
-* **Only the app cells move.** ItemTouchHelper refuses to pick up the gear or
-  *Close* and refuses to drop a tile on them, so the page's two fixed cells stay
-  where they are however the tiles are shuffled.
-* **A sheet longer than the screen scrolls, and the row that closes it does not.**
-  The rows live in a `ScrollView` (`dialog_sheet.xml`) whose height is capped the
-  moment the sheet is measured (`Sheet.clampRows`, `MAX_ROWS_HEIGHT`), with the row
-  that closes the sheet in a footer below it, so a long list never hides the way
-  out at the bottom of it.
-* **The keyboard takes room from the rows, not from the card.** A dialog window is
-  not shrunk around the IME, so a sheet the height of the screen used to end up
-  half under the keypad — with the field visible and the rows and the OK row gone.
-  `Sheet.clampRows` now reads the IME inset (`ViewCompat` + `WindowInsetsCompat`),
-  caps the rows to the space the keypad leaves, and moves the card to the top of
-  the screen while the keyboard is up (`Gravity.TOP`, back to `CENTER` when it
-  closes, gated on `insets.isVisible(ime)` so the two states cannot ping-pong).
-  The shortcuts screen has the same problem from the other side and solves it the
-  plain way: it asks for `adjustResize`, so the panes shrink and the field, the
-  rows and the preview all stay above the keys.
-* **What is hidden is stored, not what is shown.** `Prefs` keeps the *hidden*
-  package names, so a later install is on the main page without anyone ticking it
-  and an uninstall leaves no stale entry. It is part of *Reset settings*, and it is
-  applied in `MainActivity.render()` rather than in the repository - so the hidden
-  app is still installed and still ranked by the pinned order; only the page
-  leaves it out.
-* **A switch is a view of what is stored, not a second copy of it.** All rows
-  share one `settingSwitch` id, so Android saves a single position for the
-  screen and restores it into *every* switch on a recreation — and the theme,
-  direction and **Reset** rows all recreate this screen. That used to put the
-  just-cleared values straight back after a Reset, which is how it was found
-  (with `run-as … cat shared_prefs/apphub.xml`). `onRestoreInstanceState` now runs
-  inside the same guard as `refresh()`, so a restored position is shown and never
-  written, and the listener additionally ignores any change that already matches
-  storage.
-
-## Closing an app: four layers
-
-`ForceStop.close()` tries the strongest mechanism available and always falls
-back, so the feature degrades instead of breaking — and it now reports what it
-*got*, not what it tried, because three of the four layers can be refused:
-
-The card itself draws `Close` only where a real close exists: `FORCE_STOP_PACKAGES`
-(the platform-signed install) or a usable root — the first two layers below. An
-install whose reach stops at the two weak layers gets no `Close` row at all,
-because its honest answer would be *still open*; those layers still run as
-fallbacks behind a real one that is refused at the moment of the tap.
-
-1. **root** — `su -c am force-stop <pkg>`. Works where `su` lets the app's uid
-   in (Magisk-style su does; AOSP's `su` only allows root and shell, so a plain
-   app is refused there and we move on). The unit's `su` is AOSP's, so this
-   layer never answers there.
-2. **`FORCE_STOP_PACKAGES`** — the hidden `ActivityManager.forceStopPackage()`,
-   which needs `android.permission.FORCE_STOP_PACKAGES`: `signature|privileged`.
-   A platform-signed install holds it *by signature*, with no root at runtime
-   and no `/system` write; `/system/priv-app` is the other way in — see
-   [Release & system install](#release--system-install).
-3. **`REMOVE_TASKS`** — the hidden `ActivityManager.removeTask(taskId)`, which
-   closes one task the way the recents screen does. Only reachable where that
-   permission is granted (the recents role holds it), so in practice this lives
-   next to layer 2; it is also the layer that keeps `Close` able to take a
-   *window* away where a force stop is not allowed.
-4. **`killBackgroundProcesses()`** — and the honest size of it. This used to be
-   described here as "enough for the hub's main flow". It is not any more:
-   **since Android 14 the platform can kill only the caller's own background
-   processes through this call**, whichever app makes it. Measured on an
-   Android 15 emulator as a controlled pair — the same cached app, killed by
-   `adb shell am kill` and *not* killed by App Hub's own call a moment before —
-   and documented in Android 14's behaviour changes ("the API can kill only the
-   background processes of your own app"). So the layer still runs where it can
-   still do something (Android 13 and older, i.e. the unit), and from Android 14
-   the app stops claiming a close it cannot make.
-
-A foreground process can never be killed by itself in *any* layer — that is a
-platform guarantee, not a gap in this app.
-
-The report follows the same rule. The layer that answered is returned, and the
-toast says what it was: `closed`, **closed in background** where only the
-background processes were reached, and **still open** where no layer could
-touch the app - a report is never allowed to claim a close no layer made.
-
-## Uninstalling an app: three layers
-
-`Uninstall.uninstall()` mirrors the close: the strongest mechanism available
-first, every layer optional, and the report naming the one that answered. The
-rule above all of them is that **only an app the user installed may be passed to
-any layer**. The answer is read when the board is drawn (and carried on the
-entry), read again when the removal is attempted, and it is what decides both
-whether the card offers the row and whether the engine acts — a factory app is
-never offered, and cannot be removed even from a card that somehow asked.
-Uninstalling App Hub itself is refused for the same reason root exists:
-`pm uninstall` does not ask.
-
-1. **root** — `su -c pm uninstall <pkg>`. The command `adb uninstall` runs, and
-   the removal Settings' own Uninstall button performs: the app goes for every
-   account on the unit. It is also the only layer that *answers* — `pm` prints
-   `Success` only once the package is already gone, and any other line is read
-   as a refusal, so nothing is reported that the shell did not confirm. (No
-   `--user` flag: the SDK no longer offers a public way to name the current
-   user, and `--user 0` on a unit whose driver is another account would take
-   the app off somebody else's profile.)
-2. **`DELETE_PACKAGES`** — `PackageInstaller.uninstall()`, which the platform
-   runs straight through when that permission is held: `signature|privileged`,
-   so it belongs to the platform-signed install or a `/system/priv-app` one. No
-   root, no screen, and no installer session — the delete is dispatched, and the
-   board's next read is where it becomes visible.
-3. **`ACTION_DELETE`** — the platform's own uninstaller, hosted by Settings,
-   which asks the driver and removes the app itself. This is where an ordinary
-   install ends, and `REQUEST_DELETE_PACKAGES` is what makes Android willing to
-   show that screen to a normal app at all: from Android 9 on, without the
-   permission the platform does not refuse the request, it silently opens
-   nothing and logs `E/UninstallerActivity: Uid … does not have
-   android.permission.REQUEST_DELETE_PACKAGES or
-   android.permission.DELETE_PACKAGES`.
-
-The card's row is amber like the other removals, because it takes something
-away; the question it opens is asked first, because this is the one removal that
-re-opening cannot bring back. The red row inside that question is the app's only
-`destroy` row — red is reserved for the yes-button of a question already asked.
-What the toast says is the layer's own news and never one sentence for all
-three: **uninstalled**, *finish the removal in the screen that opened*, or
-*not removed*.
-
-## A file manager over the unit's storage
-
-**Files** stands on the main page as a tile of its own, switched on and off from
-*Settings → Behaviour → File manager*. The tile is *made* rather than *found*
-(`MainPage.page`): the board skips App Hub's own package when it reads the
-launcher activities, so this app's own screens have no launcher entry to be
-found. That is also why the entry carries `AppEntry.tool` and not `system` - a
-tile and not an app - and why its card offers what is true of a screen (*Open*,
-*Pin*, *Hide*) and never *Close* (it is this app) or *Uninstall* (that is this
-install). Hiding it writes the setting the settings row writes, so the two cannot
-disagree about whether the tile is there.
-
-### What it can see, and how it is allowed to
-
-Real paths, not the Storage Access Framework: a file manager that cannot show a
-card until the driver has granted that card separately is a file manager with a
-form in front of it. Two versions of Android spell the whole of storage two ways,
-and the app declares both.
-
-| Android | What is asked for | What it gets |
-|---|---|---|
-| 10 and below (the unit) | `READ_EXTERNAL_STORAGE` + `WRITE_EXTERNAL_STORAGE`, at runtime, with `android:requestLegacyExternalStorage="true"` | real paths into shared storage on every volume. Android 10's `PackageParser` sets the legacy flag whenever that attribute is true, *whatever the app targets*; the mount is then decided by `OP_LEGACY_STORAGE`, so the sandbox never applies |
-| 11 and up | `MANAGE_EXTERNAL_STORAGE` (*All files access*), granted in a system screen of its own | real paths into shared storage on every volume, except `Android/data` and `Android/obb` |
-
-Volumes come from two places for the same reason. From Android 11 the platform's
-own `StorageManager` knows each volume's printed name ("SanDisk SD card") and
-whether it is the emulated one; below that the list is built from the directories
-this app was handed for each volume - one per attached volume - with the app's own
-corner of each cut off to leave the volume's root.
-
-Without the grant, **nothing is read at all** and the banner says so. That is not
-laziness: from Android 11 on, a folder this app may not read lists as *empty*
-rather than as refused, and a file manager that calls a full folder empty is
-worse than one that says it has not been let in yet. The banner's *Enable* opens
-Android's own per-app screen, or raises the runtime dialog on the versions that
-have one - and on the way back the state is read again rather than remembered.
-A folder that genuinely cannot be read (`Android/data`, from Android 11 on) says
-that instead, because *empty*, *gone*, *shut* and *no storage at all* are four
-different answers.
-
-### The five verbs
-
-One row per folder or file, folders first and then the same locale-aware collator
-the board sorts with. Tap a folder to go into it; the first row of every folder is
-the way back up, named after where it leads ("Internal storage", not "emulated").
-A tap on a *file* does the obvious thing with it and hands it to another app to
-open; a package is the one row whose tap opens the menu instead, because
-installing is the thing a driver wants from a package and that lives in the menu.
-A file that nothing on the unit opens puts that same menu up - with the sentence
-saying so on its second line - because a tap that ends on a toast has gone
-nowhere. Every row's verbs are behind the `...` on the row - *Open with* among
-them - and behind a long press, for a driver who tries that first.
-
-* **Open** is the one verb that leaves this app: a file is handed to whichever app
-on the unit opens that kind of thing, which is the one piece of this screen that
-had a real decision in it and therefore has a section of its own below. A folder's
-*Open* is the ordinary one - it goes in.
-* **Copy** and **Move** are two taps in two places, so what has been picked up is
-drawn in a bar at the bottom of the screen until it is put down or dismissed.
-A copy stays in hand afterwards, because the same picture usually goes to more
-than one folder; a move does not. Within a volume a move is a rename and nothing
-is read or written; across volumes it is a copy and then a delete, and when the
-delete is refused the toast says **there are two of it now** rather than that it
-moved. A name that is already in the folder it is going to is refused, not
-overwritten.
-* **Delete** asks first and says what goes with it: a folder on Android means
-everything inside it, and there is no recycle bin to find it in afterwards. That
-question's yes-row is the app's only red.
-* **Install** is offered for a `.apk` and nothing else, because a package is the
-only file the platform will install by itself. (`.apkm` and `.xapk` are bundles
-*containing* APKs, so they are drawn and treated as the archives they are.)
-
-Nothing here *shows* a file. There is no viewer and no editor - this hub is not
-one - but there is a way out: *Open with* hands the file over instead. A package
-is the one row that does not get it, because *Install* is already a way in for
-that kind of file and two rows leading to one installer would be one too many.
-
-### Handing a file to another app, without handing over storage
-
-Android crosses a process boundary with a `content://` URI and never with a path,
-which for a file manager that reads real paths is the one problem this screen has.
-The obvious answer is a second provider rooted at storage, and it is the answer
-this app refuses: `update_paths.xml` is the standing rule - *a provider that can
-serve any file is a door* - and every URI such a provider minted would be a read
-handle into whatever sat under its root, the card in the slot included.
-
-`Handoff.kt` is what it does instead, and it is shorter than the objection: **the
-one file the driver picked is the file that leaves.** A tap mints a token for that
-row and writes down the path it belongs to; what goes out to the other app is
-`content://<package>.handoff/<token>/<name>`. `HandoffProvider` has no `paths` and
-no root - it answers a token, one file per token, read-only, and a token this app
-did not just mint means nothing at all.
-
-| Ending | When |
-|---|---|
-| *handed to another app* | the platform found something to open it with, and that app is opening now |
-| *nothing on the unit can open it* | not one app claims that kind of file. News rather than a failure, and from a tap it becomes the verbs sheet's second line instead of a toast, so the tap still leads somewhere |
-| *not on the unit any more* | the card came out, or the file went behind us |
-| *could not be opened* | the file is there and would not be read, or the platform refused the hand-off |
-
-No chooser of this app's own is raised: the platform's resolver *is* the "open
-with" screen, and it is the one that offers *just once* against *always* - a
-choice that belongs to the driver. Nothing is copied on the way out either, so a
-film is opened from the stick it is on, through a descriptor this app opens and
-the other app reads. That descriptor is read-only, and it carries the file's own
-length, because the app on the other side is often a player drawing a seek bar.
-A hand-out is kept for a day and never more than eight of them, since a token is a
-read handle on one file and a handle nobody can still be holding is worth less
-than the room its name takes.
-
-### Installing a package: one session, two endings
-
-`Install.install()` reads the APK itself and writes it into a `PackageInstaller`
-session. That is not a detour: a package on a card the driver has just plugged in
-has to be installable, and handing the installer a *URI* would mean a second
-provider able to serve any file on the unit - the door `update_paths.xml`
-deliberately keeps shut. A session takes the bytes from a path, and the path can
-be anywhere.
-
-| Layer | Needs | What happens |
-|---|---|---|
-| Silent | `INSTALL_PACKAGES` - `signature\|privileged`, so the platform-signed install or `/system/priv-app` | the session commits straight through and the platform puts the package on with no screen. The toast says *installing*, not *installed*: the platform carries the session out behind the tap |
-| Asking | nothing but `REQUEST_INSTALL_PACKAGES` | the commit comes back as `STATUS_PENDING_USER_ACTION` carrying the intent of Android's own install screen, and `InstallStatusReceiver` opens it. Nothing is on the unit until that screen is answered |
-
-The receiver is declared in the manifest rather than held by the screen, because
-that answer arrives on a binder thread after the tap that started the install -
-possibly after the file manager itself has gone. Every operation leaves one line
-for `adb logcat -s AppHub`, the way the close and the uninstall do:
-
-```
-copy <from> -> <to> <FileOp>      delete <path> <FileOp>      install session=<id> status=<n>
-handoff <path> <HandoffOp>
-```
-
-## A web browser over the unit's own WebView
-
-**Web** stands on the main page beside **Files**, switched on and off from
-*Settings → Behaviour → Web browser*, and made the same way: the board skips App
-Hub's own package when it reads the launcher activities, so a screen of this app
-has no entry of its own to be found, and the tile is built from `Tool.BROWSER`
-instead. The engine is the unit's own `WebView` - the platform ships one, so this
-app adds no library for a browser - and what this screen is, then, is this app's
-chrome around it: the header every screen has, a toolbar built out of the same
-row a setting is drawn in, the same sheets for history and bookmarks, and a start
-block in place of a blank page.
-
-### One field, two jobs
-
-An address bar has to answer the one question nobody can answer for the driver:
-was that an address or a search? `Web.target` is that rule, in one place so it
-can be read on its own. A scheme that is there is obeyed - `https://…`,
-`about:blank`, a `data:` page - and never quietly rewritten into a search.
-Without one, `localhost` is a host, a single word with a dot and letters after it
-is a host, and everything else is a search: words with spaces in them, or a bare
-word with no dot. Guessing *host* for a bare word is the reading worth avoiding,
-because it sends a driver to a domain squat instead of a result page.
-
-Searches go to DuckDuckGo's own HTML endpoint, which answers without JavaScript -
-the difference between a result list and a blank screen on a head unit - and it
-is one constant in `Web`, so moving it is one edit.
-
-### What a tap on a link can do
-
-| What the link is | What happens |
-|---|---|
-| a web page (`http`, `https`, `about`, `data`) | it loads, here |
-| a download | the platform's own `DownloadManager` takes it |
-| `mailto:`, `intent:`, `market:`, `tel:` | handed to the platform, which is the only thing on the unit that knows what those are |
-| `file:`, or anything else | never loaded here: a page may not ask this browser to open the unit's filesystem |
-
-### Downloads land where the file manager looks
-
-A link off the web goes to the platform's downloader and not into this app: it
-fetches the bytes, keeps the transfer alive after the browser is closed under it,
-and - the reason it is the right tool - puts the file in the unit's *Downloads*
-folder, which is the folder the file manager already draws. A driver downloads a
-map and then opens it, with the two features meeting where both of them would
-look. The browser's own cookie and user agent are copied onto the request,
-because the downloader has its own HTTP client and has never seen the session the
-page is holding: without them a file behind a login arrives as a sign-in page.
-
-The ending is this app's news too, not only the platform's. The downloader names
-App Hub as the receiver of its own completion broadcast, and `DownloadReports`
-asks the downloader's record what actually happened: a file that landed already
-has the platform's notification and says nothing more, and a transfer that failed
-gets the one sentence it would otherwise never earn. The menu's *Show in Files*
-row is the way back to it - the browser knows a file is *in* Downloads before it
-opens the door to the folder the file manager draws, which is what makes the two
-features one path rather than two.
-
-| Ending | When |
-|---|---|
-| *downloading* | the downloader has the request and the file is on its way, which is not the same as being on the unit - the platform's own notification says when it lands |
-| *not a link that can be fetched* | a `blob:` or a `data:` address, or a name the platform cannot guess: those exist only while the page does, so this is news rather than a failure |
-| *the downloader refused it* | it would not take the request, or there is no downloader on this unit |
-| *did not finish* | the downloader's own record, asked when the platform reports the transfer over: a failed download is the one ending a driver finds out about an hour later otherwise, looking in the folder for a file that is not there |
-
-### History and bookmarks: two lists in one file
-
-Both live in the `browser` preferences file as JSON, read by the framework's own
-`org.json` for the same reason `Updater` uses it - two lists of three fields do
-not justify a library. History keeps the last 200 visits, newest first, and a page
-that is already the newest is replaced rather than repeated: a reload, or coming
-back to the tab, is not a new visit, and a history that says otherwise is a
-history nobody can read. Only `http` and `https` are written down at all -
-`about:blank`, a `data:` page and this app's start block are not places the driver
-went. Bookmarks carry the same three fields, newest first, so keeping a page again
-moves it back to the top.
-
-Both are read defensively. A memory that cannot be parsed is an empty one, because
-a browser that will not open is a worse answer than a browser with no history -
-the one place in this feature where the app forgives instead of insisting.
-
-Everything is behind the `...` beside the address: keep this page or drop it (one
-row, two readings), then the two lists, then *Copy address*, then *Clear history*
-in the sheet's hazard group. Both lists are sheets and not screens - one column of
-addresses over the page the driver is already looking at, and a list that wants a
-screen of its own has stopped being about the page. *Clear history* asks first,
-and the question says the bookmarks stay, because the two are separate memories
-and a driver clearing one means exactly one.
-
-### Three decisions worth keeping
-
-* **An SSL error is never taken.** There is no *proceed anyway* anywhere in this
-  app: `onReceivedSslError` cancels the load and the banner says so. A certificate
-  the platform will not accept is the one thing a browser must not be talked out
-  of, so the row that would offer otherwise does not exist.
-* **A page cannot open a window of its own.** New windows are off, so a link that
-  wants one loads in the page it was tapped in - a popup this screen could not see
-  again would be a popup the driver cannot close.
-* **The page draws in software.** `setLayerType(LAYER_TYPE_SOFTWARE)` is
-  deliberate: a head unit's GPU driver is where a `WebView` meets hardware it was
-  never tested against, and a page that draws a little slower beats a page that
-  draws wrong. The page's own background is the app's page colour, so a dark
-  screen is not met by a white flash at night.
-
-Plain `http` is allowed - `android:usesCleartextTraffic="true"` on `<application>`
-- because a browser on a unit has to reach a router's own page, a dashcam at
-`192.168.x.x` and the factory head unit's own interface, none of which has a
-certificate. It is the browser's half of the app only: the update path is
-unchanged and still checks the release certificate by digest before it installs
-anything.
-
-What it does not do is worth as much as what it does: no tabs, no private mode, no
-password store, no file upload (a page asking for a file is told plainly that this
-browser has none). Each of those is a feature with a screen of its own, and this
-is the browser a driver uses for one address at a time.
-
-### The home screen, on offer
-
-The manifest carries a second intent filter on `MainActivity` - `category.HOME`
-beside `category.LAUNCHER` - and that is all it carries: declaring the category is
-what lets Android's own chooser list this app, and nothing is made the default by
-declaring it. The row in *Settings* opens that chooser; once the system answers
-the home intent with App Hub, the row is gone, and the board is what comes up
-after a boot.
-
-The row's condition is read, not stored: `resolveActivity` on the home intent is
-asked fresh on every resume, because the default can be changed from outside this
-app entirely - the system settings, or a factory reset - and a stored answer would
-go stale the moment it did. The choice stays the system's and stays reversible
-one tap away; the factory launcher is not touched, and the factory launcher's
-shortcut rail, if the unit draws one, is what *Screen margins* already exists to
-work around.
-
-One line per download and per refused certificate for `adb logcat -s AppHub`,
-beside the file manager's own:
-
-```
-page done <url>
-download id=<id> name=<name> url=<url>
-download <url> <DownloadOp>
-download complete id=<id> <DownloadEnd>
-ssl refused: <url>
-```
-
-## What is open, and how App Hub knows
-
-Knowing what is "open" is one question with four answers, best first, and the
-board draws which one it got. The reader is `OpenApps`, and every mark on the
-board comes from its one read — the marks cannot disagree about which apps are
-open.
-
-| | Source | Says what | Needs |
-|---|---|---|---|
-| 1 | `ActivityManager.getRecentTasks()` | **exactly what is open**: every task the system still holds, with its id | `REAL_GET_TASKS` — `signature\|privileged`, so a platform-signed install or `/system/priv-app` |
-| 2 | `getRunningAppProcesses()` | apps with a **process** right now | the same permission, or root |
-| 3 | `/proc`, read directly (`ProcTable`) | the same, without asking anybody | a release whose process table is still world-readable - Android 9 is one, and the unit is one |
-| 4 | `su -c ps -A -o NAME` | the same, without asking the framework | a usable `su` |
-| 5 | `UsageStats` events | apps brought to the front in the last 30 minutes | the one-time *Usage access* opt-in |
-
-Three things about that table are worth keeping.
-
-**Why layer 1 is the one that matters.** `getRecentTasks()` is deprecated, and
-it is still the only non-root door to the task list: the replacement its
-deprecation note points at is a launcher-side API (`LauncherApps`), which needs
-the default-launcher *role* rather than a permission. Deprecated is not the same
-as removed — and this is the difference between a list of apps that are open and
-a list of apps that were opened.
-
-**A source that cannot answer is detected, not believed.** An app that is
-refused sees only its own processes, and one that may not read tasks sees at
-least its own task; both would otherwise read as "nothing is open on this
-device". So each cheap source has to prove itself — a foreign package for the
-process table, a task at all (its own included) for the recents list — and a
-source that cannot prove anything is skipped rather than reported as an empty
-device. Where no source can answer at all, the board simply shows no dots, and
-the log line below names the doors that were shut.
-
-**The process table is the door nobody closed.** Every framework door to "what
-is running" is shut to a plain install: the task list needs a signature
-permission, `getRunningAppProcesses()` has answered with one app's own processes
-since API 22, and the usage view is a different question. `/proc` is still
-readable on the releases that mount it plainly, so `ProcTable` walks it: the
-process name names the app, the `Uid` line says which packages share it,
-`VmRSS` adds up to the app's resident memory, and `oom_score_adj` decides the
-word - 0-200 is the app in front (*Running*), anything else with a process is
-*Open*.
-It has to find a process that is not this app's own before it claims anything,
-so a unit that hides the table is answered with silence rather than with
-"nothing is running", and a name that is not an installed app is dropped
-instead of drawn as a mystery row. When nothing answers at all, one log line
-says which doors were shut - `open apps: nothing answered (tasks=false
-root=false usage=false)` - because those four problems look identical from the
-driver's seat and only one of them is fixed from a PC.
-
-**Usage access is a view of the past, and is labelled as one.**
-
-`ACTIVITY_RESUMED` is the whole signal. The first version of this removed a
-package again on `ACTIVITY_PAUSED`, which reads like "it left" but is not: an
-app is paused *every* time it is covered — including by this hub — so with the
-hub in front the answer was always empty, and a phone with usage access was told
-nothing was open while six apps had a task each. `PAUSED` and `STOPPED` arrive
-both when an app is left and when its task is taken away, so neither can decide
-that it is gone; only "was resumed recently" is left. Those rows are drawn as
-*Recently open* - a hollow dot on the board, the one place the app still draws
-the distinction.
-
-The window is 30 minutes (`OpenApps.RECENT_WINDOW_MILLIS`) rather than the 15
-this started with: it is a filter against ancient history, not a stopwatch.
-
-## Making the open-apps feature work
-
-A plain **debug** install can never read the task list (the permission is
-`signature|privileged`, and `adb shell pm grant` refuses it — verified on an
-Android 15 emulator: *"not a changeable permission type"*; `FORCE_STOP_PACKAGES`
-is refused the same way, and `REMOVE_TASKS` is *"managed by role"*). What works,
-per device:
-
-**The unit, on a plain install first.** Nothing to install and nothing to
-grant: on the releases where `/proc` is world-readable - Android 9, the unit's
-class - the list is real processes, which is what made the board's marks real at
-all on a car whose Settings app has no usage-access screen to open and whose
-install could not be given a permission.
-
-**The unit (platform key in hand).** Install the platform-signed
-build. It costs no root at runtime and writes nothing to `/system`:
-
-```bash
-python tools/release.py --install --reinstall
-```
-
-The signature match is what grants `REAL_GET_TASKS` and `FORCE_STOP_PACKAGES`,
-and it is not a guess: the factory launcher shares `android.uid.system`, which
-the platform only allows for an APK signed with the framework's own certificate
-— the same `c8a2e9bc…92ab8` this repository already signs with. Check it after
-installing:
-
-```bash
-adb shell dumpsys package com.mimskydo.apphub | grep -E "REAL_GET_TASKS|FORCE_STOP_PACKAGES"
-```
-
-Both lines must read `granted=true`. With them the list is exact and *Close* is
-a real force stop — without them (and without root), no *Close* row is drawn.
-
-**Before any of that: try the grant.** The unit is `userdebug`
-(`ro.debuggable=1`), and a build that is willing to hand a signature permission
-to `pm` would save the reinstall entirely:
-
-```bash
-adb shell pm grant com.mimskydo.apphub android.permission.REAL_GET_TASKS
-adb shell pm grant com.mimskydo.apphub android.permission.FORCE_STOP_PACKAGES
-```
-
-On the Android 15 emulator used here both are refused (*"is not a changeable
-permission type"*) because the protection level carries no `development` flag —
-the grant is the cheap experiment, and the platform-signed install is the one
-that is known to work.
-
-**A unit that hides the process table (Android 10 and up, or a ROM that closed
-it).** One adb command opens the fallback view without any Settings screen:
-
-```bash
-adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow
-```
-
-That lists *recently open* apps — and with no root and no signature the card
-draws no *Close* row beside them: `killBackgroundProcesses()` is a fallback
-inside a close, not a close on its own (layer 4), and a row the install cannot
-make good on is not offered. It cannot force-stop, and it cannot see a task that
-was never brought to the front in the window.
-
-**A phone.** Android leaves two options and no third: root (Magisk-style `su`,
-which the app uses when it finds one), or an install the platform is willing to
-trust. Since Android 14, `killBackgroundProcesses()` reaches only the caller's
-own processes, so on a modern unrooted phone **nothing** can close another app —
-not this app, not `adb grant`, not a task-killer. Usage access still gives the
-list of what was used recently, the phone's own recents screen is the tool that
-closes, and the card draws no *Close* row at all: where nothing can close,
-nothing is offered. The app says so rather than pretending, which is the point.
-
-**A privileged install.** `/system/priv-app` is the other way to hold the same
-permissions: `python tools/release.py --system`. `--system` refuses on a unit
-whose `ro.control_privapp_permissions` is `enforce` unless the permission is
-allow-listed (`/system/etc/permissions/privapp-permissions-*.xml`), because an
-unlisted privileged permission can stop the unit from booting. The normal
-platform-signed install avoids that path entirely and is the recommended one.
+| File manager · Web browser | one switch per tile; the tile's own card writes the same setting |
+| Home screen | opens Android's own chooser for the home role; the row disappears once this app answers the intent, read fresh on every resume |
+| Theme · Layout direction | System / Light / Dark · System / RTL / LTR |
+| Screen margins | left, right, top, bottom in dp from 0 to half the side — wheel or typed — so the unit's own overlay (rail, clock, climate strip) cannot cover this app's content |
+| Usage access | shown only while missing; tapping walks a ladder of real settings screens, because a car ROM may not carry the first one |
+| Reset settings | back to the defaults; pins are kept |
+
+## Closing an app
+
+`ForceStop.close()` takes the strongest layer that can run and reports which
+one answered: root (`am force-stop`), the platform-signed `forceStopPackage`,
+`removeTask`, then `killBackgroundProcesses`. On an install with neither the
+permission nor root there is no *Close* row at all — a report of "still open"
+is not worth offering.
+
+## Uninstalling an app
+
+Only an app the user installed may be removed, and the check runs again at
+the moment of removal. Three layers: root (`pm uninstall`),
+`PackageInstaller.uninstall` (straight through for the platform-signed
+install), and Android's own uninstaller. The toast says which happened; the
+row is amber behind a question with the one red yes in the app, and App Hub
+never removes itself.
+
+## What is open
+
+One reader, `OpenApps.read`, feeds every list and dot — sources are asked
+strongest first, and a source that cannot answer is skipped rather than
+believed. On the unit that source is `ProcTable`, which reads `/proc` itself:
+real processes per app, memory from `VmRSS`, *Running* for the one in front
+and *Open* for the rest. Where the table is hidden the screen says it cannot
+see, rather than drawing "nothing open"; *Recently open* is the usage view,
+and the banner says so.
+
+## Home screen
+
+The `HOME` intent-filter only *offers* App Hub in the system's chooser; the
+settings row is the only thing that asks, and the answer is read fresh rather
+than stored. The factory launcher stays installed and reachable either way.
 
 ## Build
 
-Requirements: JDK 21 — the tracked `gradle/gradle-daemon-jvm.properties` asks the
-wrapper for a JetBrains 21 toolchain, which on this machine is
-`C:/Users/mahdi/.jdks/jbr-21.0.11`. The build itself is Gradle 9.7.1 with AGP
-9.4.1 (`compileSdk` 37 → SDK package `platforms;android-37.0`) and build-tools
-36.0.0.
-
-The version is not written in the build file either: `versionName` is the newest
-reachable `vX.Y.Z` git tag and `versionCode` is packed from it — `1.0.0` →
-`10000`, `1.0.1` → `10001`, `1.1.0` → `10100` — so a release is the tag and
-nothing else. A checkout with no tags at all (a shallow clone, an exported tree)
-builds `1.0.0`, the first release this project shipped.
+JDK 21 (the tracked `gradle/gradle-daemon-jvm.properties` asks for the
+JetBrains toolchain), Gradle 9.7.1, AGP 9.4.1, `compileSdk`/`targetSdk` 37
+(SDK package `platforms;android-37.0`), build-tools 36.0.0, `minSdk` 28.
 
 ```bash
-./gradlew assembleDebug          # works with no flags, and no network
-./gradlew --offline assembleDebug   # same, but also forbids any network access
+./gradlew assembleDebug            # no flags needed, no network
+./gradlew --offline assembleDebug  # same, but also forbids any network access
 ```
 
-No build flags are needed. `app/build.gradle.kts` pins the two AndroidX modules
-(`appcompat:1.8.0`, `recyclerview:1.4.0`) to versions the local Gradle cache
-holds, because `dl.google.com` is unreachable from this machine (every request
-404s, even for artifacts that do exist); resolution goes through the Aliyun
-mirror that `settings.gradle.kts` puts first. A version that is neither cached
-nor on that mirror cannot be added — the build dies with a wall of
-`Could not find …` task failures instead.
+The version is not written in the build file: `versionName` is the newest
+reachable `vX.Y.Z` git tag and `versionCode` is packed from it (1.0.0 →
+10000, 1.1.0 → 10100). A checkout with no tags builds `1.0.0`.
 
-**Adding a new dependency:** check what versions the cache actually holds, then
-pin that version in the same block, or the build will fail the same way.
-
-```bash
-ls ~/.gradle/caches/modules-2/files-2.1/androidx.core/core
-```
-
-The same block applies to SDK packages: `gradle.properties` turns
-`android.builder.sdkDownload` off, and a missing package is installed from the
-mirror with `tools/sdkget.py`:
+`dl.google.com` is unreachable from this machine (every request 404s), so the
+two AndroidX modules (`appcompat`, `recyclerview`) are pinned to versions the
+local Gradle cache holds and resolution falls back to the mirror
+`settings.gradle.kts` keeps last — canonical repositories first. A version
+that is neither cached nor mirrored cannot be added:
 
 ```bash
+ls ~/.gradle/caches/modules-2/files-2.1/androidx.core/core   # what is cached
 python tools/sdkget.py --list platforms           # what the mirror carries
-python tools/sdkget.py "platforms;android-37.0"   # install / update one
+python tools/sdkget.py "platforms;android-37.0"   # install one; sdkDownload is off
 ```
 
 Output: `app/build/outputs/apk/debug/app-debug.apk` → `adb install -r <apk>`.
 
-`.github/workflows/android-debug.yml` runs this same build on every push and
-pull request, so a dependency that stops resolving cannot slip through: it
-builds the debug APK and uploads it as an artifact. Both workflows take their
-JDK and SDK packages from one composite action,
-`.github/actions/android-setup/action.yml`, so those pins live in a single place
-instead of in two files. A `vX.Y.Z` tag runs `.github/workflows/release.yml`
-instead; see *Releasing from a tag* below.
-
-**Debugging over Wi-Fi.** Android Studio's *Pair devices using Wi-Fi* dialog
-refuses to open while the adb server is older than platform-tools 37.0.0: it
-reports *"ADB Version Too Low"* even though `adb pair` itself would work. Check
-what the server says, and update it from the mirror if it is older:
-
-```bash
-adb version                              # "Version 37.0.1-…" is fine
-python tools/sdkget.py platform-tools    # installs the current one; then: adb kill-server
-```
-
-Pair an Android 11+ device with `adb pair <ip>:<pair-port>` (code from
-Developer options → Wireless debugging) and then `adb connect <ip>:<port>` —
-pairing and connecting use different ports. Devices older than 11 have no
-pairing UI and need one USB session of `adb tcpip 5555` first.
+CI: `.github/workflows/android-debug.yml` builds the debug APK and runs the
+JVM tests on every push, taking its JDK and SDK pins from
+`.github/actions/android-setup/action.yml`; a `vX.Y.Z` tag runs
+`.github/workflows/release.yml` instead (see below). For Wi-Fi debugging,
+Android Studio's pairing dialog needs an adb **server** of platform-tools
+≥ 37.0.0 — `adb version` to check, `python tools/sdkget.py platform-tools`
+then `adb kill-server` if it is older.
 
 ## Release & system install
 
 `tools/release.py` builds the release APK, zipaligns it and signs it with the
-unit's **platform key** (the certificate every factory app uses,
-`c8a2e9bc…92ab8`), then verifies the digest:
+unit's **platform key** (`c8a2e9bc…92ab8`), then verifies the digest:
 
 ```bash
-python tools/release.py                 # build + sign + verify only
+python tools/release.py                 # build + sign + verify
 python tools/release.py --install       # ... then adb install -r
 python tools/release.py --install --reinstall   # after a debug-key build
 python tools/release.py --system        # privileged app in /system/priv-app
 python tools/release.py --online        # let Gradle use the network
 ```
 
-Without `--online` the release build runs `gradle assembleRelease --offline`;
-the version pins above are always in effect either way.
-
 Key lookup: `--pk8`/`--pem`, then `PLATFORM_PK8`/`PLATFORM_PEM`, then
 `tools/signing.properties`, then the usual `C:/chery-launcher/keys/`.
 
-`--system` runs the same sequence the launcher rollouts use: `adb root` →
-`adb remount` → confirm `/` is `rw` → push + sha256 check → uninstall the
-user-data copy → `mkdir /system/priv-app/AppHub` → `cp` → `chown root:root` →
-`chmod 0644` → `restorecon` → verify the installed hash → reboot.
-
-> **Read before using `--system`.** A privileged app that requests a privileged
-> permission which is *not* in `/system/etc/permissions/privapp-permissions-*.xml`
-> is merely denied it in `log` mode, but can stop the unit from booting in
-> `enforce` mode. The script reads `ro.control_privapp_permissions` and refuses
-> to continue on `enforce` unless you pass `--force`. Installing the
-> platform-signed APK normally (`--install`) is always safe and gives you
-> layers 1 and 3; only layer 2 needs `/system/priv-app`.
+`--system` runs root → remount → push + sha256 check → install under
+`/system/priv-app` → reboot. Read its warning first: a privileged permission
+that is missing from `privapp-permissions-*.xml` is only denied in `log`
+mode, but can stop the unit booting in `enforce` mode — the script reads
+`ro.control_privapp_permissions` and refuses on `enforce` without `--force`.
+Installing the platform-signed APK with `--install` is always safe.
 
 ### Releasing from a tag
 
-`.github/workflows/release.yml` runs when a `vX.Y.Z` tag is pushed and
-publishes a signed APK on the GitHub release: **one universal build**, because
-the app ships no native libraries and no density-specific resources, so a split
-by ABI or screen density could not leave anything out.
+A release is one `vX.Y.Z` tag and nothing else — the tag *is* the version:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
 
 The keystore never enters the repository. It lives in four repository secrets,
-and the job decodes it into `$RUNNER_TEMP` for that run only:
+decoded into `$RUNNER_TEMP` for that run only:
 
 | Secret | What it holds |
-| --- | --- |
-| `RELEASE_KEYSTORE_BASE64` | the `.jks` file, base64-encoded on one line |
+|---|---|
+| `RELEASE_KEYSTORE_BASE64` | the `.jks` file, base64 on one line |
 | `RELEASE_KEYSTORE_PASSWORD` | the store password |
 | `RELEASE_KEY_ALIAS` | the alias inside it |
-| `RELEASE_KEY_PASSWORD` | the key's password (often the store one) |
+| `RELEASE_KEY_PASSWORD` | the key's password |
 
 ```bash
 # from wherever the keystore is kept - do not put it in the repository
@@ -862,133 +178,62 @@ gh secret set RELEASE_KEY_ALIAS
 gh secret set RELEASE_KEY_PASSWORD
 ```
 
-On Windows, or anywhere the `base64` in reach is not the one that wraps at
-column 76, the same thing without a file in between:
-
-```powershell
-$b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\keys\apphub-release.jks"))
-$b64 | gh secret set RELEASE_KEYSTORE_BASE64
-```
-
-The job strips a byte-order mark, NUL padding or `certutil`'s
-`-----BEGIN …-----` lines off that secret before it decodes it, and it refuses a
-value that is not base64 at all instead of signing with a broken keystore. It
-then opens the keystore with `keytool`, so a password or an alias that does not
-match is found in a second rather than after a build and an emulator boot.
-
-`*.jks` and `*.keystore` are ignored, but keeping the file outside the working
-tree is still the better habit.
-
-A release is then one tag, and nothing else — the tag *is* the version:
-
-```bash
-git tag v1.0.0 && git push origin v1.0.0     # the first release
-git tag v1.0.1 && git push origin v1.0.1     # the next one
-```
-
-There is nothing to bump first. The job refuses a tag that is not a plain
-`vX.Y.Z`, builds, checks the APK's own `versionName` against the tag, verifies
-the signature with `apksigner verify`, and reads two things out of the APK that
-are not about its version: that the file manager's hand-off provider is declared
-unexported, granting per intent, and with no paths file behind it. Then — before
-it publishes anything — it installs that signed APK on an emulator (Android 11,
-Google APIs, headless) and requires the launcher activity
-`com.mimskydo.apphub/.MainActivity` to reach the front and stay there. The same
-run asks that unit's package manager about the hand-off provider and hands it a
-token nobody minted, which has to come back refused. Only then does it publish
-`AppHub-<version>-universal.apk` plus its `.sha256`. The emulator run leaves a
-screenshot, an activity dump and the two hand-off answers in the
-`smoke-test-<tag>` artifact, and `tools/smoke-test-apk.sh` is the same check by
-hand:
+The job strips a byte-order mark, CRLF wrapping or `certutil`'s `BEGIN/END`
+lines before decoding, opens the keystore with `keytool` before building,
+refuses a tag that is not a plain `vX.Y.Z`, checks the APK's own `versionName`
+against it, verifies the signature, and requires the file manager's hand-off
+provider to be unexported and per-intent. Then — before publishing anything —
+it installs the signed APK on a headless emulator and requires
+`com.mimskydo.apphub/.MainActivity` to be the resumed activity with a clean
+crash buffer, and hands the provider a token nobody minted, which has to come
+back refused. Only then does it publish `AppHub-<version>-universal.apk` plus
+its `.sha256`. The same checks by hand:
 
 ```bash
 sh tools/smoke-test-apk.sh app/build/outputs/apk/release/app-release.apk
 ```
 
+A signed build on this machine uses the same four variables as the workflow
+(`APPHUB_KEYSTORE`, `APPHUB_KEYSTORE_PASSWORD`, `APPHUB_KEY_ALIAS`,
+`APPHUB_KEY_PASSWORD`). With none set, `assembleRelease` still works and
+leaves the APK unsigned, which is what `tools/release.py` expects.
+
 ### Updating from the unit itself
 
-The *Updates* row in the settings is the whole feature: it shows the build this
-unit is running (`1.0.0`), and tapping it asks GitHub for
-`releases/latest` of this repository. If that release is newer, the row offers
-it, and the APK is downloaded, checked and installed without a laptop anywhere
-near the car.
-
-An APK arriving from the network is code this app would then be running, so
-nothing is installed until all four of these hold:
+The *Updates* row in the settings shows the running build, asks this
+repository's `releases/latest`, and installs nothing until all four hold:
 
 | Check | What it rules out |
-| --- | --- |
+|---|---|
 | signed with the release certificate, pinned as a SHA-256 digest in `Updater.kt` | anything not published from this project |
 | the package name is this app's | a file that is not this app at all |
-| `versionCode` newer than the installed one | going backwards, and re-installing what is there |
+| `versionCode` newer than the installed one | going backwards |
 | matching the `.sha256` published beside it | a truncated or substituted transfer |
 
-Android will not replace a package with a differently-signed one either, but
-that is the platform's answer after the fact; the pin is what lets the row say
-*why* instead.
+GitHub's chains are younger than a car's trust store (Sectigo E46, Let's
+Encrypt's "YR" generation), so `GithubTls` asks the platform's trust manager
+first and hears `res/raw/github_roots.pem` — each anchor checked against the
+live chain with `openssl verify` when it was added — only after the platform
+refuses. A chain neither store accepts is still refused, and the update path
+talks to GitHub's names only, redirects included.
 
-**The chain, and why an old unit could not build it.** A car's trust store is a
-snapshot of the year it shipped, and GitHub has moved on: `github.com` is served
-by a Sectigo E46 chain, and the release asset hosts by a Let's Encrypt "YR"
-chain - authorities that did not exist when an Android 9 unit was built. The
-platform's answer is `SSLHandshakeException: Chain validation failed`, and this
-app reported it as *GitHub did not answer: Chain validation failed*: true, and
-useless. `GithubTls` is the fix. The platform's own trust manager is asked first
-and keeps the last word; `res/raw/github_roots.pem` - three self-signed roots,
-each checked against the live chains with `openssl verify` when it was added -
-is heard only after the platform has refused. The same pass pins the addresses
-the update path may talk to (`github.com`, `api.github.com`,
-`*.githubusercontent.com`) and follows a redirect only inside those names,
-because the APK's URL comes out of the API's own JSON. One log line says when
-the bundled anchors were the ones that answered:
-
-```
-the platform refused the update host's chain, trying the bundled anchors: <why>
-```
-
-The install itself has two paths, in this order: on a unit with root, the file is
-copied to `/data/local/tmp` and installed with `su -c pm install -r`, which is the
-same install `adb install` runs and needs no taps at all. Without root, Android's
-own dialog does it - the same screen the unit shows for any sideloaded APK, after
-a one-time *allow installs from this app* grant.
-
-Replacing a running package kills the process that asked for it, so the run that
-starts an update can never report the result. The version being installed is
-written down before the silent path runs, and the next time the board comes up it
-says which of the two happened: *Updated to 1.0.1*, or *The update to 1.0.1 did
-not install*.
-
-Two things are worth knowing:
-
-* **A platform-signed build cannot be updated this way.** `tools/release.py`
-signs with the unit's platform key, and no release carries that signature, so
-the row says so instead of downloading something it cannot use. Install the
-release APK by hand once (the one-time switch), and this row updates it from
-then on.
-* **Rotating the signing key breaks it for existing installs.** The release job
-refuses to publish an APK whose signer does not match the digest pinned in
-`Updater.kt`, which is what makes a silent drift impossible - and the unit is
-then left needing one manual install again.
-
-A signed build on this machine uses the same four variables as the workflow:
-
-```bash
-APPHUB_KEYSTORE=C:/keys/apphub-release.jks APPHUB_KEYSTORE_PASSWORD=... \
-APPHUB_KEY_ALIAS=... APPHUB_KEY_PASSWORD=... ./gradlew assembleRelease
-```
-
-With none of them set, `assembleRelease` still works and leaves the APK
-unsigned, which is what `tools/release.py` expects for the platform-key path.
+The install has two paths: root copies the file to `/data/local/tmp` and runs
+`su -c pm install -r`; without root, Android's own installer does it through
+the single-path FileProvider. The run that starts an update dies with the
+process, so the next board reads `Prefs.pendingUpdate` and says *Updated to
+…* or *… did not install*. Two things worth knowing: a platform-signed build
+cannot be updated this way (the row says so instead of downloading), and
+rotating the release key needs one manual install on every unit.
 
 ## Project layout
 
 ```
 app_hub/
 ├── app/src/main/
-│   ├── AndroidManifest.xml          permissions + the single activity
+│   ├── AndroidManifest.xml          permissions + the activities
 │   ├── java/com/mimskydo/apphub/
-│   │   ├── BaseActivity.kt          applies theme + forced direction before views
-│   │   ├── MainActivity.kt          the grid (apps + the settings cell)
+│   │   ├── BaseActivity.kt          theme, direction, margins
+│   │   ├── MainActivity.kt          the grid and its chrome
 │   │   ├── MainPage.kt              the page's order and cells, shared by grid + preview
 │   │   ├── SettingsActivity.kt      every option, rows built in code
 │   │   ├── ShortcutsActivity.kt     apps on the left, the page they make on the right
@@ -997,281 +242,58 @@ app_hub/
 │   │   ├── IconShape.kt             icon masking (circle, squircles, rounded)
 │   │   ├── AppRepository.kt         PackageManager query (off the UI thread)
 │   │   ├── Updater.kt               the release check, the verified download, the install
-│   │   ├── AppEntry.kt              cell model + AppState (running/recent)
-│   │   ├── AppAdapter.kt            grid adapter, icon cache, settings cell
+│   │   ├── AppEntry.kt              cell model + tool tiles + app state
+│   │   ├── AppAdapter.kt            grid adapter, icon cache
 │   │   ├── PinnedApps.kt            ordered pins in SharedPreferences
-│   │   ├── OpenApps.kt              what is open: tasks, processes, usage + the access report
+│   │   ├── OpenApps.kt              what is open: one reader, ordered sources
+│   │   ├── ProcTable.kt             /proc table on the unit
 │   │   ├── RunningApps.kt           process-based detection (privileged/root)
 │   │   ├── ActivityStats.kt         usage-stats recency + access check
-│   │   ├── ForceStop.kt             the four close layers + the verified report
-│   │   ├── Uninstall.kt             the three removal layers, user-installed apps only
+│   │   ├── ForceStop.kt             the close layers + the verified report
+│   │   ├── Uninstall.kt             the removal layers, user-installed apps only
 │   │   ├── Files.kt                 volumes, folders and the copy/move/delete verbs
 │   │   ├── Install.kt               an APK into an installer session, + the status receiver
-│   │   ├── Handoff.kt               one file out to another app: a token, a provider, four endings
-│   │   ├── FileManagerActivity.kt   the file manager screen: rows, verbs, the carry bar
+│   │   ├── Handoff.kt               one file out to another app: token, provider, four endings
+│   │   ├── FileManagerActivity.kt   the file manager screen
 │   │   ├── Web.kt                   the browser's rules: address-or-search, memory, downloads
 │   │   ├── BrowserActivity.kt       the browser screen: toolbar, WebView, history + bookmarks
 │   │   └── RootShell.kt             optional su, probes `-c` and `<uid>` forms
 │   └── res/                         layouts, drawables, theme, EN + FA strings
 ├── tools/release.py                 platform-signed release + optional install
-├── tools/smoke-test-apk.sh          installs an APK on the emulator, proves it starts,
-│                                    and probes the hand-off provider
+├── tools/smoke-test-apk.sh          the release job's checks, usable by hand
 ├── build.gradle.kts                 AGP 9.4.1 (built-in Kotlin, no Kotlin plugin)
 ├── .github/actions/android-setup/   the JDK + SDK pins, shared by both workflows
-├── .github/workflows/               debug APK on every push, release on a tag
+├── .github/workflows/               debug APK + JVM tests on push, release on a tag
 └── gradle/wrapper/                  Gradle 9.7.1 wrapper
 ```
 
-Dependencies are deliberately tiny — `androidx.appcompat` (theme +
-`AppCompatActivity`) and `androidx.recyclerview` (the list). No Material, no
+Dependencies are deliberately tiny — `androidx.appcompat` and
+`androidx.recyclerview`, plus `junit` for the JVM tests. No Material, no
 Compose, no icon packs; the app icon itself is a vector.
-
-## How this was checked
-
-The UI was driven on an **emulator** (Pixel-class system image, 1024×600 at
-density 160 — deliberately the same shape as the head unit) with `uiautomator`
-dumps for the geometry and `screencap` for the pixels. This machine has no
-`avdmanager`, so the AVD is two hand-written files under `../work/avd/`
-(`apphub.ini` plus `apphub.avd/config.ini`: x86_64, `android-35`
-`google_apis_playstore`, `hw.lcd.width=1024`, `hw.lcd.height=600`,
-`hw.lcd.density=160`, `hw.keyboard=yes`) started with
-`ANDROID_AVD_HOME=C:\wamp\www\fx\work\avd emulator -avd apphub -no-window`:
-
-| Check | Result |
-|---|---|
-| empty install | the message cell spans the grid and the **Settings cell is still reachable** — before the fix the grid was hidden with nothing installed, so there was no way into the settings at all |
-| populated grid | 8 columns at Medium on a 1024dp screen, one text line per cell, running/`recent` dot on the icon |
-| long press | rounded sheet, app icon + name + package in the header, four rows |
-| settings screen | every setting row plus the **Back** row at the end, with live values (`Medium`, `Rounded`, `Auto (8 columns)`, `Name (A–Z)`, `All 19 apps`, `0 / 0 / 0 / 0 dp`) |
-| margin wheel | `Left` opens a wheel reading **Any value from 0 to 512 dp** (half the 1024dp width) and `Top` one reading **0 to 284 dp** (half the 568dp-tall window) — so the bound is the live screen, not a constant. Three turns of the wheel: 0 → 3, one step per turn, no wrapping; six turns down at 0 stay at 0; on a value of 96, five turns gave 101 |
-| margin by keyboard | *Type the value* opens a numeric field pre-filled with the stored dp (250) and selected. Typing `250` and pressing Enter applied `250 / 0 / 0 / 0 dp` and moved the row to x 32 → 282; `9999` landed on **512**, the limit; clearing the field and pressing Enter left the stored 512 alone; typing `96` and tapping **OK** gave `96`, and **Cancel** after typing `7` changed nothing |
-| margins are live | with the wheel still open, the settings text behind it moved **65 → 111 px** for a 30 → 76 dp turn, i.e. the screen follows the value as it is dialled (measured from `screencap` pixels, since only the dialog is in the a11y tree) |
-| screen margins | summary read `3 / 0 / 0 / 0 dp` after a 3 dp turn (row title x 32 → 35); with left 76 / top 9 the content box started at `(89, 46)` instead of `(13, 37)` and the 1024×568 window was inset by exactly those two numbers |
-| margins reach the grid | after picking them and pressing **Back**, the grid carried the same inset: the `Settings` tile's text moved 19,222 → 51,246 (+32/+24) |
-| the keypad gets its room | in the margins sheet, with the keyboard up the card moved to the top of the screen and shrank to `[314,36][710,284]`, the rows to y 284 and the **OK** row to y 244–265 — all of it above the keypad, which starts at y 296. Before the fix the same state left the card's white pixels only from y 38 to **295** (the keypad was drawn over everything below) while OK sat at y 531, under the keys. Tapping a live key typed into the field, and OK pressed with the keyboard open closed the sheet and left the row reading `18 of 19 apps` |
-| hide from the grid | long-pressing Camera offers five rows, the last being **Hide from the main page**; tapping it drops the cell immediately (`hidden_apps` = `com.android.camera2`), shows a toast, and the app is back through the shortcuts screen alone |
-| reset clears it | *Reset settings* empties the prefs file (`<map />`) and the count returns to `All 19 apps` with every box ticked — Calendar is back on the grid, which then holds 19 apps + Settings + Close = 21 cells |
-| include system apps reloads | with the factory apps switched on the row went from `None` to `All 19 apps` by itself: the switch drops the cached list and reads it again on the background thread |
-| reset really resets | after *Reset settings* → *Reset*, `shared_prefs/apphub.xml` is **empty** and the switches read on / on / on; before the fix the same run left the switched-off settings behind, because the restore after the recreation wrote the pre-restore switch positions back |
-| back row | last row of the list; tapping it returns to the grid and the grid re-applies the margins |
-| shortcuts, two panes | at 1024×600 the list is `[14,84][505,556]` and the page `[519,84][1010,556]`, with `All 19 apps` at `[930,47][1004,65]` and the hint at `[888,86][1010,103]` — nothing runs off the screen. 19 apps + gear + *Close* lay out as 113px cells at x 524/647/770/892 |
-| the filter is remembered | typing `cam` left one row in the list and stored `shortcuts_filter`; closing the screen with **Back** and opening it again from the settings row came back with `cam` in the field and the list still narrowed. The ✕ cleared the field *and* the stored value |
-| the filter does not decide the page | with `cam` typed the header still read `All 19 apps` and the preview still held every app: filtering hides rows, it does not tick anything |
-| All / None | *None* left `0 of 19 apps` and 19 packages in `hidden_apps`, and the preview became the empty page — *No apps to show yet* spanning the whole width (`[524,116][1005,207]`), with the gear and *Close* still cells; *All apps* put all 19 back |
-| reorder writes the page | long-pressing the third tile and sliding it left moved Chrome from 3rd to 2nd and stored `page_order` = calendar, **chrome**, camera2, …; the pane showed the new order at once and the grid drew `Calendar, Chrome, Camera, Clock` in its first row when it came back |
-| a sort drops the arrangement | the *Sort* sheet → *Name (A–Z)* removed `page_order` and the grid went back to name order |
-| the preview is not a launcher | its cells report `clickable=false`, and the gear and *Close* in it report `clickable=false` too — while the app's own cells in the grid stay clickable |
-| icon size | measured in the screenshot: 64px tile at Medium, 88px at Extra large |
-| adapt to screen, off | the row is on the settings screen between *Icon size* and *Icon shape* and reads **×1**; the grid measures 8 columns, 128px cells, 64px icons and a 20px-tall label at Medium |
-| adapt to screen, on | tapping the row took the screen from a 29px header to a 57px one, a 21px row title to 41px, the header's **own glyphs from 19px of ink to 40px**, the row's own value to **×2** and the *Grid* row from `Auto (8 columns)` to **`Auto (4 columns)`** - so the grid really does lay itself out for a narrower screen, rather than drawing the old eight columns into the room of four |
-| what it does to the grid | 8 columns of 128px cells, 64px icons and 104x20px labels became **4 columns of 248px cells, 128px icons and 204x36px labels** - icons, text and spacing all exactly double, on the unit's own 1024x600 @ 160dpi shape |
-| it reaches the screen behind it | the switch was flipped on the settings screen; pressing Back put the **already-running grid** back at ×2 (the density is fixed when a screen is created, so it is built again when it no longer matches) |
-| the icons stay crisp | the drawn art fills both boxes identically - 89% of the tile in the icon's own green, art bounding box the full 64x64 and the full 128x128 - and the 3px of antialiased edge at 64px became 4px at 128px rather than the 8px a 2x upscale of the small bitmap would have left |
-| margins are not scaled with it | `margin_left` = 50dp put the content box at x 63 with the switch off **and at x 76 with it on**: the 13px of cell margin doubled with the density, the 50px of screen margin did not. The wheel's range is the unit's too: *Any value from 0 to 512 dp* with the switch on |
-| the other screens | at ×2 the sheets and the shortcuts screen (list, filter, page preview) all lay out inside 1024x600; a long-press sheet is taller than the screen and **scrolls**, so *Hide from the main page* is still reachable |
-| reset clears it | *Reset settings* → *Reset* left `shared_prefs/apphub.xml` empty, the row reading **×1** and the grid back to `Auto (8 columns)`, i.e. back to the size the unit's own density gives |
-| icon shape | Circular vs Samsung style are visibly different silhouettes; before the fix all five shapes were **pixel-identical** |
-| theme | Dark flips the whole screen; the pref round-trips through `SharedPreferences` |
-| direction | RTL mirrors the grid (first app moves to the right edge) while strings stay in the device language |
-| usage access | row is present, and **gone** after `appops set … GET_USAGE_STATS allow` |
-
-The open-apps work was driven the same way, on an **Android 15 emulator**
-(Pixel-class system image, 1024×600 at density 160, `ro.build.type=user`, so
-`adb root` is unavailable - which is what makes it a fair stand-in for a phone):
-
-| Check | Result |
-|---|---|
-| which permissions `adb` can hand over | `pm grant` accepts `PACKAGE_USAGE_STATS`, `DUMP` and `WRITE_SECURE_SETTINGS` (the `development` flag), and refuses the three this feature needs: `REAL_GET_TASKS` and `FORCE_STOP_PACKAGES` with *"is not a changeable permission type"*, `REMOVE_TASKS` with *"is managed by role"* (`dumpsys package permissions`: `REAL_GET_TASKS` = `signature\|privileged`, `REMOVE_TASKS` = `signature\|recents\|role`) |
-| the list, before | with usage access granted and three apps just opened and backgrounded, the board marked **nothing** - the bug being fixed: `ACTIVITY_PAUSED` dropped a package the moment it was covered, and the hub is always the app doing the covering |
-| the list, after | `adb shell appops set com.mimskydo.apphub GET_USAGE_STATS allow` → Chrome, Photos, Settings and the hub's own neighbour app each carried a hollow dot |
-| one read, one answer | the board's marks are drawn from one read (`OpenApps`), so a tile cannot be marked by one source and unmarked by another |
-| a close that cannot work is not offered | the card's *Close* row is gated on `OpenAccess.forceStop` — root or `FORCE_STOP_PACKAGES` — so an install with neither (the Android 15 emulator here) is one row shorter, and the honest *"…is still open"* report can no longer be reached by a tap that was never going to work |
-| the platform is the reason | controlled pair on one cached app: `adb shell am kill com.android.settings` killed pid 8349; App Hub's own `killBackgroundProcesses("com.android.settings")` returned normally and **pid 8349 was still there** a moment later. App Hub's own call is a no-op from Android 14 on, exactly as the release notes say |
-| one real bug found this way | the first version of the new fallback asked `checkPermission(KILL_BACKGROUND_PROCESSES, <the app being closed>)` - the *target's* permission, which no normal app holds - so every close reported `layer=NONE` while looking like a close that had run, and nothing was ever called |
-
-The checks that need the unit itself could not be run here: nothing was installed
-on the vehicle, and no Android 10 test device is attached to this machine. What
-is *not* verified is therefore exactly two things, both on the unit: that the
-platform-signed install is granted `REAL_GET_TASKS` and `FORCE_STOP_PACKAGES`
-(one `dumpsys` line, in [Making the open-apps feature work](#making-the-open-apps-feature-work)),
-and that Android 10's `getRecentTasks()` answers a permission-holder with every
-task. The second is the framework's documented behaviour for the permission and
-is why the source is tried first; the implementation does not depend on it,
-because a source that answers nothing falls through to the next one.
-
-The design pass was driven the same way, screen by screen, on the build that is
-installed (the emulator is named explicitly in every `adb` call: a phone can be
-attached to this machine at the same time, and nothing here should ever be able
-to touch it):
-
-| Check | Result |
-|---|---|
-| every screen still opens | the board, the tools sheet, the settings screen, the shortcuts screen and the way back were all reached through the real UI: **5 of 5, 0 crashes** from `com.mimskydo.apphub` |
-| the shortcut screen used to throw | its empty-state panel had become a two-line `LinearLayout` in the layouts while the screen still held it as a `TextView`, so `onCreate` threw a `ClassCastException` and the screen never opened at all (`ShortcutsActivity.kt:73`). Fixed, and it opens |
-| the badge is on the icon's corner, not over it | at Medium the badge's 28dp circle is centred on the icon's top-right corner - it covers the art's corner quarter and hangs into the tile's whitespace - and it is placed against a box the adapter sizes, so the same is true at Small and at Extra large. Before the fix a 40dp circle sat across 60% of a 64dp icon, and at 72dp rows the card's six verbs ran off the bottom of the panel |
-| a clipped badge is a quarter of a circle | the badge deliberately paints outside its own view, so the tile, its inner column and the icon's box all had to stop clipping (`clipChildren` and `clipToPadding`): a screenshot of the lifted board is what showed the quarter |
-| the running ring no longer moves the badge | the ring paints outside the icon's box by a negative inset instead of making its own view bigger, so an app that is running no longer shifts the geometry its tile's badge is placed against |
-| the action card fits the panel | six 64dp rows (`row_sheet_height`) plus two hairlines and the header come to 528px of the 576px window, with the dividers after the second row (do / arrange) and before the *remove* group. Where the install cannot close, the card is one row shorter and the hairline opens on *Hide*. At 72dp the same card ran past the bottom edge |
-| a count is a quantity | the empty board and the settings row read `1 app` for one app via `<plurals>`; they used to read `1 apps` |
-| one app, one drawing | the board, both lists and the app card now share one icon cache keyed by package, size and shape. The masker draws *copies* of an adaptive icon's layers: re-binding the app's own instance to a raster size had left the shortcuts list drawing a stretched icon on a black square while the same icon was fine on the board |
-| dark mode | the night palette measures exactly as specified on the settings screen: **62.8%** `#171A21` (surfaces), **31.9%** `#0F1115` (page), **1.8%** `#242833` (hairlines) - 95.6% of the screen in three tones |
-| a setting shows its own result | choosing *Circular* writes the row's value and re-reads it in place; the number of pickers that only read on `onResume` is now zero. *Icon size* → *Extra large* turns the Grid row from `Auto (8 columns)` into `Auto (7 columns)` on the same screen, because that value is derived from it |
-| the `⋯` is a mark, not a button | the circle is 24dp at the reference 64dp icon and scales down with it (18px/25px/25px measured at 48/64/96dp) rather than growing, and the glyph is inset *twice* — inside the circle, and inside that for the dots. Before, a 40dp-wide glyph was being drawn inside a 28dp circle and bulged out of it |
-| a card with nothing at the top has nothing at the top | the tools menu's first row sits 29px below the card's top edge (card padding + the row's own centring); it wore ~100px of empty header because `sheetHeader` keeps a touch target's `minHeight` whether or not it holds anything. All five pickers and the app card were re-measured after the fix |
-| the switch | stays the platform's own widget. Three attempts at a custom track and thumb were overridden by the control's own tint, and it is the one widget whose shape a finger has already been taught; the app's colour reaches it through the theme's accent instead |
-
-Not checked: the head unit itself. Nothing here was installed on the vehicle,
-and the launcher tooling in `../launcher_tool/` was not touched by this work.
-
-The uninstall flow is the one thing in this round no screen could be driven for:
-opening Android's own uninstaller needs a device, and this machine has neither an
-emulator nor an attached one. Its layers were checked against the platform
-sources and its permissions against the built APK; the first real removal will
-be the unit's.
-
-The file manager was not driven on a device either, for the same reason. What was
-checked from here is the build (`assembleDebug` and `assembleRelease`), the
-permissions and the two new components in the built APK, and the two things about
-a screen that no compiler checks:
-
-* **every `android:pathData` in every drawable parses against the SVG grammar**
-  Android's own `PathParser` reads at *runtime* - the resource compiler does not
-  check it, and a malformed path is not a build error, it is a crash when the
-  drawable is inflated. All 31 of the app's vectors were run through a parser
-  that reads the same grammar, arc flags included;
-* **the twelve new glyphs draw what they are meant to.** The app runs on a
-  vehicle that is not attached to this machine, so the sheet was drawn by hand:
-  the same paths, at 24dp and 40dp (and the tile's icon at 96dp), on light and on
-dark. That is how the way-up glyph was caught - as a folder with an arrow inside
-  it, it was near-indistinguishable from *Move* in a column, and it is now a plain
-  arrow. The hand-off arrow went through the same sheet as well - at 96dp and at
-  24dp - because a glyph that has to say "another app" is exactly the kind that
-  does not survive a row by accident.
-
-The browser is in the same position, and was checked the same way: the build, the
-manifest and resources read out of the built APK, and the four new glyphs (`web`,
-the blue `web-tile`, `bookmark`, `reload`) drawn as a sheet at the sizes the
-screens use - 96dp and 24dp for the outlines, and the tile at 96, 64 and 48dp -
-and looked at, because a globe is a shape that either reads at row size or does
-not. The three outlines and the blue sheet all held up.
-
-What no check from here can cover is the part that is the unit's: a real card,
-a real copy, a real delete, and Android's own installer doing the work.
 
 ## Honest limitations
 
-* **An in-app update needs the release key, not the platform one.** The *Updates* row
-  installs only an APK signed with the release certificate it pins, so a unit running the
-  platform-signed build (any unit, after `tools/release.py`) cannot be updated from the
-  screen until the release APK is installed over it once, by hand.
-* **System apps are excluded by default** (`FLAG_SYSTEM` /
-  `FLAG_UPDATED_SYSTEM_APP` are filtered out) — this hub is for what the user
-  installed. *Include system apps* in the settings lists them too.
-* **Uninstall is offered only for apps the user installed**, and the same check
-  runs again when the removal is attempted, so the offer and the act cannot
-  disagree. A factory app has no such row; App Hub never removes itself.
-* **The app is gone only after the layer that answered has done its job.** Root
-  and the platform-signed install remove it without a screen; on an ordinary
-  install the row opens Android's own uninstaller, and the toast says the
-  removal is waiting on that screen instead of claiming it happened. The app's
-  data goes with it, and App Hub cannot put it back.
-* **The uninstall flow was not driven on a device from this machine** (no
-  emulator and none attached). The release build, the permissions in the APK
-  badging and the platform behaviour of each layer are what verified it; the
-  first real removal is the unit's.
-* **The file manager needs the whole of storage, and Android 11 and up call that
-  *All files access*.** Without it the screen shows the banner and reads nothing,
-  rather than listing folders as empty - which on Android 11 and up is exactly
-  what a folder it may not read looks like. On the unit's Android 10 there is no
-  such screen: it is the ordinary runtime pair.
-* **`Android/data` and `Android/obb` cannot be read from Android 11 on**, grant
-  or no grant. Opening one says so instead of drawing an empty folder.
-* **Writing to a card is the platform's decision, not this app's.** Android 10
-  writes to a secondary volume through the legacy mount; from Android 11 it is
-  all files access; and where a volume refuses, the operation reports the refusal
-  instead of leaving half a copy behind (a failed copy takes its own leftovers
-  back out).
-* **Three things the file manager deliberately does not do**: show a file (no
-  viewer and no editor - *Open with* hands it to one of those instead, which is
-  not the same thing), work on more than one file at a time (no multi-select, no
-  *new folder*), and hold anything in its hands past the screen it was picked up
-  on.
-* **Nothing was ever handed to a second app from this machine.** The hand-off's
-  four endings, the token provider and the read grant are the parts of the file
-  manager that need another app on the unit to be exercised at all, and there is
-  no emulator here and nothing attached. What verified them is the build, the
-  provider as it stands in the built APK, and the platform source behind the
-  grant; the first real *Open with* on the unit will be the unit's.
-* **A receiving app has to understand a `content://` URI.** Everything on the unit
-  is handed a file this way, by URI and never by path - which is what Android
-  requires, and what keeps a provider over all of storage out of this app. An old
-  app that only knows how to open a path simply is not in the list the platform
-  offers: the file is still there, and the other verbs still work on it.
-* **A package already installed under a different key cannot be replaced** from
-  here, and the install fails in the platform's own way - the toast says it did
-  not happen, and the installer's log line says why. This is not the self-update
-  path, which checks the release certificate before it downloads anything.
-* **The file manager was not driven on a device from this machine** either. The
-  build, the APK's permissions, the vector paths and a hand-drawn sheet of every
-  glyph are what verified it; the first real copy, move, delete and install are
-  the unit's.
-* **The browser has no tabs, no private mode, no password store and no file
-  upload.** Each is a feature with a screen of its own, and this is the browser a
-  driver uses for one address at a time. A page that asks for a file is told
-  plainly that this browser has none.
-* **A download is the platform's job, and so is where it lands.** The link goes to
-  `DownloadManager`, the bytes are its business, and the file arrives in
-  *Downloads* — the folder the file manager draws — with the platform's own
-  notification saying when. A download that exists only while its page does
-  (`blob:`, `data:`) cannot be fetched at all and says so. Nothing about a transfer
-  is remembered here: the downloader survives the browser being closed, which is
-  the point of handing it over.
-* **History and bookmarks live on this install and go with it.** Up to 200 visits
-  in the `browser` preferences file as JSON, with the bookmarks beside them;
-  uninstalling App Hub takes both, and clearing the history leaves the bookmarks
-  exactly where they are, as the confirmation says.
-* **An SSL error always stops the load.** There is no *proceed anyway* anywhere in
-  this app — a certificate the platform will not accept ends on the banner, by
-  design, and the row that would offer otherwise does not exist.
-* **The browser allows plain `http`.** A router's own page, a dashcam at
-  `192.168.x.x` and the factory head unit's interface have no certificate, and a
-  browser that refused them would be a browser that cannot reach the unit's own
-  network. The update path is untouched and still pins the release certificate by
-  digest; cleartext is the browser's half of the app only.
-* **The browser was never opened on a device from this machine** — no emulator
-  here and none attached. What verified it is the build, the manifest and the
-  resources read out of the built APK, the four new glyphs drawn as a sheet, and
-  the platform's documented `WebView` and `DownloadManager` behaviour; the first
-  page load, the first download and the first refused certificate are the unit's.
-* **No exact "open" view without privileges.** On a plain install you get the
-  `recent` state (needs the usage-access opt-in) or nothing; only the
-  platform-signed install, a `/system/priv-app` install or root gives the real
-  task and process view.
-* **A modern phone cannot close other apps at all.** Android 14 restricts
-  `killBackgroundProcesses()` to the caller's own processes, so on an unrooted
-  phone the app shows the *Recently open* list and draws no *Close* row at all,
-  instead of pretending. The platform-signed install, a priv-app install, or
-  root is what brings the row back — not an `adb grant`, which the platform
-  refuses for these three permissions.
-* **The dot is the only status shown** — the grid deliberately carries no
-  package names, badges or pin markers.
-* **Adapting to the screen is one fixed rule, not a knob.** The factor is the
-  screen's width over 400dp, capped at ×2 - there is no slider behind it, and no
-  way to ask for ×1.5 on a screen the rule says is ×2 (the icon size is still
-  there to fine-tune the tiles on top of it).
-* **At ×2 the screens scroll more**, which is the price of everything being
-  twice as big on a 600px-tall display: four grid rows instead of eight on the
-  settings screen, and a long-press sheet that has to be scrolled to reach its
-  last two rows. The layouts themselves lay out inside 1024x600 unchanged.
-* **An icon is scaled from whatever the app ships.** An adaptive or vector icon
-  redraws at the bigger size; a legacy app whose icon is a small raster PNG is
-  upscaled from that bitmap, exactly as it already was at Extra large.
-* **The adaptation follows the window's own width, not the display's.** The
-  scale is computed from the application's configuration, so a screen narrower
-  than the display (a split window) is scaled as if it were the whole panel. That
-  is not a case this unit produces, and one source for the number is what keeps
-  it from compounding.
-* `QUERY_ALL_PACKAGES` is declared so the list keeps working on Android 11+;
-  on the Android 10 head unit it is ignored.
-* The app targets SDK 34 but runs on the unit's Android 9/10 (API 28/29) — that
-  is the point of `minSdk 28`.
+- System apps are excluded by default; *Include system apps* lists them.
+- Uninstall is offered only for apps the user installed, and App Hub never
+  removes itself.
+- The file manager needs full storage access (*All files access* from
+  Android 11 on); without it the screen says so instead of reading a folder as
+  empty. `Android/data` and `Android/obb` cannot be read from Android 11 on,
+  grant or no grant.
+- No multi-select, no *new folder*, no built-in viewer or editor: *Open with*
+  hands the file to another app by `content://` URI, so an app that only
+  opens paths will not be in the list.
+- The browser has no tabs, no private mode, no password store and no upload;
+  an SSL error always stops the load (there is no *proceed anyway* anywhere
+  in this app), and plain `http` stays allowed because the unit's own router
+  and dashcam pages have no certificate.
+- History and bookmarks (200 visits kept) live on this install and go with
+  it; clearing the history leaves the bookmarks alone.
+- A real close and a real task view need the platform-signed install, a
+  priv-app install or root: Android 14+ restricts `killBackgroundProcesses()`
+  to the caller's own processes, so an ordinary install shows *Recently open*
+  and draws no *Close* row rather than pretending.
+- No device is attached to this machine. What verified all of this is the
+  build, the permissions and resources read back out of the built APK, the
+  JVM tests, and glyph sheets drawn by hand; the first real copy, close,
+  uninstall, download and page load on the unit are the unit's.

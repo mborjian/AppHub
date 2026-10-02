@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The running ring: drawn outside the icon, in the tile's own corner language.
-     A ring says "this one is alive" from across the cabin without brightening
-     anything - which a glow would, at night, in a windscreen.
-
-     The view this paints is the icon's own box, so the ring is pushed out of it
-     by the negative inset rather than by making the view bigger. That matters:
-     the tile's badge is placed against that box, and a box that grew when an app
-     is running would have moved the badge with it. -->
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
     android:insetTop="@dimen/ring_outset"
     android:insetBottom="@dimen/ring_outset"

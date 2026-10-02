@@ -3,20 +3,6 @@ package com.mimskydo.apphub
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-/**
- * Optional root access. Nothing in the app requires it: every call returns
- * null/false when there is no usable `su` and the caller falls back to the
- * unprivileged path (`killBackgroundProcesses`).
- *
- * Two `su` flavours exist in the wild, so the probe tries both and remembers
- * which one answered:
- *
- *  * `su -c "<command>"`  - Magisk and most toolbox builds
- *  * `su <uid> <command…>` - AOSP's `su` (what `adb shell su 0 id` uses)
- *
- * Never call this on the main thread: a `su` that decides to ask a human
- * blocks until [TIMEOUT_SECONDS] elapse.
- */
 object RootShell {
 
     private enum class Form { UNKNOWN, NONE, DASH_C, USER_ARG }
@@ -31,15 +17,6 @@ object RootShell {
 
     fun isAvailable(): Boolean = form() != Form.NONE
 
-    /**
-     * Runs a whole shell command line as root and returns its output.
-     *
-     * The whole command line is the point: callers hand it their own quoting and
-     * chains (`&&`, `;`), and both `su` flavours are handed a shell rather than a
-     * pre-split argv. Null means "no
-     * usable root, or the command failed", which is the only distinction the
-     * callers need - every root path here either falls back or does nothing.
-     */
     fun command(shellCommand: String): String? = when (form()) {
         Form.DASH_C -> exec(listOf(suBinary, "-c", shellCommand))
         Form.USER_ARG -> exec(listOf(suBinary, "0", "sh", "-c", shellCommand))
@@ -49,24 +26,10 @@ object RootShell {
     fun forceStop(packageName: String): Boolean =
         run("am force-stop $packageName", listOf("am", "force-stop", packageName)) != null
 
-    /**
-     * `pm uninstall` - the same command `adb uninstall` runs, and the same
-     * removal Settings' own Uninstall button performs: the app goes for every
-     * account on the unit, not just the one in front of it.
-     *
-     * No `--user` flag because the SDK offers no public way to name the
-     * current user any more (`Context.getUserId` is gone from the API 37
-     * stub), and guessing `--user 0` on a unit whose driver is another account
-     * would take the app off somebody else's profile instead.
-     *
-     * True only on the shell's own `Success` line: `pm` exits 0 for a refused
-     * removal too, so its output is the only signal worth reading.
-     */
     fun uninstall(packageName: String): Boolean =
         run("pm uninstall $packageName", listOf("pm", "uninstall", packageName))
             ?.contains("Success") == true
 
-    /** `ps -A -o NAME`, one process name per line (empty when no root). */
     fun processNames(): Set<String> =
         run("ps -A -o NAME", listOf("ps", "-A", "-o", "NAME"))
             ?.lineSequence()
@@ -75,10 +38,6 @@ object RootShell {
             ?.toHashSet()
             ?: emptySet()
 
-    /**
-     * @param shellCommand the command line for the `su -c` form
-     * @param argv         the same command pre-split for the `su <uid>` form
-     */
     private fun run(shellCommand: String, argv: List<String>): String? = when (form()) {
         Form.DASH_C -> exec(listOf(suBinary, "-c", shellCommand))
         Form.USER_ARG -> exec(listOf(suBinary, "0") + argv)
@@ -101,8 +60,6 @@ object RootShell {
 
     private fun exec(argv: List<String>): String? = try {
         val process = ProcessBuilder(argv).redirectErrorStream(true).start()
-        // wait first, read afterwards: a `su` waiting for a confirmation
-        // prompt produces no output at all, and readText() would block forever
         if (process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
             if (process.exitValue() == 0) {
                 process.inputStream.bufferedReader().use { it.readText() }
@@ -114,7 +71,7 @@ object RootShell {
             null
         }
     } catch (t: Throwable) {
-        null          // no su binary, no permission, seccomp, …
+        null
     }
 
     private const val TIMEOUT_SECONDS = 5L

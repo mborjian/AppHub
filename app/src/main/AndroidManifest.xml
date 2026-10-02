@@ -2,85 +2,38 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Fallback "close": killBackgroundProcesses() for the listed apps.
-         Protection level is normal, so it is granted at install time. -->
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
 
-    <!-- Real "close" (force-stop), only actually granted to a privileged
-         app that sits in /system/priv-app and is signed with the platform
-         key (see tools/release.py, system mode). Harmless otherwise. -->
     <uses-permission
         android:name="android.permission.FORCE_STOP_PACKAGES"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- The open apps, exactly: this is the permission the framework itself
-         checks before it hands over the task list, and it is what separates
-         "this app is open" from "this app was used recently".
-         protectionLevel=signature|privileged, so it is granted to an APK
-         signed with the platform key (tools/release.py) or installed under
-         /system/priv-app - no root needed at runtime. Harmless otherwise: a
-         plain install is simply refused it and falls back. -->
     <uses-permission
         android:name="android.permission.REAL_GET_TASKS"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- Closing a task the way the recents screen does, where that is allowed
-         (signature|recents|role). Never required: the layers below it remain. -->
     <uses-permission
         android:name="android.permission.REMOVE_TASKS"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- The running dot, on the devices where nothing better is available.
-         Needs a one-time opt-in from the user in
-         Settings > Apps > Special access > Usage access, which the settings
-         screen offers and then hides once it is granted. -->
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- The update screen reads this repository's public releases and takes the
-         APK of a newer one; nothing else in the app talks to the network. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- The self-update. Without it Android will not show its install dialog at
-         all; the app checks for it and offers the one-time grant rather than
-         downloading a file it cannot use. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
-    <!-- Removing an app the user installed, through Android's own uninstaller
-         screen. protectionLevel is normal; without it, from Android 9 on, the
-         platform does not refuse the request - it silently shows nothing. -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 
-    <!-- Silent removal, only actually granted to an app in /system/priv-app
-         signed with the platform key (see tools/release.py, system mode). With
-         it, PackageInstaller.uninstall deletes straight through. Harmless
-         otherwise: the layer is skipped and Android's own screen asks. -->
     <uses-permission
         android:name="android.permission.DELETE_PACKAGES"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- Needed from Android 11 on to see every installed app. Irrelevant on
-         the Android 10 head unit, harmless everywhere else. -->
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
-    <!-- The file manager reads and writes the unit's own storage, and whatever
-         card or stick is plugged into it. Two versions of Android spell that two
-         ways, and this app declares both:
-
-           - Android 10 and below: the storage pair, at runtime, together with
-             the legacy flag on <application> below that is what makes the
-             platform hand real paths back. That is the unit's own Android 10;
-           - Android 11 and up: all files access, which is a switch in a system
-             screen of its own rather than a dialog - one grant for the whole of
-             storage, and the only way to see a card's real tree from 11 on.
-
-         Neither of them opens Android/data or Android/obb from Android 11 on -
-         not even all files access - and the file manager says so instead of
-         drawing an empty folder. Both are harmless on a version that does not
-         use them, which is why declaring the pair is not conditional. -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
@@ -95,21 +48,6 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
-    <!-- The legacy flag. On Android 10 an app that asks for it is handed real
-         paths into shared storage instead of the sandboxed view, and that is the
-         whole of the file manager's access on the unit. Android 11 and up ignore
-         it - there the permission above is the mechanism - so it costs nothing
-         anywhere it does not apply. Without it, the file manager on the unit
-         would list a folder full of other apps' files as empty, which is the one
-         answer it is not allowed to give.
-
-         `usesCleartextTraffic` is here for the browser and for nothing else: a
-         browser that refuses `http://` is not a browser, and the addresses a head
-         unit is most often pointed at - a router, a dashcam, a page on the car's
-         own network - are plain `http` with no certificate to offer. It changes
-         nothing anywhere else in the app: the updater talks `https` to one host it
-         pins by certificate digest, and the file manager never talks to anything.
-         Without it every `http` page would fail with the platform's own refusal. -->
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -120,9 +58,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppHub">
 
-        <!-- uiMode and density are deliberately NOT in configChanges: a theme
-             or density change then recreates the activity, which is what makes
-             the new colours apply everywhere. -->
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize"
@@ -133,10 +68,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- The home role, offered - not taken. Adding this category is what
-                 lets the system's HOME chooser list this app; nothing is made
-                 the default by declaring it, and the row in Settings that opens
-                 that chooser is the only thing that does. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
@@ -149,45 +80,23 @@
             android:exported="false"
             android:label="@string/settings_title" />
 
-        <!-- The list on the left is a field to type in, so the window shrinks
-             around the keyboard (adjustResize) instead of being panned: the
-             panes then stay where they are and the field stays on screen. -->
         <activity
             android:name=".ShortcutsActivity"
             android:exported="false"
             android:label="@string/set_shortcuts_title"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- The web browser: this app's own screen over the WebView, opened from
-             its tile on the board for the same reason the file manager is - it is
-             not an app, so there is no launcher entry for the repository to find
-             and no intent filter for one. Software rendering is forced on: this
-             runs on a head unit whose driver is looking at the screen, not at
-             frames per second, and a hardware layer that misreads a page is worse
-             than a page that scrolls a little slower. -->
         <activity
             android:name=".BrowserActivity"
             android:exported="false"
             android:label="@string/browser_title"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- The file manager: this app's own screen over the unit's storage.
-             Opened from its tile on the board rather than from a launcher, which
-             is why it carries no intent filter - and why the board's repository,
-             which reads launcher activities, never sees it. -->
         <activity
             android:name=".FileManagerActivity"
             android:exported="false"
             android:label="@string/files_title" />
 
-        <!-- What the platform's downloader says when it is done with a browser
-             download. This app enqueues the request, so this broadcast is
-             addressed to it by name - which is why it is exempt from the
-             implicit-broadcast ban and safe to declare statically. The
-             receiver only ever reports: the file landing has its own
-             notification already, and a failed download is the one ending the
-             driver would otherwise find out about by looking for a file that
-             is not there. -->
         <receiver
             android:name=".DownloadReports"
             android:exported="false">
@@ -196,12 +105,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Where an install session's news arrives. A commit that needs the
-             driver's answer comes back as an intent this receiver has to open,
-             and it can arrive long after the tap that started the install - so
-             it is declared here rather than held by a screen. Not exported: the
-             only sender is this app's own session, through the pending intent it
-             created. -->
         <receiver
             android:name=".InstallStatusReceiver"
             android:exported="false">
@@ -210,9 +113,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- The system's installer reads the downloaded APK through this, and
-             nothing else does: one cache path, no export, and permission
-             granted per intent rather than once and for all. -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.updates"
@@ -223,13 +123,6 @@
                 android:resource="@xml/update_paths" />
         </provider>
 
-        <!-- Handing one file to another app to open. Note what is missing: no
-             FILE_PROVIDER_PATHS, so there is no tree and no root to resolve a
-             name against. A URI here carries a token this app minted for the one
-             file the driver picked, and the file manager copies nothing - a film
-             on a stick is opened from the stick (see Handoff.kt, and
-             update_paths.xml for the rule this keeps). Not exported, permission
-             granted per intent, like the provider above. -->
         <provider
             android:name=".HandoffProvider"
             android:authorities="${applicationId}.handoff"

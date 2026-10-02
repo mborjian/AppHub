@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A group's name on the settings screen.
-
-     Twenty-one identical rows in one column is a list to be read; four named
-     groups is a screen to be scanned. It is the cheapest hierarchy there is,
-     and it costs one line of text. -->
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/sectionTitle"

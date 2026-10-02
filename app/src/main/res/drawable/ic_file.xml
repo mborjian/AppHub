@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A page of text: everything the file manager cannot name. Folder, picture,
-     tune, film, archive and package have glyphs of their own; a driver's card
-     is full of everything else, and one page for the rest is better than a
-     question mark. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

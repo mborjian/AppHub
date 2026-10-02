@@ -1,15 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The other tappable thing on a lifted tile: a washed circle holding the three
-     dots, floating over the icon's own corner.
-
-     The circle is inset 16dp inside the view, so the view is a 56dp target while
-     the thing you see is a 24dp badge. That is the proportion a badge on an icon
-     has always had - about 40% of a 60dp icon, half over the artwork's corner and
-     half in the whitespace beside it - and it is what makes the tile read as
-     *marked* rather than as an icon with a button on its face. A 24dp target
-     would be 3.8mm, which is why the target is the whole 56dp box and only the
-     drawing shrank. The hairline is what keeps the circle legible on art that
-     happens to be the same tone as the wash. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/ripple">
     <item>
